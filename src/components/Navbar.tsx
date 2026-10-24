@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Moon, Sun, Heart, Package, Volume2, VolumeX } from 'lucide-react';
+import { Search, Moon, Sun, Heart, Package, Volume2, VolumeX, Store } from 'lucide-react';
 import { ThemeMode } from '../types';
 import { sound } from '../utils/audio';
 
@@ -13,6 +13,7 @@ interface NavbarProps {
   onOpenWishlist: () => void;
   onOpenTracker: () => void;
   onOpenVirtualStudio: () => void;
+  onOpenStoreEntrance?: () => void;
   activeNav: string;
   onNavClick: (nav: string) => void;
 }
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenWishlist,
   onOpenTracker,
   onOpenVirtualStudio,
+  onOpenStoreEntrance,
   activeNav,
   onNavClick
 }) => {
@@ -176,6 +178,25 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             )}
           </button>
+
+          {/* Re-enter Store Entrance Preview Button */}
+          {onOpenStoreEntrance && (
+            <button
+              onClick={() => {
+                sound.playDoorBell();
+                onOpenStoreEntrance();
+              }}
+              className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-mono font-bold tracking-wider transition-all focus:outline-none cursor-pointer border ${
+                isDark
+                  ? 'bg-[#18120d] border-[#382b20] text-[#c9b9a8] hover:text-white hover:border-white/30'
+                  : 'bg-[#eee6d9] border-[#ded4c3] text-[#7a6452] hover:text-[#1c140e] hover:border-[#7a6452]'
+              }`}
+              title="Experience the boutique storefront entrance"
+            >
+              <Store className="w-3.5 h-3.5 text-amber-400" />
+              <span className="uppercase">ENTRANCE</span>
+            </button>
+          )}
 
           {/* Virtual Dark Room Simulator Button */}
           <button

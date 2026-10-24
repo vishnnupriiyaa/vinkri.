@@ -16,6 +16,7 @@ import { FloorDetailModal } from './components/FloorDetailModal';
 import { WishlistModal } from './components/WishlistModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { VirtualDarkRoomModal } from './components/VirtualDarkRoomModal';
+import { StoreEntrancePreview } from './components/StoreEntrancePreview';
 import { InfoModals } from './components/InfoModals';
 import { Footer } from './components/Footer';
 import { PRODUCTS_DATA, FLOORS_DATA } from './data/products';
@@ -49,6 +50,9 @@ export default function App() {
 
   // Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Store Entrance Preview State (cute entrance experience before main website)
+  const [isEntranceOpen, setIsEntranceOpen] = useState(true);
 
   // Modals state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -176,6 +180,7 @@ export default function App() {
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenTracker={() => setIsTrackerOpen(true)}
         onOpenVirtualStudio={() => handleOpenDarkRoom()}
+        onOpenStoreEntrance={() => setIsEntranceOpen(true)}
         activeNav={activeNav}
         onNavClick={handleNavClick}
       />
@@ -244,6 +249,12 @@ export default function App() {
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
         onOpenNavModal={(nav) => setInfoModalType(nav)}
+      />
+
+      {/* Cute Store Entrance Preview Portal */}
+      <StoreEntrancePreview
+        isOpen={isEntranceOpen}
+        onEnterStore={() => setIsEntranceOpen(false)}
       />
 
       {/* Trolley Drawer */}

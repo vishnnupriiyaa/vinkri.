@@ -64,6 +64,36 @@ class SoundManager {
       // Gracefully ignored
     }
   }
+
+  playDoorBell() {
+    try {
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+
+      // Dual harmonic boutique bell chime
+      const notes = [659.25, 523.25]; // E5, then C5 (classic ding-dong boutique doorbell)
+      notes.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        const startTime = this.ctx.currentTime + idx * 0.22;
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        gain.gain.setValueAtTime(0.12, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.7);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.75);
+      });
+    } catch {
+      // audio safety
+    }
+  }
 }
 
 export const sound = new SoundManager();
