@@ -1,0 +1,6 @@
+{
+  "name": "VINKRI - Soulful Creations",
+  "description": "An architectural e-commerce experience showcasing soulful creations, desk toys, custom dioramas, diecast stands, and decor lamps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
