@@ -102,7 +102,7 @@ export const PRODUCTS_DATA: Product[] = [
     ledColors: ['Warm Amber (2700K)', 'Soft Candlelight (2200K)'],
     isTopSeller: true,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/moon_tree_light_1792822133142.jpg',
+    imageThumbnail: '/assets/images/moon_tree_light_1792822133142.jpg',
     inStock: true,
     badge: 'Best Seller'
   },
@@ -123,7 +123,7 @@ export const PRODUCTS_DATA: Product[] = [
     ledColors: ['Golden Summit Dawn', 'Glacial Cold Cyan', 'Deep Night Starlight'],
     isTopSeller: true,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/mount_everest_light_1792822132587.jpg',
+    imageThumbnail: '/assets/images/mount_everest_light_1792822132587.jpg',
     inStock: true,
     badge: 'Popular'
   },
@@ -144,7 +144,7 @@ export const PRODUCTS_DATA: Product[] = [
     ledColors: ['Showroom 4000K Pure White', 'Warm Tungsten 3000K'],
     isTopSeller: true,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/car_showcase_1792822133725.jpg',
+    imageThumbnail: '/assets/images/car_showcase_1792822133725.jpg',
     inStock: true,
     badge: 'Collector Choice'
   },
@@ -166,7 +166,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Purely Mechanical',
     isTopSeller: false,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/grid_cube_toy_1792822134419.jpg',
+    imageThumbnail: '/assets/images/grid_cube_toy_1792822134419.jpg',
     inStock: true
   },
   {
@@ -185,7 +185,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Purely Mechanical',
     isTopSeller: false,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/basketball_shooter_1792823665203.jpg',
+    imageThumbnail: '/assets/images/basketball_shooter_1792823665203.jpg',
     inStock: true
   },
   {
@@ -204,7 +204,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Purely Mechanical',
     isTopSeller: false,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/candy_dispenser_1792823665976.jpg',
+    imageThumbnail: '/assets/images/candy_dispenser_1792823665976.jpg',
     inStock: true
   },
   {
@@ -224,7 +224,7 @@ export const PRODUCTS_DATA: Product[] = [
     ledColors: ['Golden Hour Glow', 'Twilight Indigo'],
     isTopSeller: false,
     isOnShelf: true,
-    imageThumbnail: '/src/assets/images/aeroplane_diorama_1792823666542.jpg',
+    imageThumbnail: '/assets/images/aeroplane_diorama_1792823666542.jpg',
     inStock: true
   },
 
@@ -245,7 +245,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Hand-cranked flywheel mechanism',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/automaton_horse_1792823850330.jpg',
+    imageThumbnail: '/assets/images/automaton_horse_1792823850330.jpg',
     inStock: true
   },
   {
@@ -263,7 +263,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Passive Kinetic',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/chrome_serpent_1792823850606.jpg',
+    imageThumbnail: '/assets/images/chrome_serpent_1792823850606.jpg',
     inStock: true
   },
   {
@@ -281,7 +281,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C rechargeable 4000mAh',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    imageThumbnail: '/assets/images/bonsai_sanctuary_1792823852211.jpg',
     inStock: true
   },
   {
@@ -299,7 +299,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/diecast_car_stand_1792823666503.jpg',
+    imageThumbnail: '/assets/images/diecast_car_stand_1792823666503.jpg',
     inStock: true
   },
   {
@@ -317,7 +317,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Under-shelf soft edge glow via USB',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/tiered_track_rack_1792823874061.jpg',
+    imageThumbnail: '/assets/images/tiered_track_rack_1792823874061.jpg',
     inStock: true
   },
   {
@@ -336,7 +336,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Optional Underlight Base',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/custom_couple_figurine_1792823872735.jpg',
+    imageThumbnail: '/assets/images/custom_couple_figurine_1792823872735.jpg',
     inStock: true,
     badge: 'Custom Commission'
   },
@@ -357,7 +357,7 @@ export const PRODUCTS_DATA: Product[] = [
     ledColors: ['Temple Warm Gold', 'Dusk Moonlight'],
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/buddha_halo_lamp_1792822134221.jpg',
+    imageThumbnail: '/assets/images/buddha_halo_lamp_1792822134221.jpg',
     inStock: true
   },
   {
@@ -375,7 +375,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C with rotary brass dimmer switch',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/shiva_trishul_aura_1792823667127.jpg',
+    imageThumbnail: '/assets/images/shiva_trishul_aura_1792823667127.jpg',
     inStock: true
   },
   {
@@ -393,7 +393,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C 5V / 2A with touch dimming',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/crescent_moon_bonsai_1792823851166.jpg',
+    imageThumbnail: '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
     inStock: true
   },
   {
@@ -412,7 +412,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: '12V 2A DC Adapter Included',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/src/assets/images/floating_levitron_1792823852255.jpg',
+    imageThumbnail: '/assets/images/floating_levitron_1792823852255.jpg',
     inStock: true
   }
 ];

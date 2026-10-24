@@ -24,27 +24,27 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
   // Direct studio photography for all major categories (Desk Toys, Dioramas, Diecast Stands, Figurines, Lamps)
   const directImages: Record<string, string> = {
     // Top 3 Sellers & Lamps
-    'moon-tree-light': '/src/assets/images/moon_tree_light_1792822133142.jpg',
-    'crescent-bonsai': '/src/assets/images/crescent_moon_bonsai_1792823851166.jpg',
-    'floating-levitron': '/src/assets/images/floating_levitron_1792823852255.jpg',
+    'moon-tree-light': '/assets/images/moon_tree_light_1792822133142.jpg',
+    'crescent-bonsai': '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
+    'floating-levitron': '/assets/images/floating_levitron_1792823852255.jpg',
     // Dioramas
-    'mount-everest-light': '/src/assets/images/mount_everest_light_1792822132587.jpg',
-    'aeroplane-diorama': '/src/assets/images/aeroplane_diorama_1792823666542.jpg',
-    'bonsai-sanctuary': '/src/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    'mount-everest-light': '/assets/images/mount_everest_light_1792822132587.jpg',
+    'aeroplane-diorama': '/assets/images/aeroplane_diorama_1792823666542.jpg',
+    'bonsai-sanctuary': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
     // Diecast Car Stands
-    'car-showcase': '/src/assets/images/car_showcase_1792822133725.jpg',
-    'diecast-stack': '/src/assets/images/diecast_car_stand_1792823666503.jpg',
-    'tiered-track-rack': '/src/assets/images/tiered_track_rack_1792823874061.jpg',
+    'car-showcase': '/assets/images/car_showcase_1792822133725.jpg',
+    'diecast-stack': '/assets/images/diecast_car_stand_1792823666503.jpg',
+    'tiered-track-rack': '/assets/images/tiered_track_rack_1792823874061.jpg',
     // Desk Toys
-    'grid-cube': '/src/assets/images/grid_cube_toy_1792822134419.jpg',
-    'basketball-shooter': '/src/assets/images/basketball_shooter_1792823665203.jpg',
-    'candy-dispenser': '/src/assets/images/candy_dispenser_1792823665976.jpg',
-    'automaton-horse': '/src/assets/images/automaton_horse_1792823850330.jpg',
-    'chrome-snake': '/src/assets/images/chrome_serpent_1792823850606.jpg',
+    'grid-cube': '/assets/images/grid_cube_toy_1792822134419.jpg',
+    'basketball-shooter': '/assets/images/basketball_shooter_1792823665203.jpg',
+    'candy-dispenser': '/assets/images/candy_dispenser_1792823665976.jpg',
+    'automaton-horse': '/assets/images/automaton_horse_1792823850330.jpg',
+    'chrome-snake': '/assets/images/chrome_serpent_1792823850606.jpg',
     // Custom Figurines
-    'buddha-halo-lamp': '/src/assets/images/buddha_halo_lamp_1792822134221.jpg',
-    'shiva-trishul-lamp': '/src/assets/images/shiva_trishul_aura_1792823667127.jpg',
-    'custom-figurine-duo': '/src/assets/images/custom_couple_figurine_1792823872735.jpg'
+    'buddha-halo-lamp': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
+    'shiva-trishul-lamp': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
+    'custom-figurine-duo': '/assets/images/custom_couple_figurine_1792823872735.jpg'
   };
 
   // Coordinates from the reference image for any remaining items
