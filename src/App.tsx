@@ -57,7 +57,14 @@ export default function App() {
   // Modals state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<FloorInfo | null>(null);
+  const [selectedFloorSlot, setSelectedFloorSlot] = useState<'left' | 'center' | 'right'>('center');
   const [floorFilter, setFloorFilter] = useState<number | null>(null);
+
+  const handleOpenFloor = (floor: FloorInfo, slot: 'left' | 'center' | 'right' = 'center') => {
+    sound.playChime();
+    setSelectedFloor(floor);
+    setSelectedFloorSlot(slot);
+  };
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -216,7 +223,7 @@ export default function App() {
           <div className="lg:col-span-7 flex flex-col justify-center">
             <BuildingShowcase
               theme={theme}
-              onSelectFloor={(floor) => setSelectedFloor(floor)}
+              onSelectFloor={handleOpenFloor}
               selectedFloorNumber={floorFilter}
               onSelectProduct={(p) => setSelectedProduct(p)}
               onQuickAdd={(p) => handleAddToCart(p, 1)}
@@ -307,7 +314,7 @@ export default function App() {
         onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
       />
 
-      {/* Floor Detail Modal */}
+      {/* Floor Detail Modal / Immersive Floor Interior Experience */}
       <FloorDetailModal
         floor={selectedFloor}
         onClose={() => setSelectedFloor(null)}
@@ -315,6 +322,10 @@ export default function App() {
         onSelectProduct={(p) => setSelectedProduct(p)}
         onQuickAdd={(p) => handleAddToCart(p, 1)}
         onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
+        onSwitchFloor={(newFloor) => setSelectedFloor(newFloor)}
+        initialSlot={selectedFloorSlot}
+        wishlistIds={wishlistIds}
+        onToggleWishlist={handleToggleWishlist}
       />
 
       {/* Virtual Dark Room Simulator Modal */}

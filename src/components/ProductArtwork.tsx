@@ -84,7 +84,7 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
         /* Sliced thumbnail from reference image */
         <div className="relative w-full h-full overflow-hidden select-none pointer-events-none">
           <img
-            src="/assets/aistudio/IMG-20261007-WA0097_d9b5d091.jpg"
+            src={isDark ? '/assets/aistudio/dark_building.jpg' : '/assets/aistudio/light_building.jpg'}
             alt="Product render"
             onError={() => setImgError(true)}
             className={`max-w-none absolute transition-all duration-300 ${
