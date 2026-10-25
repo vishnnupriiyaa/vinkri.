@@ -175,8 +175,8 @@ export const InfoModals: React.FC<InfoModalProps> = ({ type, onClose, theme }) =
                 <div className="flex items-start gap-2.5">
                   <MapPin className={`w-4 h-4 shrink-0 mt-0.5 ${isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'}`} />
                   <div>
-                    <p className="font-extrabold text-sm text-white">Hyderabad Flagship Atelier</p>
-                    <p className="opacity-80 text-xs mt-0.5">Plot 42, Road No. 36, Jubilee Hills, Hyderabad, Telangana 500033</p>
+                    <p className={`font-extrabold text-sm ${isDark ? 'text-white' : 'text-[#282019]'}`}>Hyderabad Flagship Atelier</p>
+                    <p className="opacity-80 text-xs mt-0.5">Hyderabad, Telangana</p>
                     <p className="opacity-65 text-[11px] mt-1 flex items-center gap-2">
                       <Clock className="w-3 h-3" />
                       <span>Visiting Hours: Tue–Sun 11:00 AM – 8:30 PM (Mondays by appointment)</span>

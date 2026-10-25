@@ -198,24 +198,52 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
       />
 
       {/* Main Container */}
-      <div className="relative w-full max-w-6xl rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.9)] overflow-hidden border border-[#382b20] bg-[#0c0907] text-[#f7f2ea] flex flex-col my-auto max-h-[96vh]">
+      <div
+        className={`relative w-full max-w-6xl rounded-2xl overflow-y-auto border flex flex-col my-auto max-h-[96vh] transition-all duration-300 ${
+          isDark
+            ? 'shadow-[0_0_80px_rgba(0,0,0,0.9)] border-[#382b20] bg-[#0c0907] text-[#f7f2ea]'
+            : 'shadow-[0_20px_70px_rgba(0,0,0,0.2)] border-[#ded4c3] bg-[#faf6f0] text-[#282019]'
+        }`}
+      >
         {/* Top Control Bar */}
-        <div className="px-5 py-3.5 border-b border-[#241a12] flex items-center justify-between bg-[#140e0a]/80 backdrop-blur-sm z-20 shrink-0">
+        <div
+          className={`px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-b flex items-center justify-between backdrop-blur-sm z-20 shrink-0 transition-colors ${
+            isDark ? 'border-[#241a12] bg-[#140e0a]/80' : 'border-[#e2d5c3] bg-[#f4ebe0]'
+          }`}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#d2f53a]/15 text-[#d2f53a] border border-[#d2f53a]/30 flex items-center justify-center">
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
+                isDark
+                  ? 'bg-[#d2f53a]/15 text-[#d2f53a] border-[#d2f53a]/30'
+                  : 'bg-[#c35626]/15 text-[#c35626] border-[#c35626]/30'
+              }`}
+            >
               <Lightbulb className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest uppercase text-[#d2f53a] font-bold">
+                <span
+                  className={`text-[10px] font-mono tracking-widest uppercase font-bold ${
+                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                  }`}
+                >
                   HYDERABAD ATELIER
                 </span>
-                <span className="text-white/40">·</span>
-                <span className="text-[10px] font-mono tracking-widest uppercase text-white/70">
-                  VIRTUAL DARK ROOM SIMULATOR
+                <span className={isDark ? 'text-white/40' : 'text-black/30'}>·</span>
+                <span
+                  className={`text-[10px] font-mono tracking-widest uppercase ${
+                    isDark ? 'text-white/70' : 'text-[#69584b]'
+                  }`}
+                >
+                  {isDark ? 'VIRTUAL DARK ROOM SIMULATOR' : 'LIGHTING & AMBIENT STUDIO'}
                 </span>
               </div>
-              <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-white">
+              <h3
+                className={`text-sm sm:text-base font-extrabold tracking-tight ${
+                  isDark ? 'text-white' : 'text-[#1e140d]'
+                }`}
+              >
                 Low-Light & Ambient Glow Simulator
               </h3>
             </div>
@@ -223,7 +251,11 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
 
           <div className="flex items-center gap-3">
             {/* Quick dark room preset switch */}
-            <div className="hidden sm:flex items-center gap-1 bg-[#1d1610] p-1 rounded-lg border border-[#33251a]">
+            <div
+              className={`hidden sm:flex items-center gap-1 p-1 rounded-lg border ${
+                isDark ? 'bg-[#1d1610] border-[#33251a]' : 'bg-white border-[#ded4c3]'
+              }`}
+            >
               <button
                 onClick={() => {
                   sound.playClick();
@@ -231,8 +263,12 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   roomAmbient === 0
-                    ? 'bg-[#d2f53a] text-black shadow-md'
-                    : 'text-[#9c8979] hover:text-white'
+                    ? isDark
+                      ? 'bg-[#d2f53a] text-black shadow-md'
+                      : 'bg-[#c35626] text-white shadow-sm'
+                    : isDark
+                    ? 'text-[#9c8979] hover:text-white'
+                    : 'text-[#69584b] hover:text-black'
                 }`}
                 title="Total Dark Room"
               >
@@ -246,8 +282,12 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   roomAmbient === 25
-                    ? 'bg-[#d2f53a] text-black shadow-md'
-                    : 'text-[#9c8979] hover:text-white'
+                    ? isDark
+                      ? 'bg-[#d2f53a] text-black shadow-md'
+                      : 'bg-[#c35626] text-white shadow-sm'
+                    : isDark
+                    ? 'text-[#9c8979] hover:text-white'
+                    : 'text-[#69584b] hover:text-black'
                 }`}
                 title="Cozy Ambient"
               >
@@ -261,8 +301,12 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   roomAmbient === 85
-                    ? 'bg-[#d2f53a] text-black shadow-md'
-                    : 'text-[#9c8979] hover:text-white'
+                    ? isDark
+                      ? 'bg-[#d2f53a] text-black shadow-md'
+                      : 'bg-[#c35626] text-white shadow-sm'
+                    : isDark
+                    ? 'text-[#9c8979] hover:text-white'
+                    : 'text-[#69584b] hover:text-black'
                 }`}
                 title="Daylight Room"
               >
@@ -273,7 +317,11 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full bg-[#1c1510] text-[#cfbfaf] hover:text-white hover:bg-[#281f18] transition-colors cursor-pointer border border-[#33251a]"
+              className={`p-1.5 rounded-full transition-colors cursor-pointer border ${
+                isDark
+                  ? 'bg-[#1c1510] text-[#cfbfaf] hover:text-white hover:bg-[#281f18] border-[#33251a]'
+                  : 'bg-white text-[#45372d] hover:text-black hover:bg-[#ede3d3] border-[#ded4c3]'
+              }`}
               aria-label="Close Virtual Studio"
             >
               <X className="w-4 h-4" />
@@ -379,7 +427,7 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
             </div>
 
             {/* Main Product Container */}
-            <div className="relative w-64 sm:w-80 md:w-96 aspect-square transition-all duration-300">
+            <div className="relative w-52 xs:w-64 sm:w-80 md:w-96 aspect-square transition-all duration-300">
               {/* Optical Glow Halo directly behind the product frame */}
               <div
                 className="absolute inset-4 rounded-full blur-[35px] pointer-events-none transition-all duration-300"
@@ -424,7 +472,11 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
               {/* Prev/Next arrows floating on canvas */}
               <button
                 onClick={handlePrevProduct}
-                className="absolute -left-4 sm:-left-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#1c1510]/90 text-white hover:bg-[#d2f53a] hover:text-black transition-all flex items-center justify-center cursor-pointer border border-[#382b20] shadow-xl z-30"
+                className={`absolute -left-4 sm:-left-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full transition-all flex items-center justify-center cursor-pointer border shadow-xl z-30 ${
+                  isDark
+                    ? 'bg-[#1c1510]/90 text-white hover:bg-[#d2f53a] hover:text-black border-[#382b20]'
+                    : 'bg-white/95 text-[#282019] hover:bg-[#c35626] hover:text-white border-[#ded4c3]'
+                }`}
                 title="Previous creation"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -432,7 +484,11 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
 
               <button
                 onClick={handleNextProduct}
-                className="absolute -right-4 sm:-right-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#1c1510]/90 text-white hover:bg-[#d2f53a] hover:text-black transition-all flex items-center justify-center cursor-pointer border border-[#382b20] shadow-xl z-30"
+                className={`absolute -right-4 sm:-right-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full transition-all flex items-center justify-center cursor-pointer border shadow-xl z-30 ${
+                  isDark
+                    ? 'bg-[#1c1510]/90 text-white hover:bg-[#d2f53a] hover:text-black border-[#382b20]'
+                    : 'bg-white/95 text-[#282019] hover:bg-[#c35626] hover:text-white border-[#ded4c3]'
+                }`}
                 title="Next creation"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -441,10 +497,22 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
 
             {/* Floor badge & Live lumen indicator */}
             <div className="mt-3 flex items-center gap-2 z-20">
-              <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-black/80 border border-white/20 text-[#d2f53a] font-bold">
+              <span
+                className={`text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full border font-bold ${
+                  isDark
+                    ? 'bg-black/80 border-white/20 text-[#d2f53a]'
+                    : 'bg-white/95 border-[#ded4c3] text-[#c35626] shadow-xs'
+                }`}
+              >
                 FLR 0{currentProduct.floorNumber} · {currentProduct.category}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/80 border border-white/20 text-white/80">
+              <span
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  isDark
+                    ? 'bg-black/80 border-white/20 text-white/80'
+                    : 'bg-white/95 border-[#ded4c3] text-[#45372d] shadow-xs'
+                }`}
+              >
                 {effectiveLampLight > 0
                   ? `EMITTED LUMENS: ~${Math.round(effectiveLampLight * 240)} lm`
                   : 'OPTICAL EMITTERS OFF'}
@@ -454,29 +522,53 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
         </div>
 
         {/* Bottom Interactive Control Dashboard */}
-        <div className="p-4 sm:p-5 bg-[#120d09] border-t border-[#261c14] z-20 shrink-0 space-y-4">
+        <div
+          className={`p-4 sm:p-5 border-t z-20 shrink-0 space-y-4 transition-colors ${
+            isDark ? 'bg-[#120d09] border-[#261c14]' : 'bg-[#f4ebe0] border-[#ded4c3]'
+          }`}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 items-center">
             {/* Product Meta & Actions */}
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="text-base sm:text-lg font-black text-white truncate">
+                <h4
+                  className={`text-base sm:text-lg font-black truncate ${
+                    isDark ? 'text-white' : 'text-[#1c140e]'
+                  }`}
+                >
                   {currentProduct.name}
                 </h4>
                 {currentProduct.badge && (
-                  <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#d2f53a]/20 text-[#d2f53a] font-bold shrink-0">
+                  <span
+                    className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold shrink-0 ${
+                      isDark ? 'bg-[#d2f53a]/20 text-[#d2f53a]' : 'bg-[#c35626]/15 text-[#c35626]'
+                    }`}
+                  >
                     {currentProduct.badge}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#a99787] line-clamp-1 mb-2">
+              <p
+                className={`text-xs line-clamp-1 mb-2 ${
+                  isDark ? 'text-[#a99787]' : 'text-[#69584b]'
+                }`}
+              >
                 {currentProduct.description}
               </p>
               <div className="flex items-center gap-3">
-                <span className="text-base font-extrabold text-white">
+                <span
+                  className={`text-base font-extrabold ${
+                    isDark ? 'text-white' : 'text-[#1c140e]'
+                  }`}
+                >
                   ₹{currentProduct.price.toLocaleString('en-IN')}
                 </span>
                 {currentProduct.originalPrice && (
-                  <span className="text-xs text-[#8c7b6d] line-through">
+                  <span
+                    className={`text-xs line-through ${
+                      isDark ? 'text-[#8c7b6d]' : 'text-[#9c8979]'
+                    }`}
+                  >
                     ₹{currentProduct.originalPrice.toLocaleString('en-IN')}
                   </span>
                 )}
@@ -485,7 +577,9 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                     added
                       ? 'bg-emerald-500 text-white'
-                      : 'bg-[#d2f53a] text-black hover:bg-[#e0ff4f]'
+                      : isDark
+                      ? 'bg-[#d2f53a] text-black hover:bg-[#e0ff4f]'
+                      : 'bg-[#c35626] text-white hover:bg-[#a64319] shadow-sm'
                   }`}
                 >
                   {added ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
@@ -497,7 +591,9 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                       onClose();
                       onSelectProductDetails(currentProduct);
                     }}
-                    className="text-xs text-[#b8a796] hover:text-white underline font-semibold cursor-pointer"
+                    className={`text-xs underline font-semibold cursor-pointer ${
+                      isDark ? 'text-[#b8a796] hover:text-white' : 'text-[#7a6452] hover:text-[#1c140e]'
+                    }`}
                   >
                     Details & Specs →
                   </button>
@@ -506,15 +602,27 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
             </div>
 
             {/* Sliders: Room Ambient & Lamp Output */}
-            <div className="space-y-3 bg-[#18110c] p-3 rounded-xl border border-[#2e2117]">
+            <div
+              className={`space-y-3 p-3 rounded-xl border ${
+                isDark ? 'bg-[#18110c] border-[#2e2117]' : 'bg-white border-[#ded4c3] shadow-xs'
+              }`}
+            >
               {/* Room Ambient Light Slider */}
               <div>
                 <div className="flex items-center justify-between text-[11px] font-bold mb-1">
-                  <span className="flex items-center gap-1.5 text-white/90">
-                    <Moon className="w-3.5 h-3.5 text-amber-400" />
+                  <span
+                    className={`flex items-center gap-1.5 ${
+                      isDark ? 'text-white/90' : 'text-[#231b15]'
+                    }`}
+                  >
+                    <Moon className="w-3.5 h-3.5 text-amber-500" />
                     <span>Room Ambient Light</span>
                   </span>
-                  <span className="font-mono text-[10px] text-[#d2f53a]">
+                  <span
+                    className={`font-mono text-[10px] font-bold ${
+                      isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                    }`}
+                  >
                     {roomAmbient === 0 ? '0% (Pitch Black)' : `${roomAmbient}%`}
                   </span>
                 </div>
@@ -524,18 +632,30 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                   max="100"
                   value={roomAmbient}
                   onChange={(e) => setRoomAmbient(Number(e.target.value))}
-                  className="w-full accent-[#d2f53a] cursor-pointer h-1.5 bg-[#2a1e15] rounded-lg"
+                  className={`w-full cursor-pointer h-1.5 rounded-lg ${
+                    isDark ? 'accent-[#d2f53a] bg-[#2a1e15]' : 'accent-[#c35626] bg-[#ded4c3]'
+                  }`}
                 />
               </div>
 
               {/* Lamp Output / Brightness Slider */}
               <div>
                 <div className="flex items-center justify-between text-[11px] font-bold mb-1">
-                  <span className="flex items-center gap-1.5 text-white/90">
-                    <Lightbulb className="w-3.5 h-3.5 text-[#d2f53a]" />
+                  <span
+                    className={`flex items-center gap-1.5 ${
+                      isDark ? 'text-white/90' : 'text-[#231b15]'
+                    }`}
+                  >
+                    <Lightbulb
+                      className={`w-3.5 h-3.5 ${isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'}`}
+                    />
                     <span>Product Lamp Brightness</span>
                   </span>
-                  <span className="font-mono text-[10px] text-[#d2f53a]">
+                  <span
+                    className={`font-mono text-[10px] font-bold ${
+                      isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                    }`}
+                  >
                     {lampBrightness}%
                   </span>
                 </div>
@@ -545,7 +665,9 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                   max="100"
                   value={lampBrightness}
                   onChange={(e) => setLampBrightness(Number(e.target.value))}
-                  className="w-full accent-[#d2f53a] cursor-pointer h-1.5 bg-[#2a1e15] rounded-lg"
+                  className={`w-full cursor-pointer h-1.5 rounded-lg ${
+                    isDark ? 'accent-[#d2f53a] bg-[#2a1e15]' : 'accent-[#c35626] bg-[#ded4c3]'
+                  }`}
                 />
               </div>
             </div>
@@ -553,7 +675,13 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
             {/* Lighting Temperature & Candle Flicker Controls */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-white/80">Optical Color Temperature</span>
+                <span
+                  className={`text-[11px] font-bold ${
+                    isDark ? 'text-white/80' : 'text-[#231b15]'
+                  }`}
+                >
+                  Optical Color Temperature
+                </span>
                 {/* Candlelight Flicker Toggle */}
                 <button
                   onClick={() => {
@@ -562,12 +690,16 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                   }}
                   className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all border cursor-pointer ${
                     isFlickering
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                      : 'bg-[#1a130e] text-[#8e7e70] border-[#31251b] hover:text-white'
+                      ? isDark
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                        : 'bg-amber-500/20 text-amber-800 border-amber-500/50'
+                      : isDark
+                      ? 'bg-[#1a130e] text-[#8e7e70] border-[#31251b] hover:text-white'
+                      : 'bg-white text-[#69584b] border-[#ded4c3] hover:text-black'
                   }`}
                   title="Simulate realistic flickering candlelight oscillation"
                 >
-                  <Flame className="w-3 h-3" />
+                  <Flame className="w-3 h-3 text-amber-500" />
                   <span>Candle Flicker {isFlickering ? 'ON' : 'OFF'}</span>
                 </button>
               </div>
@@ -585,15 +717,23 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                       }}
                       className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                         isSelected
-                          ? 'border-white bg-[#221812] shadow-md scale-102'
-                          : 'border-[#2d2016] bg-[#160f0a] hover:bg-[#1e150f]'
+                          ? isDark
+                            ? 'border-white bg-[#221812] shadow-md scale-102'
+                            : 'border-[#c35626] bg-white ring-1 ring-[#c35626]/40 shadow-xs scale-102'
+                          : isDark
+                          ? 'border-[#2d2016] bg-[#160f0a] hover:bg-[#1e150f]'
+                          : 'border-[#ded4c3] bg-white/70 hover:bg-white'
                       }`}
                     >
                       <span
                         className="w-3 h-3 rounded-full border border-black/40 shadow-sm"
                         style={{ backgroundColor: t.colorHex }}
                       />
-                      <span className="text-[9px] font-mono font-bold leading-tight truncate w-full text-white/90">
+                      <span
+                        className={`text-[9px] font-mono font-bold leading-tight truncate w-full ${
+                          isDark ? 'text-white/90' : 'text-[#231b15]'
+                        }`}
+                      >
                         {t.kelvin}
                       </span>
                     </button>
@@ -603,7 +743,13 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
 
               {/* Surface Environment Switcher */}
               <div className="flex items-center gap-1.5 pt-1">
-                <span className="text-[10px] text-[#8c7b6d] shrink-0 font-medium">Room Surface:</span>
+                <span
+                  className={`text-[10px] shrink-0 font-medium ${
+                    isDark ? 'text-[#8c7b6d]' : 'text-[#786452]'
+                  }`}
+                >
+                  Room Surface:
+                </span>
                 <div className="flex items-center gap-1 overflow-x-auto text-[10px]">
                   {ROOM_ENVS.map((env) => (
                     <button
@@ -614,8 +760,12 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                       }}
                       className={`px-2 py-0.5 rounded transition-all cursor-pointer truncate ${
                         selectedEnvId === env.id
-                          ? 'bg-[#2a1f16] text-[#d2f53a] font-bold border border-[#443224]'
-                          : 'text-[#9c8979] hover:text-white'
+                          ? isDark
+                            ? 'bg-[#2a1f16] text-[#d2f53a] font-bold border border-[#443224]'
+                            : 'bg-white text-[#c35626] border-[#ded4c3] shadow-xs font-bold'
+                          : isDark
+                          ? 'text-[#9c8979] hover:text-white'
+                          : 'text-[#69584b] hover:text-black'
                       }`}
                     >
                       {env.name.split(' ')[0]}
@@ -627,8 +777,16 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
           </div>
 
           {/* Quick Product Strip below */}
-          <div className="pt-2 border-t border-[#221710] flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-[10px] font-mono text-[#8c7b6d] uppercase shrink-0 font-semibold">
+          <div
+            className={`pt-2 border-t flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none ${
+              isDark ? 'border-[#221710]' : 'border-[#ded4c3]'
+            }`}
+          >
+            <span
+              className={`text-[10px] font-mono uppercase shrink-0 font-semibold ${
+                isDark ? 'text-[#8c7b6d]' : 'text-[#786452]'
+              }`}
+            >
               QUICK TEST:
             </span>
             {PRODUCTS_DATA.map((prod) => {
@@ -642,8 +800,12 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                   }}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all border flex items-center gap-1.5 cursor-pointer ${
                     isSelected
-                      ? 'bg-[#d2f53a] text-black border-[#d2f53a] shadow-sm'
-                      : 'bg-[#18110b] text-[#b8a796] border-[#291d14] hover:text-white hover:border-[#423023]'
+                      ? isDark
+                        ? 'bg-[#d2f53a] text-black border-[#d2f53a] shadow-sm'
+                        : 'bg-[#c35626] text-white border-[#c35626] shadow-sm'
+                      : isDark
+                      ? 'bg-[#18110b] text-[#b8a796] border-[#291d14] hover:text-white hover:border-[#423023]'
+                      : 'bg-white text-[#5c4a3d] border-[#ded4c3] hover:text-black hover:bg-[#faf6f1]'
                   }`}
                 >
                   <span className="text-[9px] font-mono opacity-70">FLR 0{prod.floorNumber}</span>

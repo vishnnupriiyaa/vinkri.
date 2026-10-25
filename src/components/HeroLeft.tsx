@@ -43,7 +43,7 @@ export const HeroLeft: React.FC<HeroLeftProps> = ({
 
         {/* Main Headline */}
         <h1
-          className={`text-4xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight leading-[1.06] mb-4 ${
+          className={`text-3xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight leading-[1.08] sm:leading-[1.06] mb-4 ${
             isDark ? 'text-white' : 'text-[#1c140e]'
           }`}
           style={{ fontFamily: 'var(--font-display)' }}
@@ -160,7 +160,7 @@ export const HeroLeft: React.FC<HeroLeftProps> = ({
                       ? isDark
                         ? 'bg-[#d2f53a] text-black shadow-md'
                         : 'bg-[#c35626] text-white shadow-md'
-                      : 'bg-black/40 text-white/80 hover:text-white opacity-0 group-hover:opacity-100'
+                      : 'bg-black/40 text-white/80 hover:text-white opacity-80 sm:opacity-0 sm:group-hover:opacity-100'
                   }`}
                   title="Save to Wishlist"
                   aria-label={`Save ${product.name} to wishlist`}
@@ -176,7 +176,7 @@ export const HeroLeft: React.FC<HeroLeftProps> = ({
                     e.stopPropagation();
                     onQuickAdd(product);
                   }}
-                  className={`absolute bottom-1.5 right-1.5 p-1 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-md cursor-pointer ${
+                  className={`absolute bottom-1.5 right-1.5 p-1 rounded-full transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 shadow-md cursor-pointer ${
                     isDark
                       ? 'bg-[#d2f53a] text-black hover:scale-110'
                       : 'bg-[#c35626] text-white hover:scale-110'

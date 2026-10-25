@@ -180,7 +180,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               sound.playClick();
               if (onOpenStorePhilosophy) onOpenStorePhilosophy();
             }}
-            title="VINKRI Rooftop Atelier Studio • Jubilee Hills, Hyderabad"
+            title="VINKRI Rooftop Atelier Studio • Hyderabad"
           >
             <div
               className={`w-full h-full rounded-md flex items-center justify-center px-3 py-1 transition-all ${
@@ -234,7 +234,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     title={`Filter by ${floor.name}`}
                   >
                     <div
-                      className={`w-full h-[88%] rounded-lg transition-all duration-200 flex flex-col justify-center px-2 py-1 border shadow-xs ${
+                      className={`w-full h-[88%] rounded-lg transition-all duration-200 flex flex-col justify-center px-1.5 sm:px-2 py-0.5 sm:py-1 border shadow-xs ${
                         isDark
                           ? isHovered || isSelected
                             ? 'bg-[#1e150f]/95 border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(210,245,58,0.2)] ring-1 ring-[#d2f53a]/30'
@@ -246,20 +246,20 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <span
-                          className={`text-[8px] font-mono font-black tracking-widest ${
+                          className={`text-[7px] sm:text-[8px] font-mono font-black tracking-wider sm:tracking-widest truncate ${
                             isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
                           }`}
                         >
                           0{floor.number} · FLOOR
                         </span>
                         <ChevronRight
-                          className={`w-2.5 h-2.5 transition-transform ${
+                          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 shrink-0 transition-transform ${
                             isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
                           } ${isHovered || isSelected ? 'translate-x-0.5' : 'opacity-40'}`}
                         />
                       </div>
                       <p
-                        className={`text-[10px] font-black tracking-tight leading-none truncate mt-0.5 ${
+                        className={`text-[8.5px] sm:text-[10px] font-black tracking-tight leading-none truncate mt-0.5 ${
                           isDark ? 'text-white' : 'text-[#1e140d]'
                         }`}
                       >
@@ -365,7 +365,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       }}
                       style={roomsGridStyle}
                       className="absolute inset-y-0 px-2 py-1 flex items-center justify-center cursor-pointer group/store z-20"
-                      title="Enter VINKRI Flagship Boutique • Jubilee Hills, Hyderabad"
+                      title="Enter VINKRI Flagship Boutique • Hyderabad"
                     >
                       <div
                         className={`w-full h-full rounded-md transition-all flex items-center justify-center ${
@@ -439,7 +439,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className="absolute z-20 cursor-pointer group"
           >
             <div
-              className={`text-[9px] sm:text-[11px] font-extrabold tracking-[0.2em] uppercase px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md backdrop-blur-md transition-all flex items-center gap-1.5 border shadow-lg ${
+              className={`text-[8px] sm:text-[11px] font-extrabold tracking-[0.12em] sm:tracking-[0.2em] uppercase px-2 sm:px-3 py-1 sm:py-1.5 rounded-md backdrop-blur-md transition-all flex items-center gap-1 sm:gap-1.5 border shadow-lg ${
                 isDark
                   ? 'bg-black/85 hover:bg-black text-[#d2f53a] border-white/20 group-hover:border-[#d2f53a]'
                   : 'bg-[#faf6f0]/95 hover:bg-white text-[#c35626] border-[#dfd2bf] shadow-md group-hover:border-[#c35626]'

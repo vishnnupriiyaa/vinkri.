@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Moon, Sun, Heart, Package, Volume2, VolumeX, Store } from 'lucide-react';
+import { Search, Moon, Sun, Heart, Package, Volume2, VolumeX, ShoppingBag } from 'lucide-react';
 import { ThemeMode } from '../types';
 import { sound } from '../utils/audio';
 
@@ -13,7 +13,6 @@ interface NavbarProps {
   onOpenWishlist: () => void;
   onOpenTracker: () => void;
   onOpenVirtualStudio: () => void;
-  onOpenStoreEntrance?: () => void;
   activeNav: string;
   onNavClick: (nav: string) => void;
 }
@@ -28,7 +27,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenWishlist,
   onOpenTracker,
   onOpenVirtualStudio,
-  onOpenStoreEntrance,
   activeNav,
   onNavClick
 }) => {
@@ -179,41 +177,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Re-enter Store Entrance Preview Button */}
-          {onOpenStoreEntrance && (
-            <button
-              onClick={() => {
-                sound.playDoorBell();
-                onOpenStoreEntrance();
-              }}
-              className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-mono font-bold tracking-wider transition-all focus:outline-none cursor-pointer border ${
-                isDark
-                  ? 'bg-[#18120d] border-[#382b20] text-[#c9b9a8] hover:text-white hover:border-white/30'
-                  : 'bg-[#eee6d9] border-[#ded4c3] text-[#7a6452] hover:text-[#1c140e] hover:border-[#7a6452]'
-              }`}
-              title="Experience the boutique storefront entrance"
-            >
-              <Store className="w-3.5 h-3.5 text-amber-400" />
-              <span className="uppercase">ENTRANCE</span>
-            </button>
-          )}
-
           {/* Virtual Dark Room Simulator Button */}
           <button
             onClick={() => {
               sound.playChime();
               onOpenVirtualStudio();
             }}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider transition-all focus:outline-none cursor-pointer border ${
+            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider transition-all focus:outline-none cursor-pointer border shrink-0 ${
               isDark
                 ? 'bg-[#18120d] border-[#382b20] text-[#d2f53a] hover:bg-[#251b14] hover:border-[#d2f53a]/50 shadow-[0_0_15px_rgba(210,245,58,0.15)]'
                 : 'bg-[#eee6d9] border-[#ded4c3] text-[#c35626] hover:bg-[#e4dacb] hover:border-[#c35626]/50 shadow-xs'
             }`}
             title="Experience products in our Virtual Dark Room Simulator"
           >
-            <Moon className="w-3.5 h-3.5 text-amber-400" />
+            <Moon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span className="uppercase tracking-widest text-[10px] hidden sm:inline">DARK ROOM</span>
-            <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-[#d2f53a]' : 'bg-[#c35626]'} animate-pulse`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-[#d2f53a]' : 'bg-[#c35626]'} animate-pulse shrink-0`} />
           </button>
 
           {/* Trolley Button with Rounded Badge Counter */}
@@ -222,14 +201,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               sound.playClick();
               onOpenCart();
             }}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider transition-all focus:outline-none cursor-pointer ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider transition-all focus:outline-none cursor-pointer shrink-0 ${
               isDark
                 ? 'bg-[#18120d] text-white hover:bg-[#221a13]'
                 : 'bg-[#eee6d9] text-[#241c16] hover:bg-[#e4dacb]'
             }`}
             aria-label={`View Trolley with ${cartCount} items`}
           >
-            <span className="tracking-widest uppercase">TROLLEY</span>
+            <ShoppingBag className="w-3.5 h-3.5 sm:hidden" />
+            <span className="tracking-widest uppercase hidden sm:inline">TROLLEY</span>
             <span
               className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
                 isDark ? 'bg-[#d2f53a] text-black' : 'bg-[#c35626] text-white'
@@ -245,7 +225,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               sound.playClick();
               onToggleTheme();
             }}
-            className={`p-1.5 rounded-full transition-colors focus:outline-none cursor-pointer ${
+            className={`p-1.5 rounded-full transition-colors focus:outline-none cursor-pointer shrink-0 ${
               isDark ? 'text-white/80 hover:text-white' : 'text-black/80 hover:text-black'
             }`}
             title={isDark ? 'Switch to Warm Beige Light Mode' : 'Switch to Rustic Brown Dark Mode'}

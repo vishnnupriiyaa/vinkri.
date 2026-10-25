@@ -294,7 +294,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
 
           <div className="hidden md:flex items-center gap-2 text-[10px] text-[#9c8979]">
             <MapPin className="w-3 h-3 text-[#d2f53a]" />
-            <span>Jubilee Hills Atelier · 5-Story Glass House</span>
+            <span>Hyderabad Atelier · 5-Story Glass House</span>
           </div>
         </div>
 

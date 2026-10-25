@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
                 Hyderabad Flagship Studio
               </span>
               <p className={`text-[11px] mt-0.5 ${isDark ? 'text-[#847365]' : 'text-[#857467]'}`}>
-                Road No. 36, Jubilee Hills, Hyderabad · Crafted with seasoned timber, brass & optics.
+                Hyderabad · Crafted with seasoned timber, brass & optics.
               </p>
             </div>
           </div>

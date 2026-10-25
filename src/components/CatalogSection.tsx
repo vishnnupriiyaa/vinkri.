@@ -200,7 +200,7 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
                       ? isDark
                         ? 'bg-[#d2f53a] text-black shadow-md'
                         : 'bg-[#c35626] text-white shadow-md'
-                      : 'bg-black/40 text-white/80 hover:text-white opacity-0 group-hover:opacity-100'
+                      : 'bg-black/40 text-white/80 hover:text-white opacity-85 sm:opacity-0 sm:group-hover:opacity-100'
                   }`}
                   title="Save to Wishlist"
                 >
@@ -217,7 +217,7 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
                     e.stopPropagation();
                     onOpenVirtualDarkRoom(product.id);
                   }}
-                  className={`absolute bottom-2.5 right-11 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-md cursor-pointer border ${
+                  className={`absolute bottom-2.5 right-11 p-2 rounded-full transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 shadow-md cursor-pointer border ${
                     isDark
                       ? 'bg-[#18110b] border-[#382b20] text-[#d2f53a] hover:scale-110'
                       : 'bg-white border-[#ded4c3] text-[#c35626] hover:scale-110'
@@ -235,7 +235,7 @@ export const CatalogSection: React.FC<CatalogSectionProps> = ({
                   e.stopPropagation();
                   onQuickAdd(product);
                 }}
-                className={`absolute bottom-2.5 right-2.5 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-md cursor-pointer ${
+                className={`absolute bottom-2.5 right-2.5 p-2 rounded-full transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 shadow-md cursor-pointer ${
                   isDark
                     ? 'bg-[#d2f53a] text-black hover:scale-110'
                     : 'bg-[#c35626] text-white hover:scale-110'

@@ -34,9 +34,9 @@ export const TrolleyDrawer: React.FC<TrolleyDrawerProps> = ({
   const [shippingForm, setShippingForm] = useState({
     name: 'Vishnu Priya',
     phone: '+91 98765 43210',
-    address: 'Plot 42, Road No. 36, Jubilee Hills',
+    address: 'Hyderabad',
     city: 'Hyderabad',
-    pincode: '500033',
+    pincode: '500001',
     paymentMethod: 'UPI (Google Pay / PhonePe)'
   });
 
@@ -471,7 +471,7 @@ export const TrolleyDrawer: React.FC<TrolleyDrawerProps> = ({
               <div className={`p-3.5 rounded-xl text-xs font-mono font-bold w-full border ${isDark ? 'bg-[#1e1712] border-[#31251b]' : 'bg-white border-[#ded2c0]'}`}>
                 <div className="text-[10px] opacity-60 uppercase mb-1">TRACKING NUMBER</div>
                 <div className="text-base font-black text-emerald-500">{generatedTrackingId}</div>
-                <div className="text-[10px] opacity-75 mt-1">Dispatched from Jubilee Hills Flagship Atelier, Hyderabad</div>
+                <div className="text-[10px] opacity-75 mt-1">Dispatched from Hyderabad Flagship Atelier</div>
               </div>
 
               <div className="w-full space-y-2 pt-2">

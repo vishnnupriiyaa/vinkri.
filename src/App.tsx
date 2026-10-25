@@ -16,7 +16,7 @@ import { FloorDetailModal } from './components/FloorDetailModal';
 import { WishlistModal } from './components/WishlistModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { VirtualDarkRoomModal } from './components/VirtualDarkRoomModal';
-import { StoreEntrancePreview } from './components/StoreEntrancePreview';
+import { LogoEntranceIntro } from './components/LogoEntranceIntro';
 import { InfoModals } from './components/InfoModals';
 import { Footer } from './components/Footer';
 import { PRODUCTS_DATA, FLOORS_DATA } from './data/products';
@@ -187,7 +187,6 @@ export default function App() {
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenTracker={() => setIsTrackerOpen(true)}
         onOpenVirtualStudio={() => handleOpenDarkRoom()}
-        onOpenStoreEntrance={() => setIsEntranceOpen(true)}
         activeNav={activeNav}
         onNavClick={handleNavClick}
       />
@@ -258,8 +257,8 @@ export default function App() {
         onOpenNavModal={(nav) => setInfoModalType(nav)}
       />
 
-      {/* Cute Store Entrance Preview Portal */}
-      <StoreEntrancePreview
+      {/* Animated VINKRI Logo Website Entry Portal */}
+      <LogoEntranceIntro
         isOpen={isEntranceOpen}
         onEnterStore={() => setIsEntranceOpen(false)}
       />
