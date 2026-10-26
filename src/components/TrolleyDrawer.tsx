@@ -100,14 +100,26 @@ export const TrolleyDrawer: React.FC<TrolleyDrawerProps> = ({
                 YOUR TROLLEY ({items.reduce((sum, item) => sum + item.quantity, 0)})
               </h2>
             </div>
-            <button
-              onClick={onClose}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                isDark ? 'hover:bg-[#281f18]' : 'hover:bg-[#ede3d3]'
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {items.length > 0 && (
+                <button
+                  onClick={onClearCart}
+                  className="text-[11px] font-mono text-rose-500 hover:text-rose-400 font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  title="Remove all items from trolley"
+                >
+                  Clear All
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  isDark ? 'hover:bg-[#281f18]' : 'hover:bg-[#ede3d3]'
+                }`}
+                aria-label="Close Trolley"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Content based on checkout step */}
@@ -216,12 +228,11 @@ export const TrolleyDrawer: React.FC<TrolleyDrawerProps> = ({
                           </div>
                           <button
                             onClick={() => onRemoveItem(item.product.id)}
-                            className={`p-1 rounded transition-colors cursor-pointer ${
-                              isDark ? 'text-[#7e6c5c] hover:text-red-400' : 'text-[#9c8979] hover:text-red-600'
-                            }`}
-                            title="Remove item"
+                            className="px-2 py-0.5 rounded text-[11px] font-mono font-bold flex items-center gap-1 text-rose-500 hover:text-white hover:bg-rose-600/80 border border-rose-500/30 transition-all cursor-pointer"
+                            title="Remove item from trolley"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3 h-3" />
+                            <span>Remove</span>
                           </button>
                         </div>
 
@@ -232,7 +243,7 @@ export const TrolleyDrawer: React.FC<TrolleyDrawerProps> = ({
                           </span>
 
                           <div
-                            className={`flex items-center rounded border overflow-hidden text-xs font-bold ${
+                            className={`flex items-center rounded-lg border overflow-hidden text-xs font-bold ${
                               isDark
                                 ? 'bg-[#100c09] border-[#382b20]'
                                 : 'bg-[#f4ebdf] border-[#ded2c0]'
@@ -240,14 +251,20 @@ export const TrolleyDrawer: React.FC<TrolleyDrawerProps> = ({
                           >
                             <button
                               onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
-                              className="px-2 py-0.5 hover:bg-black/20 cursor-pointer"
+                              className="px-2.5 py-1 hover:bg-black/20 cursor-pointer flex items-center justify-center transition-colors"
+                              title={item.quantity === 1 ? 'Remove from trolley' : 'Decrease quantity'}
                             >
-                              -
+                              {item.quantity === 1 ? (
+                                <Trash2 className="w-3 h-3 text-rose-500" />
+                              ) : (
+                                '-'
+                              )}
                             </button>
-                            <span className="px-2 py-0.5 tabular-nums">{item.quantity}</span>
+                            <span className="px-2.5 py-1 tabular-nums border-x border-inherit">{item.quantity}</span>
                             <button
                               onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
-                              className="px-2 py-0.5 hover:bg-black/20 cursor-pointer"
+                              className="px-2.5 py-1 hover:bg-black/20 cursor-pointer flex items-center justify-center transition-colors"
+                              title="Increase quantity"
                             >
                               +
                             </button>

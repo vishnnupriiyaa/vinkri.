@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Plus, Check, ChevronRight } from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
-import { sound } from '../utils/audio';
 
 interface BuildingShowcaseProps {
   theme: ThemeMode;
@@ -25,6 +24,11 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
   const [hoveredRoom, setHoveredRoom] = useState<{ floor: number; slot: 'left' | 'center' | 'right'; productId?: string } | null>(null);
   const [addedId, setAddedId] = useState<string | null>(null);
+
+  // Moving-to-floor elevator motion animation states
+  const [movingFloorNumber, setMovingFloorNumber] = useState<number | null>(null);
+  const [isMovingToFloor, setIsMovingToFloor] = useState(false);
+  const [movingFloor, setMovingFloor] = useState<FloorInfo | null>(null);
 
   // Unified 5-story architectural floor configuration matching both light and dark buildings
   const floorsConfig = [
@@ -104,13 +108,47 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     }
   ];
 
+  const triggerMoveToFloor = (floorData: FloorInfo, slot: 'left' | 'center' | 'right' = 'center') => {
+    if (isMovingToFloor) return;
+    setMovingFloorNumber(floorData.numeric);
+    setMovingFloor(floorData);
+    setIsMovingToFloor(true);
+
+    // Transit time for elevator moving animation
+    setTimeout(() => {
+      onSelectFloor(floorData, slot);
+      setTimeout(() => {
+        setIsMovingToFloor(false);
+        setMovingFloorNumber(null);
+        setMovingFloor(null);
+      }, 350);
+    }, 720);
+  };
+
+  const getCameraTransform = () => {
+    if (!isMovingToFloor || movingFloorNumber === null) return 'scale(1) translate(0%, 0%)';
+    switch (movingFloorNumber) {
+      case 5:
+        return 'scale(2.1) translateY(24%)';
+      case 4:
+        return 'scale(2.1) translateY(12%)';
+      case 3:
+        return 'scale(2.1) translateY(0%)';
+      case 2:
+        return 'scale(2.1) translateY(-12%)';
+      case 1:
+        return 'scale(2.1) translateY(-24%)';
+      default:
+        return 'scale(1) translate(0%, 0%)';
+    }
+  };
+
   const handleRoomClick = (e: React.MouseEvent, productId: string, floorNumber?: number, slot?: 'left' | 'center' | 'right') => {
     e.stopPropagation();
-    sound.playChime();
     if (floorNumber) {
       const floorData = FLOORS_DATA.find((f) => f.numeric === floorNumber);
       if (floorData) {
-        onSelectFloor(floorData, slot);
+        triggerMoveToFloor(floorData, slot);
         return;
       }
     }
@@ -122,7 +160,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
   const handleQuickAddRoom = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
-    sound.playChime();
     const prod = PRODUCTS_DATA.find((p) => p.id === productId);
     if (prod) {
       onQuickAdd(prod);
@@ -138,8 +175,14 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
         className="relative w-full transition-all duration-700 overflow-hidden rounded-2xl shadow-2xl"
         style={{ aspectRatio: '1.38 / 1' }}
       >
-        {/* Background Building Image - Exact same architecture for both light & dark themes */}
-        <div className="relative w-full h-full">
+        {/* Background Building Structure with Elevator Motion Camera Zoom */}
+        <div
+          className="relative w-full h-full transition-transform duration-700 ease-out"
+          style={{
+            transform: getCameraTransform(),
+            transformOrigin: 'center center'
+          }}
+        >
           <img
             src={isDark ? '/assets/aistudio/dark_building.jpg' : '/assets/aistudio/light_building.jpg'}
             alt="VINKRI 5-Story Glass Architectural Atelier • Hyderabad"
@@ -172,24 +215,147 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </>
           )}
 
-          {/* Rooftop VINKRI Atelier Sign Hotspot */}
+          {/* Architectural Rooftop VINKRI Billboard Display with 3D Scaffolding & Spotlights */}
           <div
-            className="absolute z-20 flex items-center justify-center cursor-pointer group"
-            style={{ top: '1.0%', left: '21%', width: '58%', height: '5.2%' }}
+            className="absolute z-25 flex flex-col items-center cursor-pointer group pointer-events-auto"
+            style={{ top: '0.2%', left: '23%', width: '54%', height: '6.4%' }}
             onClick={() => {
-              sound.playClick();
               if (onOpenStorePhilosophy) onOpenStorePhilosophy();
             }}
-            title="VINKRI Rooftop Atelier Studio • Hyderabad"
+            title="VINKRI Flagship Rooftop Billboard • Hyderabad Atelier (Click to learn more)"
           >
+            {/* Top Architectural Spotlights (3 overhead floodlights angled downward) */}
+            <div className="w-full flex justify-around px-8 -mb-1 relative z-30 pointer-events-none">
+              {[0, 1, 2].map((spot) => (
+                <div key={spot} className="flex flex-col items-center">
+                  {/* Spotlight fixture head */}
+                  <div
+                    className={`w-2.5 h-1.5 rounded-t-xs border transition-colors ${
+                      isDark
+                        ? 'bg-[#2a2017] border-[#4a3928] shadow-[0_0_8px_rgba(210,245,58,0.5)]'
+                        : 'bg-[#ebdcd0] border-[#c35626]/50 shadow-[0_1px_4px_rgba(195,86,38,0.15)]'
+                    }`}
+                  />
+                  {/* Downward light beam cone */}
+                  <div
+                    className={`w-6 h-4 -mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity blur-[2px] ${
+                      isDark
+                        ? 'bg-gradient-to-b from-[#d2f53a]/40 to-transparent'
+                        : 'bg-gradient-to-b from-amber-400/30 to-transparent'
+                    }`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Billboard Housing Enclosure - Matches Theme Mode Palette */}
             <div
-              className={`w-full h-full rounded-md flex items-center justify-center px-3 py-1 transition-all ${
+              className={`relative w-full flex-1 rounded-md flex items-center justify-between px-2 sm:px-3 overflow-hidden transition-all duration-300 border ${
                 isDark
-                  ? 'group-hover:bg-white/10 group-hover:ring-1 group-hover:ring-[#d2f53a]/50'
-                  : 'group-hover:bg-[#c35626]/10 group-hover:ring-1 group-hover:ring-[#c35626]/40'
+                  ? 'bg-black/95 border-[#4a3726] shadow-[0_0_35px_rgba(210,245,58,0.35),0_10px_25px_rgba(0,0,0,0.9)] group-hover:border-[#d2f53a] group-hover:shadow-[0_0_45px_rgba(210,245,58,0.65)]'
+                  : 'bg-[#faf6f0] border-[#c35626]/50 shadow-[0_6px_22px_rgba(195,86,38,0.22),0_2px_8px_rgba(60,40,25,0.08)] group-hover:border-[#c35626] group-hover:shadow-[0_8px_30px_rgba(195,86,38,0.38)]'
               }`}
             >
-              <span className="sr-only">VINKRI Atelier Crown</span>
+              {/* Corner Metallic Fastener Rivets */}
+              <div
+                className={`absolute top-1 left-1 w-1 h-1 rounded-full border ${
+                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
+                }`}
+              />
+              <div
+                className={`absolute top-1 right-1 w-1 h-1 rounded-full border ${
+                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
+                }`}
+              />
+              <div
+                className={`absolute bottom-1 left-1 w-1 h-1 rounded-full border ${
+                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
+                }`}
+              />
+              <div
+                className={`absolute bottom-1 right-1 w-1 h-1 rounded-full border ${
+                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
+                }`}
+              />
+
+              {/* Internal Luminous Backlight Aura */}
+              <div
+                className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
+                  isDark
+                    ? 'bg-gradient-to-r from-[#d2f53a]/15 via-white/10 to-[#d2f53a]/15 group-hover:opacity-100 opacity-70 animate-pulse'
+                    : 'bg-gradient-to-r from-[#c35626]/8 via-amber-200/25 to-[#c35626]/8 opacity-80 group-hover:opacity-100'
+                }`}
+              />
+
+              {/* Sub-badge Left: HYDERABAD */}
+              <div
+                className={`relative z-10 hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0 ${
+                  isDark ? 'text-[#a89685]' : 'text-[#8c6b54]'
+                }`}
+              >
+                <span
+                  className={`w-1 h-1 rounded-full animate-pulse ${
+                    isDark ? 'bg-emerald-400' : 'bg-[#c35626]'
+                  }`}
+                />
+                <span>HYD</span>
+              </div>
+
+              {/* Center VINKRI Official Logo - Inverts cleanly for light theme beige background */}
+              <div className="relative z-10 flex-1 flex items-center justify-center px-1">
+                <img
+                  src="/assets/aistudio/50547_5739e055.jpg"
+                  alt="VINKRI Flagship Billboard"
+                  className={`h-4 sm:h-5 md:h-6 w-auto max-w-[85%] object-contain group-hover:scale-105 transition-all duration-300 ${
+                    isDark
+                      ? 'filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'
+                      : 'filter invert mix-blend-multiply drop-shadow-[0_1px_3px_rgba(195,86,38,0.25)]'
+                  }`}
+                />
+              </div>
+
+              {/* Sub-badge Right: ATELIER */}
+              <div className="relative z-10 hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0">
+                <span className={isDark ? 'text-[#d2f53a]' : 'text-[#c35626] font-semibold'}>ATELIER</span>
+              </div>
+
+              {/* Glowing Neon Edge Accent Strips (Top & Bottom rails) */}
+              <div
+                className={`absolute top-0 inset-x-0 h-[1.5px] transition-colors ${
+                  isDark
+                    ? 'bg-gradient-to-r from-transparent via-[#d2f53a] to-transparent opacity-80 group-hover:opacity-100'
+                    : 'bg-gradient-to-r from-transparent via-[#c35626] to-transparent opacity-90 group-hover:opacity-100'
+                }`}
+              />
+              <div
+                className={`absolute bottom-0 inset-x-0 h-[1.5px] transition-colors ${
+                  isDark
+                    ? 'bg-gradient-to-r from-transparent via-[#d2f53a] to-transparent opacity-80 group-hover:opacity-100'
+                    : 'bg-gradient-to-r from-transparent via-[#c35626] to-transparent opacity-90 group-hover:opacity-100'
+                }`}
+              />
+            </div>
+
+            {/* Bottom Architectural Steel Support Struts / Girders */}
+            <div className="w-full flex justify-around px-6 sm:px-12 -mt-0.5 relative z-10 pointer-events-none opacity-85">
+              {[0, 1, 2, 3].map((girder) => (
+                <div key={girder} className="flex flex-col items-center">
+                  {/* Vertical steel strut */}
+                  <div
+                    className={`w-0.5 sm:w-1 h-1.5 ${
+                      isDark
+                        ? 'bg-[#3d2f21] border-x border-[#1a130c]'
+                        : 'bg-[#b09d8b] border-x border-[#8c7866]'
+                    }`}
+                  />
+                  {/* Rooftop anchor base plate */}
+                  <div
+                    className={`w-2 sm:w-2.5 h-0.5 rounded-full ${
+                      isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/80'
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -225,8 +391,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   {/* Left Column: Interactive Hotspot over Floor Category Badge */}
                   <div
                     onClick={() => {
-                      sound.playClick();
-                      if (floorData) onSelectFloor(floorData);
+                      if (floorData) triggerMoveToFloor(floorData);
                       else if (floor.number === 0 && onOpenStorePhilosophy) onOpenStorePhilosophy();
                     }}
                     style={leftBadgeStyle}
@@ -360,7 +525,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     /* Ground Floor: Transparent Storefront Hotspot */
                     <div
                       onClick={() => {
-                        sound.playClick();
                         if (onOpenStorePhilosophy) onOpenStorePhilosophy();
                       }}
                       style={roomsGridStyle}
@@ -390,8 +554,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   {/* Right Column: Interactive Hotspot over Floor Number Marker */}
                   <div
                     onClick={() => {
-                      sound.playClick();
-                      if (floorData) onSelectFloor(floorData);
+                      if (floorData) triggerMoveToFloor(floorData);
                     }}
                     style={rightMarkerStyle}
                     className="absolute inset-y-0 cursor-pointer flex items-center justify-center group/marker z-20"
@@ -424,15 +587,43 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       </span>
                     </div>
                   </div>
+
+                  {/* Floor Window Illumination Burst during Elevator Movement */}
+                  {isMovingToFloor && movingFloorNumber === floor.number && (
+                    <div
+                      className="absolute inset-0 pointer-events-none z-30 animate-pulse rounded-lg"
+                      style={{
+                        backgroundColor: `${floor.color}45`,
+                        boxShadow: `inset 0 0 45px ${floor.color}, 0 0 35px ${floor.color}`
+                      }}
+                    />
+                  )}
                 </div>
               );
             })}
           </div>
 
+          {/* Exterior Elevator Lift Carriage Animation */}
+          {isMovingToFloor && (
+            <div
+              className="absolute z-35 right-[1.5%] w-8 sm:w-11 rounded-md border border-white/50 shadow-2xl transition-all duration-700 pointer-events-none flex flex-col items-center justify-center py-1 backdrop-blur-md"
+              style={{
+                top: floorsConfig.find((f) => f.number === movingFloorNumber)?.top || '50%',
+                height: '11%',
+                backgroundColor: isDark ? 'rgba(210, 245, 58, 0.35)' : 'rgba(195, 86, 38, 0.35)',
+                boxShadow: isDark ? '0 0 30px rgba(210, 245, 58, 0.8)' : '0 0 25px rgba(195, 86, 38, 0.7)'
+              }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+              <span className="text-[7px] font-mono font-black text-white uppercase mt-0.5">
+                0{movingFloorNumber}
+              </span>
+            </div>
+          )}
+
           {/* Bottom Right Architectural Signature: "IDEAS INTO EVERYDAY OBJECTS →" */}
           <div
             onClick={() => {
-              sound.playClick();
               if (onOpenStorePhilosophy) onOpenStorePhilosophy();
             }}
             style={{ bottom: '2.5%', right: '2.5%' }}
@@ -450,6 +641,27 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Cinematic Elevator In Transit HUD Overlay */}
+        {isMovingToFloor && movingFloor && (
+          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none bg-black/45 backdrop-blur-[1px] transition-all duration-300">
+            <div className="px-5 py-3.5 rounded-2xl bg-black/90 border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono font-black text-[#d2f53a] tracking-widest uppercase">
+                <span className="w-2 h-2 rounded-full bg-[#d2f53a] animate-ping" />
+                <span>ELEVATOR IN TRANSIT • LEVEL 0{movingFloor.number}</span>
+              </div>
+              <span
+                className="text-sm sm:text-base font-extrabold text-white tracking-wide"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Entering {movingFloor.name}...
+              </span>
+              <div className="w-36 h-1 rounded-full bg-white/20 overflow-hidden mt-1">
+                <div className="h-full bg-gradient-to-r from-[#d2f53a] via-emerald-400 to-[#d2f53a] w-full animate-pulse" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

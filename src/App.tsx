@@ -22,7 +22,6 @@ import { Footer } from './components/Footer';
 import { PRODUCTS_DATA, FLOORS_DATA } from './data/products';
 import { Product, FloorInfo, CartItem, ThemeMode } from './types';
 import { Check } from 'lucide-react';
-import { sound } from './utils/audio';
 
 export default function App() {
   // Theme state: Rustic Brown Dark Mode (default) vs Warm Beige Light Mode
@@ -61,7 +60,6 @@ export default function App() {
   const [floorFilter, setFloorFilter] = useState<number | null>(null);
 
   const handleOpenFloor = (floor: FloorInfo, slot: 'left' | 'center' | 'right' = 'center') => {
-    sound.playChime();
     setSelectedFloor(floor);
     setSelectedFloorSlot(slot);
   };
@@ -80,7 +78,6 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleToggleTheme = () => {
-    sound.playClick();
     setTheme((prev) => (prev === 'rustic-dark' ? 'warm-beige' : 'rustic-dark'));
   };
 
@@ -92,7 +89,6 @@ export default function App() {
   };
 
   const handleAddToCart = (product: Product, quantity = 1) => {
-    sound.playChime();
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -108,7 +104,6 @@ export default function App() {
   };
 
   const handleToggleWishlist = (productId: string) => {
-    sound.playClick();
     setWishlistIds((prev) => {
       const exists = prev.includes(productId);
       const next = exists ? prev.filter((id) => id !== productId) : [...prev, productId];
@@ -118,7 +113,6 @@ export default function App() {
   };
 
   const handleUpdateCartQuantity = (productId: string, quantity: number) => {
-    sound.playClick();
     if (quantity <= 0) {
       handleRemoveCartItem(productId);
       return;
@@ -131,12 +125,18 @@ export default function App() {
   };
 
   const handleRemoveCartItem = (productId: string) => {
-    sound.playClick();
+    const item = cartItems.find((i) => i.product.id === productId);
     setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
+    if (item) {
+      showToast(`Removed "${item.product.name}" from Trolley`);
+    } else {
+      showToast('Removed item from Trolley');
+    }
   };
 
   const handleClearCart = () => {
     setCartItems([]);
+    showToast('Trolley cleared');
   };
 
   const handleNavClick = (nav: string) => {
@@ -152,13 +152,11 @@ export default function App() {
   };
 
   const handleExploreStore = () => {
-    sound.playClick();
     const el = document.getElementById('catalog-section');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleViewAllTopSellers = () => {
-    sound.playClick();
     const el = document.getElementById('catalog-section');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
@@ -172,7 +170,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-500 font-sans selection:bg-[#d2f53a] selection:text-black ${
+      className={`min-h-screen flex flex-col transition-colors duration-500 font-sans selection:bg-[#d2f53a] selection:text-black overflow-x-hidden w-full max-w-full ${
         isDark ? 'bg-[#0a0705] text-[#f7f2ea]' : 'bg-[#faf6f0] text-[#282019]'
       }`}
     >
@@ -249,7 +247,6 @@ export default function App() {
       <Footer
         theme={theme}
         onSelectFloorNumber={(floorNum) => {
-          sound.playClick();
           setFloorFilter(floorNum);
           const el = document.getElementById('catalog-section');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -311,6 +308,8 @@ export default function App() {
         theme={theme}
         onAddToCart={handleAddToCart}
         onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
+        isInCart={selectedProduct ? cartItems.some((item) => item.product.id === selectedProduct.id) : false}
+        onRemoveFromCart={handleRemoveCartItem}
       />
 
       {/* Floor Detail Modal / Immersive Floor Interior Experience */}
@@ -325,6 +324,8 @@ export default function App() {
         initialSlot={selectedFloorSlot}
         wishlistIds={wishlistIds}
         onToggleWishlist={handleToggleWishlist}
+        cartProductIds={cartItems.map((item) => item.product.id)}
+        onRemoveFromCart={handleRemoveCartItem}
       />
 
       {/* Virtual Dark Room Simulator Modal */}

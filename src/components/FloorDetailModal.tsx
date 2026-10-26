@@ -8,13 +8,13 @@ import {
   Plus,
   ShoppingBag,
   Moon,
-  Sun,
-  Lightbulb,
   Check,
   Heart,
   ChevronLeft,
   ChevronRight,
   Sliders,
+  Trash2,
+  Building,
   Layers,
   Box,
   MapPin
@@ -22,7 +22,6 @@ import {
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { PRODUCTS_DATA, FLOORS_DATA } from '../data/products';
 import { ProductArtwork } from './ProductArtwork';
-import { sound } from '../utils/audio';
 
 interface FloorDetailModalProps {
   floor: FloorInfo | null;
@@ -35,6 +34,8 @@ interface FloorDetailModalProps {
   initialSlot?: 'left' | 'center' | 'right' | null;
   wishlistIds?: string[];
   onToggleWishlist?: (productId: string) => void;
+  cartProductIds?: string[];
+  onRemoveFromCart?: (productId: string) => void;
 }
 
 export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
@@ -47,13 +48,35 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
   onSwitchFloor,
   initialSlot = 'center',
   wishlistIds = [],
-  onToggleWishlist
+  onToggleWishlist,
+  cartProductIds = [],
+  onRemoveFromCart
 }) => {
   const isDark = theme === 'rustic-dark';
   const [activeSlot, setActiveSlot] = useState<'left' | 'center' | 'right'>('center');
   const [viewMode, setViewMode] = useState<'walkthrough' | 'gallery'>('walkthrough');
   const [roomLighting, setRoomLighting] = useState<'bright' | 'studio' | 'mood'>('studio');
   const [addedId, setAddedId] = useState<string | null>(null);
+
+  // Door entrance portal state: simulates sliding glass elevator/chamber doors opening on arrival
+  const [doorState, setDoorState] = useState<'closed' | 'opening' | 'open'>('closed');
+
+  useEffect(() => {
+    if (!floor) return;
+    setDoorState('closed');
+    const openTimer = setTimeout(() => {
+      setDoorState('opening');
+    }, 60);
+
+    const completeTimer = setTimeout(() => {
+      setDoorState('open');
+    }, 850);
+
+    return () => {
+      clearTimeout(openTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [floor?.number]);
 
   useEffect(() => {
     if (initialSlot) {
@@ -70,22 +93,21 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
     ? PRODUCTS_DATA.find((p) => p.id === currentItem.productId)
     : null;
 
+  const isInCart = currentProduct ? cartProductIds.includes(currentProduct.id) : false;
+
   const handleNextChamber = () => {
-    sound.playClick();
     if (activeSlot === 'left') setActiveSlot('center');
     else if (activeSlot === 'center') setActiveSlot('right');
     else setActiveSlot('left');
   };
 
   const handlePrevChamber = () => {
-    sound.playClick();
     if (activeSlot === 'right') setActiveSlot('center');
     else if (activeSlot === 'center') setActiveSlot('left');
     else setActiveSlot('right');
   };
 
   const handleElevatorFloor = (targetFloorNum: number) => {
-    sound.playChime();
     const targetFloor = FLOORS_DATA.find((f) => f.numeric === targetFloorNum);
     if (targetFloor && onSwitchFloor) {
       onSwitchFloor(targetFloor);
@@ -102,7 +124,38 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
 
   // Lighting multipliers for the room atmosphere
   const lightOpacity =
-    roomLighting === 'bright' ? 0.85 : roomLighting === 'studio' ? 0.45 : 0.15;
+    roomLighting === 'bright' ? 0.9 : roomLighting === 'studio' ? 0.5 : 0.2;
+
+  // Custom architectural flooring definition per level
+  const floorFinishes: Record<number, { name: string; texture: string; border: string }> = {
+    5: {
+      name: 'Polished Nordic Birch Plywood with Aluminium Joints',
+      texture: 'linear-gradient(to right, rgba(230,210,180,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(230,210,180,0.04) 1px, transparent 1px)',
+      border: '#3b82f6'
+    },
+    4: {
+      name: 'Chevron Smoked Walnut Parquet Planking',
+      texture: 'linear-gradient(45deg, rgba(80,55,35,0.2) 25%, transparent 25%), linear-gradient(-45deg, rgba(80,55,35,0.2) 25%, transparent 25%)',
+      border: '#10b981'
+    },
+    3: {
+      name: 'Charcoal Shadowbox Pine Gallery Flooring',
+      texture: 'linear-gradient(to right, rgba(0,0,0,0.4) 1px, transparent 1px)',
+      border: '#f59e0b'
+    },
+    2: {
+      name: 'Honed Industrial Architectural Slate Tiles',
+      texture: 'linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)',
+      border: '#8b5cf6'
+    },
+    1: {
+      name: 'Warm Hand-Oiled Teak Atelier Hardwood Floor',
+      texture: 'linear-gradient(to bottom, rgba(140,80,30,0.15) 1px, transparent 1px)',
+      border: '#d2f53a'
+    }
+  };
+
+  const currentFinish = floorFinishes[floor.numeric] || floorFinishes[1];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto p-2 sm:p-4 lg:p-6 flex items-center justify-center select-none animate-fadeIn">
@@ -113,20 +166,60 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
       />
 
       <div
-        className={`relative w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden border my-auto transition-all duration-300 flex flex-col ${
+        className={`relative w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden border my-auto transition-all duration-500 flex flex-col ${
           isDark
             ? 'bg-[#120c08] border-[#38281d] text-[#f7f2ea]'
             : 'bg-[#faf6f0] border-[#ded4c3] text-[#282019]'
-        }`}
+        } ${doorState === 'closed' ? 'scale-95 opacity-90' : 'scale-100 opacity-100'}`}
         style={{
           boxShadow: isDark
-            ? `0 25px 70px -15px ${floor.accentHex}20, 0 0 50px rgba(0,0,0,0.9)`
-            : `0 25px 70px -15px ${floor.accentHex}15, 0 10px 40px rgba(0,0,0,0.15)`
+            ? `0 25px 70px -15px ${floor.accentHex}25, 0 0 50px rgba(0,0,0,0.95)`
+            : `0 25px 70px -15px ${floor.accentHex}20, 0 10px 40px rgba(0,0,0,0.15)`
         }}
       >
-        {/* Top Atelier Bar: Floor Level Title, Elevator Buttons & Close */}
+        {/* Double Motorized Sliding Elevator Doors Overlay (Simulates Entering the Floor) */}
+        {doorState !== 'open' && (
+          <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden flex">
+            {/* Left Sliding Door */}
+            <div
+              className={`w-1/2 h-full flex flex-col justify-center items-end pr-6 sm:pr-10 border-r border-[#d2f53a]/30 shadow-2xl transition-transform duration-700 ease-out ${
+                isDark
+                  ? 'bg-gradient-to-r from-[#0d0906] to-[#1c140e] text-[#f5ede2]'
+                  : 'bg-gradient-to-r from-[#f0e6d6] to-[#ded2bf] text-[#2c2016]'
+              } ${doorState === 'opening' ? '-translate-x-full' : 'translate-x-0'}`}
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 24px)'
+              }}
+            >
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest opacity-80">
+                <span className="w-2 h-2 rounded-full bg-[#d2f53a] animate-ping" />
+                <span className="font-bold">ENTERING LEVEL 0{floor.number}</span>
+              </div>
+            </div>
+
+            {/* Right Sliding Door */}
+            <div
+              className={`w-1/2 h-full flex flex-col justify-center items-start pl-6 sm:pr-10 border-l border-[#d2f53a]/30 shadow-2xl transition-transform duration-700 ease-out ${
+                isDark
+                  ? 'bg-gradient-to-l from-[#0d0906] to-[#1c140e] text-[#f5ede2]'
+                  : 'bg-gradient-to-l from-[#f0e6d6] to-[#ded2bf] text-[#2c2016]'
+              } ${doorState === 'opening' ? 'translate-x-full' : 'translate-x-0'}`}
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 24px)'
+              }}
+            >
+              <span className="font-mono text-xs uppercase tracking-widest font-black text-[#d2f53a]">
+                DOORS OPENING...
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Top Atelier Bar: Floor Level Title, Elevator Buttons & Exit */}
         <div
-          className={`px-5 py-3.5 sm:px-6 sm:py-4 flex flex-wrap items-center justify-between gap-3 border-b relative z-30 transition-colors ${
+          className={`px-4 sm:px-6 py-3 sm:py-3.5 flex flex-wrap items-center justify-between gap-3 border-b relative z-30 transition-colors ${
             isDark ? 'bg-[#18110b] border-[#2d1e14]' : 'bg-[#f4ebe0] border-[#e2d5c3]'
           }`}
         >
@@ -147,15 +240,15 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest uppercase text-[#a89685]">
-                  INTERIOR ATELIER
+                  INSIDE LEVEL 0{floor.number}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-widest hidden sm:inline">
-                  INSIDE CHAMBERS
+                  WALKTHROUGH ACTIVE
                 </span>
               </div>
               <h3
-                className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2"
+                className="text-base sm:text-lg font-black tracking-tight flex items-center gap-2"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 <span>{floor.name}</span>
@@ -175,7 +268,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
           {/* Center/Right: Elevator Panel to jump floors without exiting */}
           <div className="flex items-center gap-2">
             <div
-              className={`hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl border ${
+              className={`hidden md:flex items-center gap-1 px-2.5 py-1 rounded-xl border ${
                 isDark ? 'bg-[#0f0a07] border-[#291b12]' : 'bg-white/80 border-[#ded3c2]'
               }`}
               title="Atelier Elevator - Ride between levels"
@@ -212,10 +305,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               }`}
             >
               <button
-                onClick={() => {
-                  sound.playClick();
-                  setViewMode('walkthrough');
-                }}
+                onClick={() => setViewMode('walkthrough')}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
                   viewMode === 'walkthrough'
                     ? isDark
@@ -224,13 +314,10 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                     : 'text-[#8c7b6d] hover:text-white'
                 }`}
               >
-                Walkthrough
+                Chambers
               </button>
               <button
-                onClick={() => {
-                  sound.playClick();
-                  setViewMode('gallery');
-                }}
+                onClick={() => setViewMode('gallery')}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
                   viewMode === 'gallery'
                     ? isDark
@@ -243,25 +330,27 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               </button>
             </div>
 
-            {/* Close Button */}
+            {/* Exit to Exterior Building Button */}
             <button
               onClick={onClose}
-              className={`p-2 rounded-full transition-colors cursor-pointer border ${
+              className={`px-2.5 py-1.5 rounded-xl transition-all cursor-pointer border flex items-center gap-1.5 text-xs font-mono font-bold ${
                 isDark
                   ? 'bg-[#221811] hover:bg-[#302118] border-[#3d2c1f] text-[#cfbfaf] hover:text-white'
                   : 'bg-white hover:bg-[#ede3d3] border-[#ded4c3] text-[#45372d]'
               }`}
-              title="Step outside building (Esc)"
+              title="Step outside to view the full building (Esc)"
               aria-label="Exit Floor"
             >
-              <X className="w-4 h-4" />
+              <Building className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">Exit to Building</span>
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
         {/* Ambient Room Ceiling Lighting Controls Bar */}
         <div
-          className={`px-6 py-2 flex items-center justify-between text-xs font-mono border-b ${
+          className={`px-4 sm:px-6 py-2 flex items-center justify-between text-xs font-mono border-b ${
             isDark ? 'bg-[#140e09] border-[#271a10] text-[#8c7a6b]' : 'bg-[#faf4ec] border-[#ebe0cf] text-[#786452]'
           }`}
         >
@@ -274,10 +363,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               {(['bright', 'studio', 'mood'] as const).map((mode) => (
                 <button
                   key={mode}
-                  onClick={() => {
-                    sound.playClick();
-                    setRoomLighting(mode);
-                  }}
+                  onClick={() => setRoomLighting(mode)}
                   className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all cursor-pointer ${
                     roomLighting === mode
                       ? isDark
@@ -292,270 +378,283 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 text-[10px] text-[#9c8979]">
+          <div className="hidden sm:flex items-center gap-2 text-[10px]">
             <MapPin className="w-3 h-3 text-[#d2f53a]" />
-            <span>Hyderabad Atelier · 5-Story Glass House</span>
+            <span>HYDERABAD FLAGSHIP ATELIER • LEVEL 0{floor.number}</span>
           </div>
         </div>
 
-        {/* Dynamic Architectural Floor Interior Stage */}
+        {/* Main Floor Interior Presentation */}
         {viewMode === 'walkthrough' ? (
-          /* Single Chamber Walkthrough: Feel standing in front of the piece in the room */
-          <div className="relative p-5 sm:p-8 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 overflow-hidden min-h-[460px]">
-            {/* Background Floor & Wall Optical Atmosphere */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[440px] sm:min-h-[480px]">
+            {/* Left 7 Cols: Spatial Chamber Stage with 3D physical depth */}
             <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-700"
-              style={{
-                background: isDark
-                  ? `radial-gradient(ellipse at 50% 30%, ${floor.accentHex}15 0%, #120c08 70%)`
-                  : `radial-gradient(ellipse at 50% 30%, ${floor.accentHex}10 0%, #faf6f0 70%)`,
-                opacity: 0.9
-              }}
-            />
+              className={`lg:col-span-7 relative flex flex-col items-center justify-center p-6 sm:p-10 border-b lg:border-b-0 lg:border-r overflow-hidden transition-colors ${
+                isDark ? 'bg-[#0a0705] border-[#2d1e14]' : 'bg-[#f5ede2] border-[#e2d5c3]'
+              }`}
+            >
+              {/* Overhead Gallery Track Lights Beam Effect */}
+              <div
+                className="absolute -top-12 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full pointer-events-none blur-[65px] transition-all duration-700"
+                style={{
+                  backgroundColor: floor.accentHex,
+                  opacity: lightOpacity * 0.4
+                }}
+              />
 
-            {/* Ceiling Spotlight Cone projecting down */}
-            <div
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 pointer-events-none transition-opacity duration-500 rounded-full blur-[70px]"
-              style={{
-                background: isDark
-                  ? `radial-gradient(circle, ${floor.accentHex}35 0%, transparent 70%)`
-                  : 'radial-gradient(circle, rgba(255,230,190,0.5) 0%, transparent 70%)',
-                opacity: lightOpacity
-              }}
-            />
+              {/* Ceiling beam structure lines */}
+              <div className="absolute top-0 inset-x-0 h-6 border-b border-white/5 flex justify-around pointer-events-none opacity-30">
+                <span className="w-1 h-3 bg-white/20" />
+                <span className="w-1 h-3 bg-white/20" />
+                <span className="w-1 h-3 bg-white/20" />
+              </div>
 
-            {/* Left Column: Visual Exhibition Pedestal */}
-            <div className="relative w-full lg:w-1/2 flex flex-col items-center justify-center">
-              {/* Chamber Navigation Chevrons */}
+              {/* Chamber Navigation Arrows (Walk between left, center, right bays) */}
               <button
                 onClick={handlePrevChamber}
-                className={`absolute left-0 z-20 p-2.5 rounded-full border shadow-xl transition-all cursor-pointer ${
+                className={`absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center border shadow-xl transition-all cursor-pointer ${
                   isDark
-                    ? 'bg-black/70 hover:bg-black border-white/20 text-white hover:scale-110'
-                    : 'bg-white/85 hover:bg-white border-[#ded4c3] text-black hover:scale-110'
+                    ? 'bg-[#18110b]/90 hover:bg-[#251a12] border-[#38281d] text-white hover:scale-105'
+                    : 'bg-white/90 hover:bg-[#faf4ec] border-[#ded4c3] text-[#282019] hover:scale-105'
                 }`}
-                title="Step to previous chamber (←)"
+                title="Walk to previous chamber"
+                aria-label="Previous Chamber"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
               <button
                 onClick={handleNextChamber}
-                className={`absolute right-0 z-20 p-2.5 rounded-full border shadow-xl transition-all cursor-pointer ${
+                className={`absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center border shadow-xl transition-all cursor-pointer ${
                   isDark
-                    ? 'bg-black/70 hover:bg-black border-white/20 text-white hover:scale-110'
-                    : 'bg-white/85 hover:bg-white border-[#ded4c3] text-black hover:scale-110'
+                    ? 'bg-[#18110b]/90 hover:bg-[#251a12] border-[#38281d] text-white hover:scale-105'
+                    : 'bg-white/90 hover:bg-[#faf4ec] border-[#ded4c3] text-[#282019] hover:scale-105'
                 }`}
-                title="Step to next chamber (→)"
+                title="Walk to next chamber"
+                aria-label="Next Chamber"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
 
-              {/* The Pedestal Display Box */}
-              <div className="relative w-full max-w-[340px] aspect-square rounded-2xl p-4 flex items-center justify-center transition-all duration-300">
-                {/* Plinth Shadow & Light Halo */}
+              {/* Product Artwork on Spatial Pedestal */}
+              <div className="relative z-10 w-full max-w-xs sm:max-w-sm flex flex-col items-center">
                 <div
-                  className="absolute -bottom-4 w-64 h-8 rounded-full blur-[14px] pointer-events-none"
+                  className="w-full aspect-square rounded-2xl overflow-hidden border shadow-2xl relative flex items-center justify-center transition-all duration-500 group"
                   style={{
-                    backgroundColor: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(0,0,0,0.25)',
-                    transform: 'scale(1.1)'
+                    backgroundColor: isDark ? '#080503' : '#ede2d3',
+                    borderColor: `${floor.accentHex}40`
                   }}
-                />
-
-                {currentProduct && (
-                  <div className="relative w-full h-full rounded-xl overflow-hidden border shadow-2xl transition-all duration-300">
+                >
+                  {currentProduct && (
                     <ProductArtwork
                       productId={currentProduct.id}
                       aspectRatio="square"
                       theme={theme}
                       showGlow={true}
-                      className="w-full h-full"
+                      className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                     />
+                  )}
 
-                    {/* Wishlist Button on artwork */}
-                    {onToggleWishlist && (
-                      <button
-                        onClick={() => onToggleWishlist(currentProduct.id)}
-                        className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all cursor-pointer ${
-                          wishlistIds.includes(currentProduct.id)
-                            ? isDark
-                              ? 'bg-[#d2f53a] text-black'
-                              : 'bg-[#c35626] text-white'
-                            : 'bg-black/50 text-white hover:bg-black/80'
-                        }`}
-                        title="Save to Wishlist"
-                      >
-                        <Heart
-                          className={`w-4 h-4 ${
-                            wishlistIds.includes(currentProduct.id) ? 'fill-current' : ''
-                          }`}
-                        />
-                      </button>
-                    )}
+                  {/* Chamber Location Ribbon */}
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase backdrop-blur-md border shadow-md bg-black/60 text-white border-white/10">
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: floor.accentHex }}
+                    />
+                    <span>BAY {activeSlot.toUpperCase()} · FLR 0{floor.number}</span>
                   </div>
-                )}
+                </div>
+
+                {/* Pedestal Base Display */}
+                <div
+                  className="w-48 h-3 rounded-full mt-3 blur-[2px] transition-all"
+                  style={{
+                    backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.15)',
+                    boxShadow: `0 0 25px ${floor.accentHex}30`
+                  }}
+                />
               </div>
 
-              {/* Floor Pedestal Base Label */}
+              {/* Physical Floorboard Runner Trim along bottom */}
               <div
-                className={`mt-4 px-3.5 py-1.5 rounded-full text-[10px] font-mono tracking-widest uppercase border flex items-center gap-2 ${
-                  isDark ? 'bg-[#18110b] border-[#332317] text-[#c9b9a8]' : 'bg-[#eee4d6] border-[#dac9b4] text-[#5e4b3c]'
-                }`}
+                className="absolute bottom-0 inset-x-0 h-7 border-t flex items-center justify-between px-4 text-[9px] font-mono uppercase opacity-75 pointer-events-none"
+                style={{
+                  backgroundColor: isDark ? '#140e0a' : '#eae0d2',
+                  borderColor: isDark ? '#261b12' : '#ded1c0',
+                  backgroundImage: currentFinish.texture
+                }}
               >
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: floor.accentHex }} />
-                <span>CHAMBER {activeSlot.toUpperCase()} · EXHIBIT BAY</span>
+                <span className="truncate">FLOORING: {currentFinish.name}</span>
+                <span className="shrink-0">ATELIER GRID SPEC 0{floor.number}</span>
               </div>
             </div>
 
-            {/* Right Column: Piece Specifications, Craftsmanship & Quick Actions */}
-            <div className="relative w-full lg:w-1/2 flex flex-col justify-between space-y-4">
+            {/* Right 5 Cols: Product Details & Cart Actions */}
+            <div
+              className={`lg:col-span-5 flex flex-col justify-between p-6 sm:p-8 transition-colors ${
+                isDark ? 'bg-[#150e09]' : 'bg-[#faf6f0]'
+              }`}
+            >
               {currentProduct ? (
                 <>
-                  <div>
-                    {/* Eyebrow & Badge */}
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="space-y-4">
+                    {/* Chamber indicator */}
+                    <div className="flex items-center justify-between">
                       <span
-                        className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider"
+                        className="text-[10px] font-mono font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full"
                         style={{
                           backgroundColor: `${floor.accentHex}20`,
                           color: floor.accentHex
                         }}
                       >
-                        {currentProduct.shortTag || currentProduct.category}
+                        CHAMBER: {activeSlot.toUpperCase()} BAY
                       </span>
-                      {currentProduct.badge && (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase">
-                          {currentProduct.badge}
-                        </span>
+
+                      {onToggleWishlist && (
+                        <button
+                          onClick={() => onToggleWishlist(currentProduct.id)}
+                          className={`p-1.5 rounded-full border transition-all cursor-pointer ${
+                            wishlistIds.includes(currentProduct.id)
+                              ? 'bg-rose-500/20 text-rose-500 border-rose-500/40'
+                              : isDark
+                              ? 'bg-[#1e150f] text-[#8c7b6d] border-[#382b20] hover:text-white'
+                              : 'bg-white text-[#7d6c5d] border-[#ded4c3] hover:text-black'
+                          }`}
+                          title="Save to Wishlist"
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${
+                              wishlistIds.includes(currentProduct.id) ? 'fill-current' : ''
+                            }`}
+                          />
+                        </button>
                       )}
                     </div>
 
-                    {/* Product Name */}
-                    <h2
-                      className="text-2xl sm:text-3xl font-black tracking-tight"
-                      style={{ fontFamily: 'var(--font-display)' }}
-                    >
-                      {currentProduct.name}
-                    </h2>
-
-                    {/* Price and Stock */}
-                    <div className="flex items-baseline gap-3 mt-2">
-                      <span
-                        className={`text-2xl sm:text-3xl font-black font-mono ${
-                          isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                    <div>
+                      <h4
+                        className="text-xl sm:text-2xl font-black tracking-tight leading-tight"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                      >
+                        {currentProduct.name}
+                      </h4>
+                      <p
+                        className={`text-xs mt-1 leading-relaxed ${
+                          isDark ? 'text-[#a89685]' : 'text-[#69584b]'
                         }`}
                       >
-                        ₹{currentProduct.price.toLocaleString('en-IN')}
-                      </span>
-                      {currentProduct.originalPrice && (
-                        <span className="text-sm line-through opacity-50 font-mono">
-                          ₹{currentProduct.originalPrice.toLocaleString('en-IN')}
+                        {currentProduct.description}
+                      </p>
+                    </div>
+
+                    {/* Price and Material Specifications */}
+                    <div
+                      className={`p-3.5 rounded-xl border space-y-2 text-xs font-mono ${
+                        isDark ? 'bg-[#1c140d] border-[#312317]' : 'bg-white border-[#ded4c3] shadow-xs'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#8c7b6d]">PRICE (INCL. GST):</span>
+                        <span
+                          className={`text-base font-black ${
+                            isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                          }`}
+                        >
+                          ₹{currentProduct.price.toLocaleString('en-IN')}
                         </span>
-                      )}
-                      <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold ml-2">
-                        ✦ In Stock · Hyderabad Workshop
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    <p
-                      className={`text-xs sm:text-sm mt-3 leading-relaxed ${
-                        isDark ? 'text-[#c2b09e]' : 'text-[#615042]'
-                      }`}
-                    >
-                      {currentProduct.description}
-                    </p>
-                  </div>
-
-                  {/* Curated Specifications Grid */}
-                  <div
-                    className={`p-3.5 rounded-xl border grid grid-cols-2 gap-3 text-xs font-mono ${
-                      isDark ? 'bg-[#18110b] border-[#2b1e15]' : 'bg-[#f4eae0] border-[#ded1be]'
-                    }`}
-                  >
-                    <div>
-                      <span className="text-[9px] uppercase tracking-wider text-[#8c7b6d] block mb-0.5">
-                        DIMENSIONS:
-                      </span>
-                      <span className="font-bold text-[11px]">{currentProduct.dimensions}</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] uppercase tracking-wider text-[#8c7b6d] block mb-0.5">
-                        POWER SOURCE:
-                      </span>
-                      <span className="font-bold text-[11px]">
-                        {currentProduct.powerSource || 'Passive Mechanical'}
-                      </span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-[9px] uppercase tracking-wider text-[#8c7b6d] block mb-0.5">
-                        ARCHITECTURAL MATERIALS:
-                      </span>
-                      <span className="text-[10.5px] leading-tight block">
-                        {currentProduct.materials.join(' · ')}
-                      </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#8c7b6d]">PRIMARY TIMBER:</span>
+                        <span className="font-bold">{currentProduct.materials?.[0] || 'Seasoned Timber'}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#8c7b6d]">CATEGORY:</span>
+                        <span className="font-bold uppercase">{currentProduct.category}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Interactive Action Buttons */}
-                  <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
-                    {/* Add to Trolley Button */}
-                    <button
-                      onClick={() => handleQuickAdd(currentProduct)}
-                      className={`w-full sm:flex-1 py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${
-                        addedId === currentProduct.id
-                          ? 'bg-emerald-500 text-black shadow-emerald-500/40'
-                          : isDark
-                          ? 'bg-[#d2f53a] hover:bg-[#bce82e] text-black shadow-[0_0_20px_rgba(210,245,58,0.3)]'
-                          : 'bg-[#c35626] hover:bg-[#a64319] text-white shadow-md'
-                      }`}
-                    >
-                      {addedId === currentProduct.id ? (
-                        <>
-                          <Check className="w-4 h-4 stroke-[3]" />
-                          <span>Added to Trolley!</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag className="w-4 h-4" />
-                          <span>Add to Trolley • ₹{currentProduct.price.toLocaleString('en-IN')}</span>
-                        </>
+                  {/* Actions: Add to Trolley & Remove from Trolley */}
+                  <div className="space-y-2.5 pt-6">
+                    <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                      {/* Add to Trolley CTA */}
+                      <button
+                        onClick={() => handleQuickAdd(currentProduct)}
+                        className={`flex-1 py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${
+                          addedId === currentProduct.id
+                            ? 'bg-emerald-500 text-black shadow-emerald-500/40'
+                            : isDark
+                            ? 'bg-[#d2f53a] hover:bg-[#bce82e] text-black shadow-[0_0_20px_rgba(210,245,58,0.3)]'
+                            : 'bg-[#c35626] hover:bg-[#a64319] text-white shadow-md'
+                        }`}
+                      >
+                        {addedId === currentProduct.id ? (
+                          <>
+                            <Check className="w-4 h-4 stroke-[3]" />
+                            <span>Added to Trolley!</span>
+                          </>
+                        ) : isInCart ? (
+                          <>
+                            <ShoppingBag className="w-4 h-4" />
+                            <span>Add Another (+1)</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingBag className="w-4 h-4" />
+                            <span>Add to Trolley • ₹{currentProduct.price.toLocaleString('en-IN')}</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Explicit Remove from Trolley button if in cart */}
+                      {isInCart && onRemoveFromCart && (
+                        <button
+                          onClick={() => onRemoveFromCart(currentProduct.id)}
+                          className="py-3 px-4 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border-rose-500/30"
+                          title="Remove item from your trolley"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Remove</span>
+                        </button>
                       )}
-                    </button>
+                    </div>
 
-                    {/* Inspect Full Specs Button */}
-                    <button
-                      onClick={() => {
-                        onClose();
-                        onSelectProduct(currentProduct);
-                      }}
-                      className={`w-full sm:w-auto py-3 px-4 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                        isDark
-                          ? 'bg-[#18110b] hover:bg-[#251a12] border-[#3d2b1f] text-white'
-                          : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#1c140e]'
-                      }`}
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>Deep Specs</span>
-                    </button>
-
-                    {/* Test in Dark Room Button */}
-                    {onOpenVirtualDarkRoom && (
+                    <div className="flex items-center gap-2">
+                      {/* Inspect Specs */}
                       <button
                         onClick={() => {
                           onClose();
-                          onOpenVirtualDarkRoom(currentProduct.id);
+                          onSelectProduct(currentProduct);
                         }}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer shrink-0 ${
+                        className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           isDark
-                            ? 'bg-[#18110b] hover:bg-[#251a12] border-[#3d2b1f] text-amber-400'
-                            : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-amber-600'
+                            ? 'bg-[#18110b] hover:bg-[#251a12] border-[#3d2b1f] text-white'
+                            : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#1c140e]'
                         }`}
-                        title="Simulate lighting in Virtual Dark Room"
                       >
-                        <Moon className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Inspect Specs</span>
                       </button>
-                    )}
+
+                      {/* Test in Dark Room */}
+                      {onOpenVirtualDarkRoom && (
+                        <button
+                          onClick={() => {
+                            onClose();
+                            onOpenVirtualDarkRoom(currentProduct.id);
+                          }}
+                          className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                            isDark
+                              ? 'bg-[#18110b] hover:bg-[#251a12] border-[#3d2b1f] text-amber-400'
+                              : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-amber-600'
+                          }`}
+                          title="Simulate lighting in Virtual Dark Room"
+                        >
+                          <Moon className="w-3.5 h-3.5" />
+                          <span>Dark Room</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </>
               ) : (
@@ -566,7 +665,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
             </div>
           </div>
         ) : (
-          /* Wide 3-Chamber Gallery View: Inspect all 3 rooms side-by-side */
+          /* Wide 3-Chamber Gallery View */
           <div className="p-6 sm:p-8 space-y-6">
             <div className="text-center max-w-xl mx-auto space-y-1">
               <span className="text-[10px] font-mono tracking-widest uppercase text-[#9c8979]">
@@ -585,6 +684,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                 const product = item.productId
                   ? PRODUCTS_DATA.find((p) => p.id === item.productId)
                   : null;
+                const itemInCart = product ? cartProductIds.includes(product.id) : false;
 
                 return (
                   <div
@@ -659,10 +759,24 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                             ₹{product.price.toLocaleString('en-IN')}
                           </span>
 
-                          <span className="text-[10px] font-mono font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                            <span>Step Inside</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {itemInCart && onRemoveFromCart && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRemoveFromCart(product.id);
+                                }}
+                                className="p-1 rounded text-rose-500 hover:bg-rose-500/10 cursor-pointer"
+                                title="Remove from trolley"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <span className="text-[10px] font-mono font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                              <span>Step Inside</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -690,10 +804,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                 return (
                   <button
                     key={slot}
-                    onClick={() => {
-                      sound.playClick();
-                      setActiveSlot(slot);
-                    }}
+                    onClick={() => setActiveSlot(slot)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 border ${
                       isSelected
                         ? isDark

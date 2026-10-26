@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Star, ShoppingBag, Check, ShieldCheck, Box, Sparkles, Layers, Truck } from 'lucide-react';
+import { X, Star, ShoppingBag, Check, ShieldCheck, Box, Sparkles, Layers, Truck, Trash2 } from 'lucide-react';
 import { Product, ThemeMode } from '../types';
 import { ProductArtwork } from './ProductArtwork';
 
@@ -9,6 +9,8 @@ interface ProductDetailModalProps {
   theme: ThemeMode;
   onAddToCart: (product: Product, quantity: number, finish?: string, lightMode?: string) => void;
   onOpenVirtualDarkRoom?: (productId: string) => void;
+  isInCart?: boolean;
+  onRemoveFromCart?: (productId: string) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -16,7 +18,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onClose,
   theme,
   onAddToCart,
-  onOpenVirtualDarkRoom
+  onOpenVirtualDarkRoom,
+  isInCart = false,
+  onRemoveFromCart
 }) => {
   const isDark = theme === 'rustic-dark';
   const [quantity, setQuantity] = useState(1);
@@ -269,6 +273,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <Check className="w-4 h-4 stroke-[3]" />
                       <span>Added to Trolley</span>
                     </>
+                  ) : isInCart ? (
+                    <>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Add Another (+{quantity})</span>
+                    </>
                   ) : (
                     <>
                       <ShoppingBag className="w-4 h-4" />
@@ -276,6 +285,20 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </>
                   )}
                 </button>
+
+                {/* Explicit Remove from Trolley if already in trolley */}
+                {isInCart && onRemoveFromCart && (
+                  <button
+                    onClick={() => {
+                      onRemoveFromCart(product.id);
+                    }}
+                    className="py-3 px-3.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 cursor-pointer transition-all"
+                    title="Remove this creation from your trolley"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Remove</span>
+                  </button>
+                )}
               </div>
 
               {/* Virtual Dark Room Simulator Action */}

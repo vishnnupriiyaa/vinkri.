@@ -11,13 +11,11 @@ import {
   ChevronRight,
   Sliders,
   Flame,
-  Maximize2,
-  Volume2
+  Maximize2
 } from 'lucide-react';
 import { Product, ThemeMode } from '../types';
 import { PRODUCTS_DATA } from '../data/products';
 import { ProductArtwork } from './ProductArtwork';
-import { sound } from '../utils/audio';
 
 interface VirtualDarkRoomModalProps {
   isOpen: boolean;
@@ -169,21 +167,18 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
   const deskSpillOpacity = Math.min(1, effectiveLampLight * 0.85);
 
   const handlePrevProduct = () => {
-    sound.playClick();
     const idx = PRODUCTS_DATA.findIndex((p) => p.id === selectedProductId);
     const prevIdx = idx > 0 ? idx - 1 : PRODUCTS_DATA.length - 1;
     setSelectedProductId(PRODUCTS_DATA[prevIdx].id);
   };
 
   const handleNextProduct = () => {
-    sound.playClick();
     const idx = PRODUCTS_DATA.findIndex((p) => p.id === selectedProductId);
     const nextIdx = idx < PRODUCTS_DATA.length - 1 ? idx + 1 : 0;
     setSelectedProductId(PRODUCTS_DATA[nextIdx].id);
   };
 
   const handleQuickAdd = () => {
-    sound.playChime();
     onAddToCart(currentProduct, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -258,7 +253,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
             >
               <button
                 onClick={() => {
-                  sound.playClick();
                   setRoomAmbient(0);
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -277,7 +271,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
               </button>
               <button
                 onClick={() => {
-                  sound.playClick();
                   setRoomAmbient(25);
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -296,7 +289,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
               </button>
               <button
                 onClick={() => {
-                  sound.playClick();
                   setRoomAmbient(85);
                 }}
                 className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -685,7 +677,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                 {/* Candlelight Flicker Toggle */}
                 <button
                   onClick={() => {
-                    sound.playClick();
                     setIsFlickering(!isFlickering);
                   }}
                   className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all border cursor-pointer ${
@@ -712,7 +703,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                     <button
                       key={t.name}
                       onClick={() => {
-                        sound.playClick();
                         setSelectedTempIndex(idx);
                       }}
                       className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
@@ -755,7 +745,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                     <button
                       key={env.id}
                       onClick={() => {
-                        sound.playClick();
                         setSelectedEnvId(env.id);
                       }}
                       className={`px-2 py-0.5 rounded transition-all cursor-pointer truncate ${
@@ -795,7 +784,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                 <button
                   key={prod.id}
                   onClick={() => {
-                    sound.playClick();
                     setSelectedProductId(prod.id);
                   }}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all border flex items-center gap-1.5 cursor-pointer ${

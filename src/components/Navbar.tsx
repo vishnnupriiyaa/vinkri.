@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Moon, Sun, Heart, Package, Volume2, VolumeX, ShoppingBag } from 'lucide-react';
+import React from 'react';
+import { Search, Moon, Sun, Heart, Package, ShoppingBag } from 'lucide-react';
 import { ThemeMode } from '../types';
-import { sound } from '../utils/audio';
 
 interface NavbarProps {
   theme: ThemeMode;
@@ -31,16 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavClick
 }) => {
   const isDark = theme === 'rustic-dark';
-  const [soundActive, setSoundActive] = useState(false);
   const navItems = ['HOME', 'ABOUT', 'SHOP', 'PROCESS', 'CONTACT'];
-
-  const toggleSound = () => {
-    sound.enabled = !soundActive;
-    setSoundActive(!soundActive);
-    if (!soundActive) {
-      sound.playChime();
-    }
-  };
 
   return (
     <header
@@ -49,24 +39,29 @@ export const Navbar: React.FC<NavbarProps> = ({
       }`}
     >
       <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between gap-4">
-        {/* Left: Brand Logo */}
+        {/* Left: Brand Official Logo */}
         <div className="flex items-center">
           <button
-            onClick={() => {
-              sound.playClick();
-              onNavClick('HOME');
-            }}
-            className="group text-left focus:outline-none cursor-pointer"
+            onClick={() => onNavClick('HOME')}
+            className="group flex items-center gap-2 focus:outline-none cursor-pointer py-1"
             aria-label="VINKRI Home"
           >
-            <span
-              className={`font-black tracking-[0.22em] text-xl sm:text-2xl transition-colors ${
-                isDark ? 'text-white' : 'text-[#231b15]'
+            <div
+              className={`relative overflow-hidden rounded-md transition-all duration-300 ${
+                isDark
+                  ? 'bg-black border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.06)] group-hover:border-[#d2f53a]/70 group-hover:shadow-[0_0_20px_rgba(210,245,58,0.3)]'
+                  : 'bg-[#faf6f0] border border-[#e2d5c3] shadow-xs group-hover:border-[#c35626]/70 group-hover:shadow-[0_0_15px_rgba(195,86,38,0.18)] px-1'
               }`}
-              style={{ fontFamily: 'var(--font-display)' }}
             >
-              VINKRI
-            </span>
+              <img
+                src="/assets/aistudio/50547_5739e055.jpg"
+                alt="VINKRI"
+                className={`h-7 sm:h-8 w-auto object-contain block max-w-[125px] sm:max-w-[145px] transition-all duration-300 ${
+                  isDark ? '' : 'filter invert mix-blend-multiply'
+                }`}
+              />
+            </div>
+            <span className="sr-only">VINKRI</span>
           </button>
         </div>
 
@@ -77,10 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             return (
               <button
                 key={item}
-                onClick={() => {
-                  sound.playClick();
-                  onNavClick(item);
-                }}
+                onClick={() => onNavClick(item)}
                 className={`relative py-1 text-[12px] font-bold tracking-[0.15em] transition-colors uppercase cursor-pointer ${
                   isActive
                     ? isDark
@@ -105,32 +97,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </nav>
 
-        {/* Right: Sound, Track, Search, Wishlist, Trolley & Theme */}
+        {/* Right: Track, Search, Wishlist, Trolley & Theme */}
         <div className="flex items-center gap-2 sm:gap-3.5">
-          {/* Audio Chime Immersion Toggle */}
-          <button
-            onClick={toggleSound}
-            className={`p-1.5 rounded-full transition-colors focus:outline-none cursor-pointer ${
-              soundActive
-                ? isDark
-                  ? 'text-[#d2f53a]'
-                  : 'text-[#c35626]'
-                : isDark
-                ? 'text-white/50 hover:text-white'
-                : 'text-black/50 hover:text-black'
-            }`}
-            title={soundActive ? 'Atelier audio effects enabled' : 'Enable tactile audio chimes'}
-            aria-label="Toggle Sound"
-          >
-            {soundActive ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
-
           {/* Track Order Button */}
           <button
-            onClick={() => {
-              sound.playClick();
-              onOpenTracker();
-            }}
+            onClick={onOpenTracker}
             className={`p-1.5 transition-colors focus:outline-none cursor-pointer ${
               isDark ? 'text-white/80 hover:text-white' : 'text-black/80 hover:text-black'
             }`}
@@ -142,10 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Search Button */}
           <button
-            onClick={() => {
-              sound.playClick();
-              onOpenSearch();
-            }}
+            onClick={onOpenSearch}
             className={`p-1.5 transition-colors focus:outline-none cursor-pointer ${
               isDark ? 'text-white/80 hover:text-white' : 'text-black/80 hover:text-black'
             }`}
@@ -157,10 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Wishlist Button with Counter */}
           <button
-            onClick={() => {
-              sound.playClick();
-              onOpenWishlist();
-            }}
+            onClick={onOpenWishlist}
             className={`relative p-1.5 transition-colors focus:outline-none cursor-pointer ${
               isDark ? 'text-white/80 hover:text-white' : 'text-black/80 hover:text-black'
             }`}
@@ -179,10 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Virtual Dark Room Simulator Button */}
           <button
-            onClick={() => {
-              sound.playChime();
-              onOpenVirtualStudio();
-            }}
+            onClick={onOpenVirtualStudio}
             className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider transition-all focus:outline-none cursor-pointer border shrink-0 ${
               isDark
                 ? 'bg-[#18120d] border-[#382b20] text-[#d2f53a] hover:bg-[#251b14] hover:border-[#d2f53a]/50 shadow-[0_0_15px_rgba(210,245,58,0.15)]'
@@ -197,10 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Trolley Button with Rounded Badge Counter */}
           <button
-            onClick={() => {
-              sound.playClick();
-              onOpenCart();
-            }}
+            onClick={onOpenCart}
             className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider transition-all focus:outline-none cursor-pointer shrink-0 ${
               isDark
                 ? 'bg-[#18120d] text-white hover:bg-[#221a13]'
@@ -221,10 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Theme Toggle (Moon / Sun) */}
           <button
-            onClick={() => {
-              sound.playClick();
-              onToggleTheme();
-            }}
+            onClick={onToggleTheme}
             className={`p-1.5 rounded-full transition-colors focus:outline-none cursor-pointer shrink-0 ${
               isDark ? 'text-white/80 hover:text-white' : 'text-black/80 hover:text-black'
             }`}

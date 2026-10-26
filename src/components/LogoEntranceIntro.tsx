@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { sound } from '../utils/audio';
 
 interface LogoEntranceIntroProps {
   isOpen: boolean;
@@ -45,8 +44,6 @@ export const LogoEntranceIntro: React.FC<LogoEntranceIntroProps> = ({
 
   const handleEnter = () => {
     if (isEntering) return;
-    sound.enabled = true;
-    sound.playChime();
     setIsEntering(true);
 
     // Cinematic push-through duration

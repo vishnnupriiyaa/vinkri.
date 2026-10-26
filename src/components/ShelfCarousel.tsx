@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Play, Pause, Plus } from 'lucide-react';
 import { Product, ThemeMode } from '../types';
 import { ProductArtwork } from './ProductArtwork';
-import { sound } from '../utils/audio';
 
 interface ShelfCarouselProps {
   products: Product[];
@@ -25,12 +24,10 @@ export const ShelfCarousel: React.FC<ShelfCarouselProps> = ({
   const displayItems = [...products, ...products];
 
   const handlePrev = () => {
-    sound.playClick();
     setDirection('reverse');
   };
 
   const handleNext = () => {
-    sound.playClick();
     setDirection('normal');
   };
 
@@ -92,7 +89,6 @@ export const ShelfCarousel: React.FC<ShelfCarouselProps> = ({
               <div
                 key={`${product.id}-${idx}`}
                 onClick={() => {
-                  sound.playClick();
                   onSelectProduct(product);
                 }}
                 className={`group flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer shrink-0 transition-all border ${
@@ -144,7 +140,6 @@ export const ShelfCarousel: React.FC<ShelfCarouselProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    sound.playChime();
                     onQuickAdd(product);
                   }}
                   className={`p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${
