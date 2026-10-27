@@ -135,15 +135,15 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     if (!isMovingToFloor || movingFloorNumber === null) return 'scale(1) translate(0%, 0%)';
     switch (movingFloorNumber) {
       case 5:
-        return 'scale(2.1) translateY(24%)';
+        return 'scale(2.6) translateY(34%)';
       case 4:
-        return 'scale(2.1) translateY(12%)';
+        return 'scale(2.6) translateY(17%)';
       case 3:
-        return 'scale(2.1) translateY(0%)';
+        return 'scale(2.6) translateY(0%)';
       case 2:
-        return 'scale(2.1) translateY(-12%)';
+        return 'scale(2.6) translateY(-17%)';
       case 1:
-        return 'scale(2.1) translateY(-24%)';
+        return 'scale(2.6) translateY(-34%)';
       default:
         return 'scale(1) translate(0%, 0%)';
     }
@@ -160,6 +160,11 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     }
     const prod = PRODUCTS_DATA.find((p) => p.id === productId);
     if (prod) {
+      const parentFloor = FLOORS_DATA.find((f) => f.numeric === prod.floorNumber);
+      if (parentFloor) {
+        triggerMoveToFloor(parentFloor, slot);
+        return;
+      }
       onSelectProduct(prod);
     }
   };
@@ -738,6 +743,38 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Dynamic Expanding Floor Rectangle Overlay for Virtual Walk-in Feeling */}
+        {isExpandingBlock && expandingFloorNumber && (
+          <div
+            className={`absolute z-45 pointer-events-none rounded-2xl overflow-hidden border-2 shadow-2xl transition-all ${
+              isDark
+                ? 'border-[#d2f53a] bg-[#140e0a]/92 text-white animate-floor-expand'
+                : 'border-[#c35626] bg-[#faf6f0]/95 text-[#282019] animate-floor-expand-light'
+            }`}
+            style={{
+              top: floorsConfig.find((f) => f.number === expandingFloorNumber)?.top || '50%',
+              height: floorsConfig.find((f) => f.number === expandingFloorNumber)?.height || '15%',
+              left: '18%',
+              width: '64%',
+              transformOrigin: 'center center'
+            }}
+          >
+            {/* Internal light beam sweep across the expanding glass chamber */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-beam-sweep" />
+
+            {/* Entering Floor Signage */}
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-3 text-center">
+              <div className="flex items-center gap-1.5 text-[10px] font-mono font-black uppercase tracking-widest text-[#d2f53a]">
+                <span className="w-2 h-2 rounded-full bg-[#d2f53a] animate-ping" />
+                <span>ENTERING LEVEL 0{expandingFloorNumber}</span>
+              </div>
+              <p className="text-xs sm:text-base font-black tracking-tight text-white mt-0.5">
+                {floorsConfig.find((f) => f.number === expandingFloorNumber)?.name}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Cinematic Elevator In Transit HUD Overlay */}
         {isMovingToFloor && movingFloor && (
