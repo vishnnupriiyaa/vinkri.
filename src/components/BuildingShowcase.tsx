@@ -115,14 +115,18 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setMovingFloorNumber(floorData.numeric);
     setMovingFloor(floorData);
     setIsMovingToFloor(true);
+    setExpandingFloorNumber(floorData.numeric);
+    setIsExpandingBlock(true);
 
-    // Transit time for elevator moving animation
+    // Transit time for building zoom & rectangle block expansion animation
     setTimeout(() => {
       onSelectFloor(floorData, slot);
       setTimeout(() => {
         setIsMovingToFloor(false);
         setMovingFloorNumber(null);
         setMovingFloor(null);
+        setIsExpandingBlock(false);
+        setExpandingFloorNumber(null);
       }, 350);
     }, 720);
   };

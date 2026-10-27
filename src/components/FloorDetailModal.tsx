@@ -221,13 +221,19 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
           </div>
         )}
 
-        {/* 1. Floor Topbar: Back to Store Front, Floor Title, Level Number & Elevator */}
+        {/* Floor Panel Scrollable Container: Exactly matching HTML specification with dedicated custom scroll bar */}
         <div
-          id="floorTopbar"
-          className={`floor-topbar px-4 sm:px-8 py-3.5 sm:py-4 flex flex-wrap items-center justify-between gap-3 border-b relative z-30 transition-colors ${
-            isDark ? 'bg-[#18110b] border-[#2d1e14]' : 'bg-[#f4ebe0] border-[#e2d5c3]'
+          className={`floor-panel flex-1 flex flex-col overflow-y-auto max-h-[88vh] ${
+            isDark ? 'vinkri-window-scrollbar' : 'vinkri-window-scrollbar-light'
           }`}
         >
+          {/* 1. Floor Topbar: Back to Store Front, Floor Title, Level Number & Elevator */}
+          <div
+            id="floorTopbar"
+            className={`floor-topbar sticky top-0 px-4 sm:px-8 py-3.5 sm:py-4 flex flex-wrap items-center justify-between gap-3 border-b z-30 transition-colors backdrop-blur-md ${
+              isDark ? 'bg-[#18110b]/95 border-[#2d1e14]' : 'bg-[#f4ebe0]/95 border-[#e2d5c3]'
+            }`}
+          >
           {/* Back to Store Front Button */}
           <button
             id="backBtn"
@@ -871,6 +877,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               </div>
             );
           })}
+        </div>
         </div>
       </section>
     </div>
