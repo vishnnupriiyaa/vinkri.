@@ -44,7 +44,16 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
     // Custom Figurines
     'buddha-halo-lamp': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
     'shiva-trishul-lamp': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
-    'custom-figurine-duo': '/assets/images/custom_couple_figurine_1792823872735.jpg'
+    'custom-figurine-duo': '/assets/images/custom_couple_figurine_1792823872735.jpg',
+    'zen-monk-figurine': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
+    'sacred-ganesha-halo': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
+    // Floor additions
+    'fuji-dawn-diorama': '/assets/images/mount_everest_light_1792822132587.jpg',
+    'aurora-fjord-pod': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    'pit-lane-garage': '/assets/images/diecast_car_stand_1792823666503.jpg',
+    'rotary-acrylic-pod': '/assets/images/car_showcase_1792822133725.jpg',
+    'amber-crystal-orb': '/assets/images/moon_tree_light_1792822133142.jpg',
+    'infinity-mirror-prism': '/assets/images/floating_levitron_1792823852255.jpg'
   };
 
   // Coordinates from the reference image for any remaining items

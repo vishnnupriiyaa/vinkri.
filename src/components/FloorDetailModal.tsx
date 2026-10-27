@@ -3,9 +3,7 @@ import {
   X,
   ArrowRight,
   ArrowLeft,
-  Eye,
   Sparkles,
-  Plus,
   ShoppingBag,
   Moon,
   Check,
@@ -15,9 +13,8 @@ import {
   Sliders,
   Trash2,
   Building,
-  Layers,
-  Box,
-  MapPin
+  MapPin,
+  Star
 } from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { PRODUCTS_DATA, FLOORS_DATA } from '../data/products';
@@ -54,7 +51,6 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
 }) => {
   const isDark = theme === 'rustic-dark';
   const [activeSlot, setActiveSlot] = useState<'left' | 'center' | 'right'>('center');
-  const [viewMode, setViewMode] = useState<'walkthrough' | 'gallery'>('walkthrough');
   const [roomLighting, setRoomLighting] = useState<'bright' | 'studio' | 'mood'>('studio');
   const [addedId, setAddedId] = useState<string | null>(null);
 
@@ -88,10 +84,13 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
 
   if (!floor) return null;
 
+  // Products belonging to this specific floor
+  const floorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === floor.numeric);
+
   const currentItem = floor.items.find((i) => i.slot === activeSlot) || floor.items[0];
   const currentProduct = currentItem?.productId
     ? PRODUCTS_DATA.find((p) => p.id === currentItem.productId)
-    : null;
+    : floorProducts[0] || null;
 
   const isInCart = currentProduct ? cartProductIds.includes(currentProduct.id) : false;
 
@@ -129,23 +128,26 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
   // Custom architectural flooring definition per level
   const floorFinishes: Record<number, { name: string; texture: string; border: string }> = {
     5: {
-      name: 'Polished Nordic Birch Plywood with Aluminium Joints',
-      texture: 'linear-gradient(to right, rgba(230,210,180,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(230,210,180,0.04) 1px, transparent 1px)',
+      name: 'Polished Nordic Birch Plywood with Aluminium Inlays',
+      texture:
+        'linear-gradient(to right, rgba(230,210,180,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(230,210,180,0.04) 1px, transparent 1px)',
       border: '#3b82f6'
     },
     4: {
       name: 'Chevron Smoked Walnut Parquet Planking',
-      texture: 'linear-gradient(45deg, rgba(80,55,35,0.2) 25%, transparent 25%), linear-gradient(-45deg, rgba(80,55,35,0.2) 25%, transparent 25%)',
+      texture:
+        'linear-gradient(45deg, rgba(80,55,35,0.2) 25%, transparent 25%), linear-gradient(-45deg, rgba(80,55,35,0.2) 25%, transparent 25%)',
       border: '#10b981'
     },
     3: {
-      name: 'Charcoal Shadowbox Pine Gallery Flooring',
+      name: 'Charcoal Shadowbox Pine Gallery Deck',
       texture: 'linear-gradient(to right, rgba(0,0,0,0.4) 1px, transparent 1px)',
       border: '#f59e0b'
     },
     2: {
       name: 'Honed Industrial Architectural Slate Tiles',
-      texture: 'linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)',
+      texture:
+        'linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)',
       border: '#8b5cf6'
     },
     1: {
@@ -158,19 +160,21 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
   const currentFinish = floorFinishes[floor.numeric] || floorFinishes[1];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto p-2 sm:p-4 lg:p-6 flex items-center justify-center select-none animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto p-2 sm:p-4 lg:p-6 flex items-start justify-center select-none animate-fadeIn">
       {/* Blurred Architectural Glass Backdrop */}
       <div
         onClick={onClose}
         className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity duration-500"
       />
 
-      <div
-        className={`relative w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden border my-auto transition-all duration-500 flex flex-col ${
+      {/* Main Floor View Panel - Designed after reference floor-view */}
+      <section
+        id="floorView"
+        className={`floor-view relative w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden border my-4 sm:my-8 transition-all duration-500 flex flex-col animate-virtual-walkin ${
           isDark
             ? 'bg-[#120c08] border-[#38281d] text-[#f7f2ea]'
             : 'bg-[#faf6f0] border-[#ded4c3] text-[#282019]'
-        } ${doorState === 'closed' ? 'scale-95 opacity-90' : 'scale-100 opacity-100'}`}
+        }`}
         style={{
           boxShadow: isDark
             ? `0 25px 70px -15px ${floor.accentHex}25, 0 0 50px rgba(0,0,0,0.95)`
@@ -217,56 +221,45 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
           </div>
         )}
 
-        {/* Top Atelier Bar: Floor Level Title, Elevator Buttons & Exit */}
+        {/* 1. Floor Topbar: Back to Store Front, Floor Title, Level Number & Elevator */}
         <div
-          className={`px-4 sm:px-6 py-3 sm:py-3.5 flex flex-wrap items-center justify-between gap-3 border-b relative z-30 transition-colors ${
+          id="floorTopbar"
+          className={`floor-topbar px-4 sm:px-8 py-3.5 sm:py-4 flex flex-wrap items-center justify-between gap-3 border-b relative z-30 transition-colors ${
             isDark ? 'bg-[#18110b] border-[#2d1e14]' : 'bg-[#f4ebe0] border-[#e2d5c3]'
           }`}
         >
-          {/* Floor Header Badge */}
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex flex-col items-center justify-center font-mono font-black border shadow-md shrink-0"
-              style={{
-                backgroundColor: `${floor.accentHex}20`,
-                borderColor: `${floor.accentHex}50`,
-                color: floor.accentHex
-              }}
-            >
-              <span className="text-[8px] uppercase tracking-wider opacity-75">LEVEL</span>
-              <span className="text-base sm:text-lg font-black leading-none">{floor.number}</span>
-            </div>
+          {/* Back to Store Front Button */}
+          <button
+            id="backBtn"
+            onClick={onClose}
+            className={`back-btn px-3.5 py-2 rounded-xl transition-all cursor-pointer border flex items-center gap-2 text-xs sm:text-sm font-mono font-bold shadow-xs ${
+              isDark
+                ? 'bg-[#241a12] hover:bg-[#322318] border-[#3f2e21] text-[#f5ede2] hover:text-[#d2f53a] hover:border-[#d2f53a]/50'
+                : 'bg-white hover:bg-[#ede3d3] border-[#ded4c3] text-[#2c2016] hover:text-[#c35626] hover:border-[#c35626]/50'
+            }`}
+            title="Return to Building Front (Esc)"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-extrabold tracking-wide">Back to Store Front</span>
+          </button>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono tracking-widest uppercase text-[#a89685]">
-                  INSIDE LEVEL 0{floor.number}
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-widest hidden sm:inline">
-                  WALKTHROUGH ACTIVE
-                </span>
-              </div>
-              <h3
-                className="text-base sm:text-lg font-black tracking-tight flex items-center gap-2"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                <span>{floor.name}</span>
-                <span
-                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full"
-                  style={{
-                    backgroundColor: `${floor.accentHex}25`,
-                    color: floor.accentHex
-                  }}
-                >
-                  {floor.tagline}
-                </span>
-              </h3>
+          {/* Center Floor Title & Atelier Status */}
+          <div id="floorTitle" className="floor-title flex flex-col items-center text-center">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-[#a89685]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>ATELIER FLOOR · HYDERABAD</span>
             </div>
+            <h2
+              className="text-lg sm:text-xl font-black tracking-tight"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {floor.name}
+            </h2>
           </div>
 
-          {/* Center/Right: Elevator Panel to jump floors without exiting */}
-          <div className="flex items-center gap-2">
+          {/* Right: Floor Number Badge & Elevator Quick Jump */}
+          <div id="floorNo" className="floor-no flex items-center gap-2">
+            {/* Quick Elevator Level Switcher */}
             <div
               className={`hidden md:flex items-center gap-1 px-2.5 py-1 rounded-xl border ${
                 isDark ? 'bg-[#0f0a07] border-[#291b12]' : 'bg-white/80 border-[#ded3c2]'
@@ -286,7 +279,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                       isActive
                         ? isDark
                           ? 'bg-[#d2f53a] text-black shadow-[0_0_10px_rgba(210,245,58,0.4)]'
-                          : 'bg-[#c35626] text-white shadow-sm'
+                          : 'bg-[#c35626] text-white shadow-xs'
                         : isDark
                         ? 'text-[#9c8979] hover:bg-white/10 hover:text-white'
                         : 'text-[#69584b] hover:bg-black/5 hover:text-black'
@@ -298,95 +291,95 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               })}
             </div>
 
-            {/* View Mode Toggle: Single Walkthrough vs Wide 3-Chamber Gallery */}
+            {/* Level Badge */}
             <div
-              className={`flex items-center rounded-lg p-0.5 border text-xs font-mono ${
-                isDark ? 'bg-[#0f0a07] border-[#291b12]' : 'bg-white/80 border-[#ded3c2]'
-              }`}
+              className="px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-mono font-black text-xs border shadow-sm"
+              style={{
+                backgroundColor: `${floor.accentHex}20`,
+                borderColor: `${floor.accentHex}50`,
+                color: floor.accentHex
+              }}
             >
-              <button
-                onClick={() => setViewMode('walkthrough')}
-                className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                  viewMode === 'walkthrough'
-                    ? isDark
-                      ? 'bg-[#d2f53a] text-black shadow-xs'
-                      : 'bg-[#c35626] text-white shadow-xs'
-                    : 'text-[#8c7b6d] hover:text-white'
-                }`}
-              >
-                Chambers
-              </button>
-              <button
-                onClick={() => setViewMode('gallery')}
-                className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                  viewMode === 'gallery'
-                    ? isDark
-                      ? 'bg-[#d2f53a] text-black shadow-xs'
-                      : 'bg-[#c35626] text-white shadow-xs'
-                    : 'text-[#8c7b6d] hover:text-white'
-                }`}
-              >
-                All 3 Bays
-              </button>
+              <span>LEVEL</span>
+              <span>0{floor.number}</span>
             </div>
 
-            {/* Exit to Exterior Building Button */}
+            {/* Close Button */}
             <button
               onClick={onClose}
-              className={`px-2.5 py-1.5 rounded-xl transition-all cursor-pointer border flex items-center gap-1.5 text-xs font-mono font-bold ${
+              className={`p-2 rounded-xl transition-all cursor-pointer border ${
                 isDark
                   ? 'bg-[#221811] hover:bg-[#302118] border-[#3d2c1f] text-[#cfbfaf] hover:text-white'
                   : 'bg-white hover:bg-[#ede3d3] border-[#ded4c3] text-[#45372d]'
               }`}
-              title="Step outside to view the full building (Esc)"
-              aria-label="Exit Floor"
+              aria-label="Close"
             >
-              <Building className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">Exit to Building</span>
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Ambient Room Ceiling Lighting Controls Bar */}
+        {/* 2. Floor Intro Banner: Rich editorial introduction directly matching prototype */}
         <div
-          className={`px-4 sm:px-6 py-2 flex items-center justify-between text-xs font-mono border-b ${
-            isDark ? 'bg-[#140e09] border-[#271a10] text-[#8c7a6b]' : 'bg-[#faf4ec] border-[#ebe0cf] text-[#786452]'
+          id="floorIntro"
+          className={`floor-intro px-4 sm:px-8 py-4 sm:py-5 border-b transition-colors ${
+            isDark ? 'bg-[#150e09] border-[#291b12]' : 'bg-[#faf4ec] border-[#e8ded0]'
           }`}
         >
-          <div className="flex items-center gap-2">
-            <Sliders className="w-3.5 h-3.5 text-[#d2f53a]" />
-            <span className="text-[10px] uppercase font-bold tracking-wider">
-              GALLERY SPOTLIGHTS:
-            </span>
-            <div className="flex items-center gap-1 ml-1">
-              {(['bright', 'studio', 'mood'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setRoomLighting(mode)}
-                  className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all cursor-pointer ${
-                    roomLighting === mode
-                      ? isDark
-                        ? 'bg-white/20 text-[#d2f53a] border border-[#d2f53a]/40 shadow-xs'
-                        : 'bg-[#c35626]/15 text-[#c35626] border border-[#c35626]/40'
-                      : 'opacity-50 hover:opacity-90'
-                  }`}
-                >
-                  {mode === 'bright' ? 'Daylight 100%' : mode === 'studio' ? 'Spotlight 60%' : 'Ambient 20%'}
-                </button>
-              ))}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-[#a89685]">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: floor.accentHex }} />
+                <span>WELCOME TO LEVEL 0{floor.number}</span>
+                <span>•</span>
+                <span style={{ color: floor.accentHex }} className="font-bold">
+                  {floor.tagline}
+                </span>
+              </div>
+              <p
+                className={`text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed ${
+                  isDark ? 'text-[#c7b7a6]' : 'text-[#69584b]'
+                }`}
+              >
+                {floor.description} Little objects made to light up spaces, hold memories and add a little
+                personality to everyday life.
+              </p>
             </div>
-          </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-[10px]">
-            <MapPin className="w-3 h-3 text-[#d2f53a]" />
-            <span>HYDERABAD FLAGSHIP ATELIER • LEVEL 0{floor.number}</span>
+            {/* Ambient Lighting & Gallery Controls */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <div
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono ${
+                  isDark ? 'bg-[#0f0a07] border-[#291b12]' : 'bg-white border-[#ded4c3]'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[10px] uppercase font-bold text-[#8c7b6d] pr-1">
+                  AMBIENCE:
+                </span>
+                {(['bright', 'studio', 'mood'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setRoomLighting(mode)}
+                    className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all cursor-pointer ${
+                      roomLighting === mode
+                        ? isDark
+                          ? 'bg-white/20 text-[#d2f53a] border border-[#d2f53a]/40 shadow-xs'
+                          : 'bg-[#c35626]/15 text-[#c35626] border border-[#c35626]/40'
+                        : 'opacity-50 hover:opacity-90'
+                    }`}
+                  >
+                    {mode === 'bright' ? 'Daylight' : mode === 'studio' ? 'Spotlight' : 'Ambient'}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Main Floor Interior Presentation */}
-        {viewMode === 'walkthrough' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[440px] sm:min-h-[480px]">
+        {/* 3. Floor Hero Products Showcase: The interactive 3-chamber spatial pedestal */}
+        <div id="floorHero" className="floor-hero-products">
+          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[460px] sm:min-h-[500px]">
             {/* Left 7 Cols: Spatial Chamber Stage with 3D physical depth */}
             <div
               className={`lg:col-span-7 relative flex flex-col items-center justify-center p-6 sm:p-10 border-b lg:border-b-0 lg:border-r overflow-hidden transition-colors ${
@@ -395,10 +388,10 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
             >
               {/* Overhead Gallery Track Lights Beam Effect */}
               <div
-                className="absolute -top-12 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full pointer-events-none blur-[65px] transition-all duration-700"
+                className="absolute -top-12 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none blur-[70px] transition-all duration-700"
                 style={{
                   backgroundColor: floor.accentHex,
-                  opacity: lightOpacity * 0.4
+                  opacity: lightOpacity * 0.45
                 }}
               />
 
@@ -412,7 +405,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               {/* Chamber Navigation Arrows (Walk between left, center, right bays) */}
               <button
                 onClick={handlePrevChamber}
-                className={`absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center border shadow-xl transition-all cursor-pointer ${
+                className={`absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center border shadow-xl transition-all cursor-pointer ${
                   isDark
                     ? 'bg-[#18110b]/90 hover:bg-[#251a12] border-[#38281d] text-white hover:scale-105'
                     : 'bg-white/90 hover:bg-[#faf4ec] border-[#ded4c3] text-[#282019] hover:scale-105'
@@ -425,7 +418,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
 
               <button
                 onClick={handleNextChamber}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center border shadow-xl transition-all cursor-pointer ${
+                className={`absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center border shadow-xl transition-all cursor-pointer ${
                   isDark
                     ? 'bg-[#18110b]/90 hover:bg-[#251a12] border-[#38281d] text-white hover:scale-105'
                     : 'bg-white/90 hover:bg-[#faf4ec] border-[#ded4c3] text-[#282019] hover:scale-105'
@@ -467,17 +460,17 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
 
                 {/* Pedestal Base Display */}
                 <div
-                  className="w-48 h-3 rounded-full mt-3 blur-[2px] transition-all"
+                  className="w-52 h-3.5 rounded-full mt-3 blur-[2px] transition-all"
                   style={{
-                    backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.15)',
-                    boxShadow: `0 0 25px ${floor.accentHex}30`
+                    backgroundColor: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.18)',
+                    boxShadow: `0 0 30px ${floor.accentHex}35`
                   }}
                 />
               </div>
 
               {/* Physical Floorboard Runner Trim along bottom */}
               <div
-                className="absolute bottom-0 inset-x-0 h-7 border-t flex items-center justify-between px-4 text-[9px] font-mono uppercase opacity-75 pointer-events-none"
+                className="absolute bottom-0 inset-x-0 h-7 border-t flex items-center justify-between px-4 text-[9px] font-mono uppercase opacity-80 pointer-events-none"
                 style={{
                   backgroundColor: isDark ? '#140e0a' : '#eae0d2',
                   borderColor: isDark ? '#261b12' : '#ded1c0',
@@ -485,7 +478,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                 }}
               >
                 <span className="truncate">FLOORING: {currentFinish.name}</span>
-                <span className="shrink-0">ATELIER GRID SPEC 0{floor.number}</span>
+                <span className="shrink-0">ATELIER SPEC 0{floor.number}</span>
               </div>
             </div>
 
@@ -498,7 +491,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               {currentProduct ? (
                 <>
                   <div className="space-y-4">
-                    {/* Chamber indicator */}
+                    {/* Chamber indicator & Wishlist button */}
                     <div className="flex items-center justify-between">
                       <span
                         className="text-[10px] font-mono font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full"
@@ -513,7 +506,7 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                       {onToggleWishlist && (
                         <button
                           onClick={() => onToggleWishlist(currentProduct.id)}
-                          className={`p-1.5 rounded-full border transition-all cursor-pointer ${
+                          className={`p-2 rounded-full border transition-all cursor-pointer ${
                             wishlistIds.includes(currentProduct.id)
                               ? 'bg-rose-500/20 text-rose-500 border-rose-500/40'
                               : isDark
@@ -532,12 +525,12 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                     </div>
 
                     <div>
-                      <h4
+                      <h3
                         className="text-xl sm:text-2xl font-black tracking-tight leading-tight"
                         style={{ fontFamily: 'var(--font-display)' }}
                       >
                         {currentProduct.name}
-                      </h4>
+                      </h3>
                       <p
                         className={`text-xs mt-1 leading-relaxed ${
                           isDark ? 'text-[#a89685]' : 'text-[#69584b]'
@@ -555,37 +548,48 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[#8c7b6d]">PRICE (INCL. GST):</span>
-                        <span
-                          className={`text-base font-black ${
-                            isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                          }`}
-                        >
-                          ₹{currentProduct.price.toLocaleString('en-IN')}
+                        <div className="flex items-baseline gap-2">
+                          {currentProduct.originalPrice && (
+                            <span className="text-xs line-through text-[#8c7b6d]">
+                              ₹{currentProduct.originalPrice.toLocaleString('en-IN')}
+                            </span>
+                          )}
+                          <span
+                            className={`text-base sm:text-lg font-black ${
+                              isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                            }`}
+                          >
+                            ₹{currentProduct.price.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#8c7b6d]">PRIMARY MATERIAL:</span>
+                        <span className="font-bold truncate max-w-[200px]">
+                          {currentProduct.materials?.[0] || 'Seasoned Timber & Glass'}
                         </span>
                       </div>
+
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-[#8c7b6d]">PRIMARY TIMBER:</span>
-                        <span className="font-bold">{currentProduct.materials?.[0] || 'Seasoned Timber'}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-[#8c7b6d]">CATEGORY:</span>
-                        <span className="font-bold uppercase">{currentProduct.category}</span>
+                        <span className="text-[#8c7b6d]">DIMENSIONS:</span>
+                        <span className="font-bold">{currentProduct.dimensions}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions: Add to Trolley & Remove from Trolley */}
-                  <div className="space-y-2.5 pt-6">
-                    <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                  <div className="space-y-3 pt-6">
+                    <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
                       {/* Add to Trolley CTA */}
                       <button
                         onClick={() => handleQuickAdd(currentProduct)}
-                        className={`flex-1 py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${
+                        className={`flex-1 py-3 px-4 rounded-xl font-mono text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${
                           addedId === currentProduct.id
-                            ? 'bg-emerald-500 text-black shadow-emerald-500/40'
+                            ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                             : isDark
-                            ? 'bg-[#d2f53a] hover:bg-[#bce82e] text-black shadow-[0_0_20px_rgba(210,245,58,0.3)]'
-                            : 'bg-[#c35626] hover:bg-[#a64319] text-white shadow-md'
+                            ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black shadow-[0_0_20px_rgba(210,245,58,0.3)]'
+                            : 'bg-[#c35626] hover:bg-[#a8471d] text-white shadow-md'
                         }`}
                       >
                         {addedId === currentProduct.id ? (
@@ -593,25 +597,20 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                             <Check className="w-4 h-4 stroke-[3]" />
                             <span>Added to Trolley!</span>
                           </>
-                        ) : isInCart ? (
-                          <>
-                            <ShoppingBag className="w-4 h-4" />
-                            <span>Add Another (+1)</span>
-                          </>
                         ) : (
                           <>
                             <ShoppingBag className="w-4 h-4" />
-                            <span>Add to Trolley • ₹{currentProduct.price.toLocaleString('en-IN')}</span>
+                            <span>{isInCart ? 'Add Another (+1)' : 'Add to Trolley'}</span>
                           </>
                         )}
                       </button>
 
-                      {/* Explicit Remove from Trolley button if in cart */}
+                      {/* Remove from Trolley Button (shows when item is in trolley) */}
                       {isInCart && onRemoveFromCart && (
                         <button
                           onClick={() => onRemoveFromCart(currentProduct.id)}
-                          className="py-3 px-4 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border-rose-500/30"
-                          title="Remove item from your trolley"
+                          className="py-3 px-4 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer border border-rose-500/60 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 hover:text-rose-400 active:scale-95 shrink-0"
+                          title="Remove item from trolley"
                         >
                           <Trash2 className="w-4 h-4" />
                           <span>Remove</span>
@@ -619,38 +618,31 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                       )}
                     </div>
 
+                    {/* Secondary Actions: Quick Inspect & Dark Room */}
                     <div className="flex items-center gap-2">
-                      {/* Inspect Specs */}
                       <button
-                        onClick={() => {
-                          onClose();
-                          onSelectProduct(currentProduct);
-                        }}
-                        className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        onClick={() => onSelectProduct(currentProduct)}
+                        className={`flex-1 py-2 px-3 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           isDark
-                            ? 'bg-[#18110b] hover:bg-[#251a12] border-[#3d2b1f] text-white'
-                            : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#1c140e]'
+                            ? 'bg-[#1e150f] hover:bg-[#2a1d15] border-[#382b20] text-[#cfbfaf] hover:text-white'
+                            : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#45372d]'
                         }`}
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Inspect Specs</span>
+                        <span>Full Specifications</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Test in Dark Room */}
                       {onOpenVirtualDarkRoom && (
                         <button
-                          onClick={() => {
-                            onClose();
-                            onOpenVirtualDarkRoom(currentProduct.id);
-                          }}
-                          className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          onClick={() => onOpenVirtualDarkRoom(currentProduct.id)}
+                          className={`py-2 px-3 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                             isDark
-                              ? 'bg-[#18110b] hover:bg-[#251a12] border-[#3d2b1f] text-amber-400'
-                              : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-amber-600'
+                              ? 'bg-[#1e150f] hover:bg-[#2a1d15] border-[#382b20] text-[#cfbfaf] hover:text-white'
+                              : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#45372d]'
                           }`}
-                          title="Simulate lighting in Virtual Dark Room"
+                          title="Inspect in 3D Dark Room"
                         >
-                          <Moon className="w-3.5 h-3.5" />
+                          <Moon className="w-3.5 h-3.5 text-amber-500" />
                           <span>Dark Room</span>
                         </button>
                       )}
@@ -664,172 +656,223 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
               )}
             </div>
           </div>
-        ) : (
-          /* Wide 3-Chamber Gallery View */
-          <div className="p-6 sm:p-8 space-y-6">
-            <div className="text-center max-w-xl mx-auto space-y-1">
-              <span className="text-[10px] font-mono tracking-widest uppercase text-[#9c8979]">
-                LEVEL {floor.number} · 3 INTEGRATED CHAMBERS
-              </span>
-              <h4
-                className="text-xl font-bold tracking-tight"
-                style={{ fontFamily: 'var(--font-display)' }}
+        </div>
+
+        {/* Chamber Quick-Switcher Pills (Bay Left, Bay Center, Bay Right) */}
+        <div
+          className={`px-5 py-3 border-t flex flex-wrap items-center justify-between gap-3 ${
+            isDark ? 'bg-[#150e09] border-[#271a10]' : 'bg-[#f4eee6] border-[#e2d5c3]'
+          }`}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#9c8979] mr-2">
+              STEP INTO BAY:
+            </span>
+            {(['left', 'center', 'right'] as const).map((slot) => {
+              const item = floor.items.find((i) => i.slot === slot);
+              const isSelected = activeSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  onClick={() => setActiveSlot(slot)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 border ${
+                    isSelected
+                      ? isDark
+                        ? 'bg-[#d2f53a] text-black border-[#d2f53a] shadow-md font-black'
+                        : 'bg-[#c35626] text-white border-[#c35626] shadow-sm font-black'
+                      : isDark
+                      ? 'bg-[#1a130e] hover:bg-[#251b14] border-[#382b20] text-[#cfbfaf]'
+                      : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#3d3126]'
+                  }`}
+                >
+                  <span>Bay {slot}</span>
+                  {item && <span className="opacity-70 text-[10px]">· {item.title}</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="text-[10px] font-mono text-[#8c7b6d] flex items-center gap-3">
+            <span>Use ← → to step between bays</span>
+            <span>•</span>
+            <span>ESC to exit floor</span>
+          </div>
+        </div>
+
+        {/* 4. More Title: Exactly matching index_0665c9b8.html (<div class="more-title">) */}
+        <div
+          id="moreTitle"
+          className={`more-title px-4 sm:px-8 py-5 border-t flex flex-wrap items-center justify-between gap-3 transition-colors ${
+            isDark ? 'bg-[#18110b] border-[#291b12]' : 'bg-[#f4ece0] border-[#ded4c3]'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-[#d2f53a]" />
+            <h3
+              className="text-xs sm:text-sm font-black tracking-widest uppercase font-mono"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              EXPLORE MORE FROM THIS FLOOR
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] font-mono text-[#8c7b6d]">
+            <span>LEVEL 0{floor.number} ARCHIVES</span>
+            <span>•</span>
+            <span className="font-bold text-emerald-400">
+              {floorProducts.length} CREATIONS IN STOCK
+            </span>
+          </div>
+        </div>
+
+        {/* 5. More Grid: Exactly matching index_0665c9b8.html (<div class="more-grid">) */}
+        <div
+          id="moreGrid"
+          className={`more-grid p-4 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 transition-colors ${
+            isDark ? 'bg-[#0f0a07]' : 'bg-[#faf6f0]'
+          }`}
+        >
+          {floorProducts.map((product) => {
+            const itemInCart = cartProductIds.includes(product.id);
+            const isJustAdded = addedId === product.id;
+
+            return (
+              <div
+                key={product.id}
+                className={`group flex flex-col rounded-2xl border p-4 transition-all duration-300 relative overflow-hidden ${
+                  isDark
+                    ? 'bg-[#160f0a] hover:bg-[#1f1610] border-[#2a1d13] hover:border-[#d2f53a]/50 shadow-md'
+                    : 'bg-white hover:bg-[#faf4ec] border-[#e2d5c3] hover:border-[#c35626]/50 shadow-xs'
+                }`}
               >
-                Explore Every Creation on This Level
-              </h4>
-            </div>
+                {/* Product Badge */}
+                {product.badge && (
+                  <div className="absolute top-6 left-6 z-20">
+                    <span
+                      className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-md shadow-xs"
+                      style={{
+                        backgroundColor: isDark ? 'rgba(210,245,58,0.2)' : 'rgba(195,86,38,0.15)',
+                        color: isDark ? '#d2f53a' : '#c35626'
+                      }}
+                    >
+                      {product.badge}
+                    </span>
+                  </div>
+                )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {floor.items.map((item) => {
-                const product = item.productId
-                  ? PRODUCTS_DATA.find((p) => p.id === item.productId)
-                  : null;
-                const itemInCart = product ? cartProductIds.includes(product.id) : false;
+                {/* Product Image / Artwork */}
+                <div
+                  onClick={() => onSelectProduct(product)}
+                  className={`w-full aspect-square rounded-xl overflow-hidden mb-3 border relative flex items-center justify-center cursor-pointer ${
+                    isDark ? 'bg-[#080503] border-[#221810]' : 'bg-[#f4eae0] border-[#ded1be]'
+                  }`}
+                >
+                  <ProductArtwork
+                    productId={product.id}
+                    aspectRatio="square"
+                    theme={theme}
+                    showGlow={false}
+                    className="w-full h-full group-hover:scale-105 transition-transform duration-500 object-contain p-2"
+                  />
+                </div>
 
-                return (
-                  <div
-                    key={item.slot}
-                    onClick={() => {
-                      setActiveSlot(item.slot);
-                      setViewMode('walkthrough');
-                    }}
-                    className={`group flex flex-col p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                      isDark
-                        ? 'bg-[#18110c] hover:bg-[#221812] border-[#2f2016] hover:border-[#d2f53a]/50 shadow-lg'
-                        : 'bg-white hover:bg-[#faf4ec] border-[#e2d5c3] hover:border-[#c35626]/50 shadow-xs'
-                    }`}
-                  >
-                    {/* Chamber Slot Ribbon */}
-                    <div className="flex items-center justify-between text-[10px] font-mono uppercase mb-2 pb-2 border-b border-inherit">
-                      <span className="font-bold flex items-center gap-1.5">
-                        <span
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: floor.accentHex }}
-                        />
-                        <span>BAY {item.slot.toUpperCase()}</span>
+                {/* Product Meta */}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-[9px] font-mono uppercase mb-1">
+                      <span style={{ color: floor.accentHex }} className="font-bold">
+                        {product.shortTag}
                       </span>
-                      <span className="text-[#9c8979]">FLR 0{floor.number}</span>
+                      <span className="flex items-center gap-1 text-amber-500">
+                        <Star className="w-2.5 h-2.5 fill-current" />
+                        <span>{product.rating}</span>
+                      </span>
                     </div>
 
-                    {/* Artwork Container */}
-                    <div
-                      className={`w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center mb-3 border relative ${
-                        isDark ? 'bg-[#0a0705] border-[#221912]' : 'bg-[#f4eae0] border-[#ded1be]'
+                    <h4
+                      onClick={() => onSelectProduct(product)}
+                      className="font-bold text-base group-hover:underline cursor-pointer"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      {product.name}
+                    </h4>
+
+                    <p
+                      className={`text-xs mt-1 line-clamp-2 leading-relaxed ${
+                        isDark ? 'text-[#a89685]' : 'text-[#69584b]'
                       }`}
                     >
-                      {product && (
-                        <ProductArtwork
-                          productId={product.id}
-                          aspectRatio="square"
-                          theme={theme}
-                          showGlow={false}
-                          className="w-full h-full group-hover:scale-105 transition-transform duration-300"
-                        />
+                      {product.description}
+                    </p>
+
+                    <div className="mt-2 text-[10px] font-mono text-[#8c7b6d] flex items-center gap-2">
+                      <span>{product.dimensions}</span>
+                      <span>•</span>
+                      <span>{product.materials?.[0] || 'Handcrafted'}</span>
+                    </div>
+                  </div>
+
+                  {/* Pricing and Cart Actions */}
+                  <div className="mt-4 pt-3 border-t border-inherit flex items-center justify-between gap-2">
+                    <div className="flex items-baseline gap-1.5">
+                      <span
+                        className={`font-mono font-black text-base ${
+                          isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                        }`}
+                      >
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-[11px] line-through font-mono text-[#8c7b6d]">
+                          ₹{product.originalPrice.toLocaleString('en-IN')}
+                        </span>
                       )}
                     </div>
 
-                    {/* Item info */}
-                    {product && (
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <span
-                            className="text-[9px] font-mono font-bold uppercase tracking-wider block mb-1"
-                            style={{ color: floor.accentHex }}
-                          >
-                            {product.shortTag}
-                          </span>
-                          <h5 className="font-black text-sm group-hover:underline">
-                            {product.name}
-                          </h5>
-                          <p
-                            className={`text-[11px] line-clamp-2 mt-1 leading-snug ${
-                              isDark ? 'text-[#b09e8e]' : 'text-[#69584b]'
-                            }`}
-                          >
-                            {product.description}
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-1.5">
+                      {/* Direct Add to Trolley */}
+                      <button
+                        onClick={() => handleQuickAdd(product)}
+                        className={`px-3 py-1.5 rounded-lg font-mono text-xs font-bold uppercase transition-all cursor-pointer flex items-center gap-1 shadow-xs active:scale-95 ${
+                          isJustAdded
+                            ? 'bg-emerald-500 text-white'
+                            : isDark
+                            ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
+                            : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
+                        }`}
+                        title="Add to Trolley"
+                      >
+                        {isJustAdded ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Added</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingBag className="w-3.5 h-3.5" />
+                            <span>Add</span>
+                          </>
+                        )}
+                      </button>
 
-                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-inherit">
-                          <span
-                            className={`font-mono font-black text-sm ${
-                              isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                            }`}
-                          >
-                            ₹{product.price.toLocaleString('en-IN')}
-                          </span>
-
-                          <div className="flex items-center gap-2">
-                            {itemInCart && onRemoveFromCart && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onRemoveFromCart(product.id);
-                                }}
-                                className="p-1 rounded text-rose-500 hover:bg-rose-500/10 cursor-pointer"
-                                title="Remove from trolley"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                            <span className="text-[10px] font-mono font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                              <span>Step Inside</span>
-                              <ArrowRight className="w-3 h-3" />
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                      {/* Remove from Trolley if in cart */}
+                      {itemInCart && onRemoveFromCart && (
+                        <button
+                          onClick={() => onRemoveFromCart(product.id)}
+                          className="p-1.5 rounded-lg border border-rose-500/50 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
+                          title="Remove from Trolley"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Bottom Chamber Switcher Bar: Quick-switch between Bays in walkthrough mode */}
-        {viewMode === 'walkthrough' && (
-          <div
-            className={`px-5 py-3 border-t flex flex-wrap items-center justify-between gap-3 ${
-              isDark ? 'bg-[#150e09] border-[#271a10]' : 'bg-[#f4eee6] border-[#e2d5c3]'
-            }`}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#9c8979] mr-2">
-                STEP INTO BAY:
-              </span>
-              {(['left', 'center', 'right'] as const).map((slot) => {
-                const item = floor.items.find((i) => i.slot === slot);
-                const isSelected = activeSlot === slot;
-                return (
-                  <button
-                    key={slot}
-                    onClick={() => setActiveSlot(slot)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all cursor-pointer flex items-center gap-1.5 border ${
-                      isSelected
-                        ? isDark
-                          ? 'bg-[#d2f53a] text-black border-[#d2f53a] shadow-md font-black'
-                          : 'bg-[#c35626] text-white border-[#c35626] shadow-sm font-black'
-                        : isDark
-                        ? 'bg-[#1a130e] hover:bg-[#251b14] border-[#382b20] text-[#cfbfaf]'
-                        : 'bg-white hover:bg-[#faf4ec] border-[#ded4c3] text-[#3d3126]'
-                    }`}
-                  >
-                    <span>Bay {slot}</span>
-                    {item && <span className="opacity-70 text-[10px]">· {item.title}</span>}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="text-[10px] font-mono text-[#8c7b6d] flex items-center gap-3">
-              <span>Use ← → keys to walk chambers</span>
-              <span>•</span>
-              <span>ESC to exit floor</span>
-            </div>
-          </div>
-        )}
-      </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 };

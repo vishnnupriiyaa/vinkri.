@@ -29,6 +29,8 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   const [movingFloorNumber, setMovingFloorNumber] = useState<number | null>(null);
   const [isMovingToFloor, setIsMovingToFloor] = useState(false);
   const [movingFloor, setMovingFloor] = useState<FloorInfo | null>(null);
+  const [expandingFloorNumber, setExpandingFloorNumber] = useState<number | null>(null);
+  const [isExpandingBlock, setIsExpandingBlock] = useState(false);
 
   // Unified 5-story architectural floor configuration matching both light and dark buildings
   const floorsConfig = [
@@ -359,6 +361,87 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </div>
           </div>
 
+          {/* 3D Expanding Floor Rectangle Block: Simulates expanding the floor block and entering */}
+          {isExpandingBlock && expandingFloorNumber !== null && (
+            (() => {
+              const expConfig = floorsConfig.find((f) => f.number === expandingFloorNumber);
+              if (!expConfig) return null;
+              return (
+                <div
+                  className={`absolute z-35 pointer-events-none rounded-xl overflow-hidden border-2 shadow-2xl ${
+                    isDark ? 'animate-floor-expand' : 'animate-floor-expand-light'
+                  }`}
+                  style={{
+                    top: expConfig.top,
+                    height: expConfig.height,
+                    left: '2%',
+                    width: '96%',
+                    borderColor: expConfig.color,
+                    transformOrigin: 'center center'
+                  }}
+                >
+                  {/* Internal Spatial Room Grid and Depth Streaks */}
+                  <div
+                    className="absolute inset-0 flex flex-col justify-between p-3"
+                    style={{
+                      backgroundColor: isDark ? 'rgba(10, 7, 5, 0.94)' : 'rgba(250, 246, 240, 0.95)',
+                      backgroundImage: `radial-gradient(circle at center, ${expConfig.color}25 0%, transparent 75%)`
+                    }}
+                  >
+                    {/* Glowing Speed Beam Sweep */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      <div
+                        className="w-full h-full animate-beam-sweep"
+                        style={{
+                          background: `linear-gradient(90deg, transparent 0%, ${expConfig.color}45 50%, transparent 100%)`
+                        }}
+                      />
+                    </div>
+
+                    {/* Corner Target Reticles */}
+                    <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: expConfig.color }} />
+                    <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: expConfig.color }} />
+                    <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: expConfig.color }} />
+                    <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: expConfig.color }} />
+
+                    {/* Top Entry Indicator */}
+                    <div className="relative z-10 flex items-center justify-between font-mono text-[9px] tracking-widest uppercase">
+                      <div className="flex items-center gap-1.5 font-black" style={{ color: expConfig.color }}>
+                        <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: expConfig.color }} />
+                        <span>ENTERING LEVEL 0{expConfig.number}</span>
+                      </div>
+                      <span className="text-[#a89685] font-bold">HYDERABAD ATELIER</span>
+                    </div>
+
+                    {/* Center Chamber Focus */}
+                    <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto">
+                      <span
+                        className="text-xs sm:text-sm font-black tracking-wider uppercase"
+                        style={{ color: isDark ? '#ffffff' : '#1e140d' }}
+                      >
+                        {expConfig.name}
+                      </span>
+                      <span className="text-[8px] sm:text-[9px] font-mono tracking-widest opacity-80 mt-0.5" style={{ color: expConfig.color }}>
+                        EXPANDING FLOOR BLOCK • STEPPING INSIDE...
+                      </span>
+                    </div>
+
+                    {/* Bottom Progress Bar */}
+                    <div className="relative z-10 w-full bg-white/20 h-1 rounded-full overflow-hidden">
+                      <div
+                        className="h-full animate-pulse transition-all duration-700"
+                        style={{
+                          backgroundColor: expConfig.color,
+                          width: '100%'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
+          )}
+
           {/* Interactive Architectural Floor Layers */}
           <div className="absolute inset-0 z-10 pointer-events-auto">
             {floorsConfig.map((floor) => {
@@ -380,13 +463,23 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   key={floor.number}
                   onMouseEnter={() => setHoveredFloor(floor.number)}
                   onMouseLeave={() => setHoveredFloor(null)}
+                  onClick={() => {
+                    if (floorData) triggerMoveToFloor(floorData);
+                    else if (floor.number === 0 && onOpenStorePhilosophy) onOpenStorePhilosophy();
+                  }}
                   style={{
                     top: floor.top,
                     height: floor.height,
                     left: '0%',
                     width: '100%'
                   }}
-                  className="absolute"
+                  className={`absolute cursor-pointer transition-all duration-300 ${
+                    isHovered
+                      ? isDark
+                        ? 'bg-white/[0.03] ring-1 ring-[#d2f53a]/20'
+                        : 'bg-[#c35626]/[0.03] ring-1 ring-[#c35626]/20'
+                      : ''
+                  }`}
                 >
                   {/* Left Column: Interactive Hotspot over Floor Category Badge */}
                   <div
