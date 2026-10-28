@@ -128,6 +128,16 @@ export const FloorPageView: React.FC<FloorPageViewProps> = ({
     return [...topSellers, ...nonSellers].slice(0, 3);
   }, [floorProducts]);
 
+  // Remaining creations on this floor (all products excluding top 3 first-row showcase)
+  const remainingCreations = useMemo(() => {
+    const topThreeIds = new Set(topThreeCreations.map((p) => p.id));
+    return floorProducts.filter((p) => !topThreeIds.has(p.id));
+  }, [floorProducts, topThreeCreations]);
+
+  // Dropdown controls for remaining items
+  const [isRemainingDropdownOpen, setIsRemainingDropdownOpen] = useState(true);
+  const [dropdownSelectedProductId, setDropdownSelectedProductId] = useState<string>('');
+
   const handleQuickAddClick = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
     onQuickAdd(product);
@@ -646,7 +656,277 @@ export const FloorPageView: React.FC<FloorPageViewProps> = ({
           </div>
         </section>
 
-        {/* 4. ALL PRODUCTS ON THIS FLOOR - CONTROLS & FILTER TOOLBAR */}
+        {/* 4. REMAINING CREATIONS DROPDOWN & SCROLLABLE DRAWER */}
+        {remainingCreations.length > 0 && (
+          <section className="space-y-4 pt-2">
+            {/* Dropdown Header Accordion Bar */}
+            <div
+              className={`rounded-3xl border p-5 sm:p-6 transition-all shadow-lg ${
+                isDark
+                  ? 'bg-gradient-to-r from-[#17100b] to-[#120c08] border-[#382619]'
+                  : 'bg-gradient-to-r from-[#faf5ee] to-[#f4ebe0] border-[#ded4c3]'
+              }`}
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIsRemainingDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-3.5 text-left cursor-pointer group select-none"
+                >
+                  <div
+                    className={`p-2.5 rounded-2xl transition-transform duration-300 border shadow-xs ${
+                      isRemainingDropdownOpen ? 'rotate-180' : 'rotate-0'
+                    } ${
+                      isDark
+                        ? 'bg-[#22170f] text-[#d2f53a] border-[#3d2c1d]'
+                        : 'bg-white text-[#c35626] border-[#dfd2be]'
+                    }`}
+                  >
+                    <ChevronDown className="w-5 h-5 stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-[10px] font-mono font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md border"
+                        style={{
+                          backgroundColor: `${floor.accentHex}18`,
+                          borderColor: `${floor.accentHex}40`,
+                          color: floor.accentHex
+                        }}
+                      >
+                        LEVEL 0{floor.number} DROPDOWN
+                      </span>
+                      <span className="text-xs font-mono font-bold text-[#8c7b6d]">
+                        {remainingCreations.length} REMAINING CREATIONS
+                      </span>
+                    </div>
+                    <h3
+                      className="text-lg sm:text-2xl font-black tracking-tight group-hover:underline mt-1"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      REMAINING CREATIONS IN {floor.name}
+                    </h3>
+                  </div>
+                </button>
+
+                {/* Direct Quick Select Jump Dropdown */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-mono text-[#8c7b6d] hidden sm:inline">
+                    Quick Jump:
+                  </span>
+                  <select
+                    value={dropdownSelectedProductId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setDropdownSelectedProductId(id);
+                      if (id) {
+                        const prod = remainingCreations.find((p) => p.id === id);
+                        if (prod) onSelectProduct(prod);
+                      }
+                    }}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-mono border font-bold cursor-pointer focus:outline-none transition-all ${
+                      isDark
+                        ? 'bg-[#0f0a07] border-[#382618] text-[#f5ede2] focus:border-[#d2f53a]'
+                        : 'bg-white border-[#ded4c3] text-[#2c2016] focus:border-[#c35626]'
+                    }`}
+                  >
+                    <option value="">-- Select remaining product ({remainingCreations.length}) --</option>
+                    {remainingCreations.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} • ₹{p.price.toLocaleString('en-IN')}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsRemainingDropdownOpen((prev) => !prev)}
+                    className={`px-4 py-2 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isDark
+                        ? 'bg-[#1e150f] hover:bg-[#2a1d14] border-[#382618] text-[#c9b9a8]'
+                        : 'bg-white hover:bg-[#f2e7d7] border-[#ded4c3] text-[#5c4b3d]'
+                    }`}
+                  >
+                    <span>{isRemainingDropdownOpen ? 'Collapse Dropdown' : 'Open Dropdown'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isRemainingDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Dropdown Content Area with Scroll Bar */}
+              {isRemainingDropdownOpen && (
+                <div className="mt-5 pt-5 border-t border-inherit">
+                  <div className="flex items-center justify-between text-xs font-mono text-[#8c7b6d] mb-4">
+                    <span>Scroll down or across to browse all {remainingCreations.length} remaining items:</span>
+                    <span className="hidden sm:inline">Click any card to inspect full details</span>
+                  </div>
+
+                  <div
+                    className="overflow-y-auto max-h-[580px] pr-2 space-y-4"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: isDark ? '#d2f53a #1e150f' : '#c35626 #f0e6d8'
+                    }}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {remainingCreations.map((product, idx) => {
+                        const isInCart = cartProductIds.includes(product.id);
+                        const isWishlisted = wishlistIds.includes(product.id);
+                        const isJustAdded = justAddedId === product.id;
+
+                        return (
+                          <div
+                            key={product.id}
+                            onClick={() => onSelectProduct(product)}
+                            className={`group relative rounded-2xl border p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 ${
+                              isDark
+                                ? 'bg-[#130d08] hover:bg-[#1a120b] border-[#2c1d12] hover:border-[#d2f53a]/60'
+                                : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/60'
+                            }`}
+                          >
+                            <div>
+                              {/* Card Header */}
+                              <div className="flex items-center justify-between mb-2.5">
+                                <span
+                                  className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                                    isDark
+                                      ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
+                                      : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
+                                  }`}
+                                >
+                                  BAY 0{idx + 4}
+                                </span>
+
+                                {onToggleWishlist && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onToggleWishlist(product.id);
+                                    }}
+                                    className={`p-1.5 rounded-full border transition-all cursor-pointer ${
+                                      isWishlisted
+                                        ? 'bg-rose-500/20 text-rose-500 border-rose-500/40'
+                                        : isDark
+                                        ? 'bg-[#1e150f] text-[#8c7b6d] border-[#382b20] hover:text-white'
+                                        : 'bg-white text-[#8c7b6d] border-[#ded4c3] hover:text-black'
+                                    }`}
+                                    title="Wishlist"
+                                  >
+                                    <Heart
+                                      className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-rose-500' : ''}`}
+                                    />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Artwork */}
+                              <div
+                                className={`relative aspect-square rounded-xl overflow-hidden border mb-3 flex items-center justify-center p-2.5 ${
+                                  isDark ? 'bg-[#090604] border-[#261910]' : 'bg-[#faf4ec] border-[#e6dac9]'
+                                }`}
+                              >
+                                <ProductArtwork
+                                  productId={product.id}
+                                  aspectRatio="square"
+                                  theme={theme}
+                                  showGlow={ambientLight !== 'studio'}
+                                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase backdrop-blur-md bg-black/75 text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                  <Eye className="w-3 h-3" />
+                                  <span>Inspect</span>
+                                </div>
+                              </div>
+
+                              {/* Title & Category */}
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between text-[11px] font-mono text-[#8c7b6d]">
+                                  <span className="uppercase">{product.shortTag || product.category}</span>
+                                  <div className="flex items-center gap-1 text-amber-500">
+                                    <Star className="w-3 h-3 fill-amber-500" />
+                                    <span>{product.rating}</span>
+                                  </div>
+                                </div>
+
+                                <h4
+                                  className="text-sm font-bold tracking-tight line-clamp-1 group-hover:underline"
+                                  style={{ fontFamily: 'var(--font-display)' }}
+                                >
+                                  {product.name}
+                                </h4>
+
+                                <p
+                                  className={`text-[11px] line-clamp-2 leading-relaxed ${
+                                    isDark ? 'text-[#a89685]' : 'text-[#69584b]'
+                                  }`}
+                                >
+                                  {product.description}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Footer: Price & Add */}
+                            <div className="pt-3 mt-3 border-t border-inherit flex items-center justify-between gap-2">
+                              <div>
+                                <span
+                                  className={`text-base font-black font-mono ${
+                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                                  }`}
+                                >
+                                  ₹{product.price.toLocaleString('en-IN')}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={(e) => handleQuickAddClick(product, e)}
+                                  className={`py-1.5 px-3 rounded-lg font-mono text-[11px] font-bold uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
+                                    isJustAdded
+                                      ? 'bg-emerald-500 text-white'
+                                      : isDark
+                                      ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
+                                      : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
+                                  }`}
+                                >
+                                  {isJustAdded ? (
+                                    <>
+                                      <Check className="w-3 h-3 stroke-[3]" />
+                                      <span>Added</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShoppingBag className="w-3 h-3" />
+                                      <span>{isInCart ? '+1' : 'Add'}</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {isInCart && onRemoveFromCart && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onRemoveFromCart(product.id);
+                                    }}
+                                    className="p-1.5 rounded-lg border border-rose-500/40 bg-rose-500/10 text-rose-500 transition-all cursor-pointer"
+                                    title="Remove from trolley"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* 5. ALL PRODUCTS ON THIS FLOOR - CONTROLS & FILTER TOOLBAR */}
         <section className="space-y-6 pt-4">
           <div
             className={`p-4 sm:p-5 rounded-2xl border transition-colors shadow-xs ${

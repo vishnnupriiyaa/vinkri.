@@ -118,12 +118,12 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
     // Silky smooth, controlled camera push-in and floor portal illumination
     setTimeout(() => {
-      onSelectFloor(floorData, slot, productId);
+      onSelectFloor(floorData, slot);
       setTimeout(() => {
         setIsMovingToFloor(false);
         setMovingFloorNumber(null);
-      }, 250);
-    }, 360);
+      }, 300);
+    }, 420);
   };
 
   const getCameraStyle = (): React.CSSProperties => {
@@ -147,9 +147,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     const targetY = floorCenterYMap[movingFloorNumber] ?? 50;
 
     return {
-      transform: 'scale(1.28)',
+      transform: 'scale(1.42)',
       transformOrigin: `50% ${targetY}%`,
-      transition: 'transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1)'
+      transition: 'transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1)'
     };
   };
 
@@ -163,7 +163,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     if (floorNumber) {
       const floorData = FLOORS_DATA.find((f) => f.numeric === floorNumber);
       if (floorData) {
-        triggerMoveToFloor(floorData, slot, productId);
+        triggerMoveToFloor(floorData, slot);
         return;
       }
     }
@@ -171,7 +171,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     if (prod) {
       const parentFloor = FLOORS_DATA.find((f) => f.numeric === prod.floorNumber);
       if (parentFloor) {
-        triggerMoveToFloor(parentFloor, slot, productId);
+        triggerMoveToFloor(parentFloor, slot);
         return;
       }
       onSelectProduct(prod);

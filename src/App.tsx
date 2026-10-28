@@ -50,8 +50,8 @@ export default function App() {
   // Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Store Entrance Preview State (cute entrance experience before main website)
-  const [isEntranceOpen, setIsEntranceOpen] = useState(true);
+  // Store Entrance Preview State (off by default so user lands straight into the building showcase)
+  const [isEntranceOpen, setIsEntranceOpen] = useState(false);
 
   // Modals state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -67,13 +67,8 @@ export default function App() {
   ) => {
     setSelectedFloor(floor);
     setSelectedFloorSlot(slot);
-    setSelectedFloorProductId(productId || null);
-    if (productId) {
-      const prod = PRODUCTS_DATA.find((p) => p.id === productId);
-      if (prod) {
-        setSelectedProduct(prod);
-      }
-    }
+    setSelectedFloorProductId(null);
+    setSelectedProduct(null); // Ensure product modal is closed so user enters the floor page UX
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
