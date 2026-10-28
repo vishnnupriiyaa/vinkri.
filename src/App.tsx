@@ -12,7 +12,7 @@ import { CatalogSection } from './components/CatalogSection';
 import { TrolleyDrawer } from './components/TrolleyDrawer';
 import { SearchModal } from './components/SearchModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
-import { FloorDetailModal } from './components/FloorDetailModal';
+import { FloorPageView } from './components/FloorPageView';
 import { WishlistModal } from './components/WishlistModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { VirtualDarkRoomModal } from './components/VirtualDarkRoomModal';
@@ -68,6 +68,13 @@ export default function App() {
     setSelectedFloor(floor);
     setSelectedFloorSlot(slot);
     setSelectedFloorProductId(productId || null);
+    if (productId) {
+      const prod = PRODUCTS_DATA.find((p) => p.id === productId);
+      if (prod) {
+        setSelectedProduct(prod);
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Toast feedback
@@ -148,10 +155,18 @@ export default function App() {
   const handleNavClick = (nav: string) => {
     setActiveNav(nav);
     if (nav === 'HOME') {
+      setSelectedFloor(null);
+      setSelectedFloorProductId(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (nav === 'SHOP') {
-      const el = document.getElementById('catalog-section');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      if (selectedFloor) {
+        setSelectedFloor(null);
+        setSelectedFloorProductId(null);
+      }
+      setTimeout(() => {
+        const el = document.getElementById('catalog-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
     } else if (nav === 'ABOUT' || nav === 'PROCESS' || nav === 'CONTACT') {
       setInfoModalType(nav as 'ABOUT' | 'PROCESS' | 'CONTACT');
     }
@@ -195,67 +210,96 @@ export default function App() {
         onNavClick={handleNavClick}
       />
 
-      {/* 2. Sub-Header Carousel ("ON THE SHELF") */}
-      <ShelfCarousel
-        products={shelfProducts}
-        theme={theme}
-        onSelectProduct={(p) => setSelectedProduct(p)}
-        onQuickAdd={(p) => handleAddToCart(p, 1)}
-      />
-
-      {/* Main Hero Container - Directly integrated with the building */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {/* 3. Hero Section (2-Column Grid Layout matching reference image) */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
-          {/* Left Column (5 Cols): Welcome text, headline, CTA, and Top 3 Sellers */}
-          <div className="lg:col-span-5 flex flex-col justify-between">
-            <HeroLeft
-              theme={theme}
-              topSellers={topSellers}
-              wishlistIds={wishlistIds}
-              onToggleWishlist={handleToggleWishlist}
-              onSelectProduct={(p) => setSelectedProduct(p)}
-              onQuickAdd={(p) => handleAddToCart(p, 1)}
-              onExploreStore={handleExploreStore}
-              onViewAllTopSellers={handleViewAllTopSellers}
-              onOpenVirtualStudio={() => handleOpenDarkRoom()}
-            />
-          </div>
-
-          {/* Right Column (7 Cols): The 5-Story Glass Architectural Atelier Building */}
-          <div className="lg:col-span-7 flex flex-col justify-center">
-            <BuildingShowcase
-              theme={theme}
-              onSelectFloor={handleOpenFloor}
-              selectedFloorNumber={floorFilter}
-              onSelectProduct={(p) => setSelectedProduct(p)}
-              onQuickAdd={(p) => handleAddToCart(p, 1)}
-              onOpenStorePhilosophy={() => setInfoModalType('ABOUT')}
-            />
-          </div>
-        </section>
-
-        {/* 4. Complete Atelier Archive (Catalog Section) */}
-        <CatalogSection
-          products={PRODUCTS_DATA}
+      {/* 2. Sub-Header Carousel ("ON THE SHELF") - shown on main building view */}
+      {!selectedFloor && (
+        <ShelfCarousel
+          products={shelfProducts}
           theme={theme}
           onSelectProduct={(p) => setSelectedProduct(p)}
           onQuickAdd={(p) => handleAddToCart(p, 1)}
-          selectedFloorFilter={floorFilter}
-          onClearFloorFilter={() => setFloorFilter(null)}
+        />
+      )}
+
+      {/* Main Content Area: Full Floor Page UX vs Exterior Building Facade Showcase */}
+      {selectedFloor ? (
+        <FloorPageView
+          floor={selectedFloor}
+          onBackToBuilding={() => {
+            setSelectedFloor(null);
+            setSelectedFloorProductId(null);
+          }}
+          theme={theme}
+          onSelectProduct={(p) => setSelectedProduct(p)}
+          onQuickAdd={(p) => handleAddToCart(p, 1)}
+          onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
+          onSwitchFloor={(newFloor) => {
+            setSelectedFloor(newFloor);
+            setSelectedFloorProductId(null);
+          }}
           wishlistIds={wishlistIds}
           onToggleWishlist={handleToggleWishlist}
-          onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
+          cartProductIds={cartItems.map((item) => item.product.id)}
+          onRemoveFromCart={handleRemoveCartItem}
         />
-      </main>
+      ) : (
+        <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          {/* 3. Hero Section (2-Column Grid Layout matching reference image) */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+            {/* Left Column (5 Cols): Welcome text, headline, CTA, and Top 3 Sellers */}
+            <div className="lg:col-span-5 flex flex-col justify-between">
+              <HeroLeft
+                theme={theme}
+                topSellers={topSellers}
+                wishlistIds={wishlistIds}
+                onToggleWishlist={handleToggleWishlist}
+                onSelectProduct={(p) => setSelectedProduct(p)}
+                onQuickAdd={(p) => handleAddToCart(p, 1)}
+                onExploreStore={handleExploreStore}
+                onViewAllTopSellers={handleViewAllTopSellers}
+                onOpenVirtualStudio={() => handleOpenDarkRoom()}
+              />
+            </div>
+
+            {/* Right Column (7 Cols): The 5-Story Glass Architectural Atelier Building */}
+            <div className="lg:col-span-7 flex flex-col justify-center">
+              <BuildingShowcase
+                theme={theme}
+                onSelectFloor={handleOpenFloor}
+                selectedFloorNumber={floorFilter}
+                onSelectProduct={(p) => setSelectedProduct(p)}
+                onQuickAdd={(p) => handleAddToCart(p, 1)}
+                onOpenStorePhilosophy={() => setInfoModalType('ABOUT')}
+              />
+            </div>
+          </section>
+
+          {/* 4. Complete Atelier Archive (Catalog Section) */}
+          <CatalogSection
+            products={PRODUCTS_DATA}
+            theme={theme}
+            onSelectProduct={(p) => setSelectedProduct(p)}
+            onQuickAdd={(p) => handleAddToCart(p, 1)}
+            selectedFloorFilter={floorFilter}
+            onClearFloorFilter={() => setFloorFilter(null)}
+            wishlistIds={wishlistIds}
+            onToggleWishlist={handleToggleWishlist}
+            onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
+          />
+        </main>
+      )}
 
       {/* 5. Footer */}
       <Footer
         theme={theme}
         onSelectFloorNumber={(floorNum) => {
-          setFloorFilter(floorNum);
-          const el = document.getElementById('catalog-section');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
+          const targetFloor = FLOORS_DATA.find((f) => f.numeric === floorNum);
+          if (targetFloor) {
+            handleOpenFloor(targetFloor);
+          } else {
+            setFloorFilter(floorNum);
+            const el = document.getElementById('catalog-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }
         }}
         onOpenNavModal={(nav) => setInfoModalType(nav)}
       />
@@ -318,28 +362,6 @@ export default function App() {
         onRemoveFromCart={handleRemoveCartItem}
       />
 
-      {/* Floor Detail Modal / Immersive Floor Interior Experience */}
-      <FloorDetailModal
-        floor={selectedFloor}
-        onClose={() => {
-          setSelectedFloor(null);
-          setSelectedFloorProductId(null);
-        }}
-        theme={theme}
-        onSelectProduct={(p) => setSelectedProduct(p)}
-        onQuickAdd={(p) => handleAddToCart(p, 1)}
-        onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
-        onSwitchFloor={(newFloor) => {
-          setSelectedFloor(newFloor);
-          setSelectedFloorProductId(null);
-        }}
-        initialSlot={selectedFloorSlot}
-        initialProductId={selectedFloorProductId}
-        wishlistIds={wishlistIds}
-        onToggleWishlist={handleToggleWishlist}
-        cartProductIds={cartItems.map((item) => item.product.id)}
-        onRemoveFromCart={handleRemoveCartItem}
-      />
 
       {/* Virtual Dark Room Simulator Modal */}
       <VirtualDarkRoomModal
