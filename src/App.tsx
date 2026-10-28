@@ -57,11 +57,17 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<FloorInfo | null>(null);
   const [selectedFloorSlot, setSelectedFloorSlot] = useState<'left' | 'center' | 'right'>('center');
+  const [selectedFloorProductId, setSelectedFloorProductId] = useState<string | null>(null);
   const [floorFilter, setFloorFilter] = useState<number | null>(null);
 
-  const handleOpenFloor = (floor: FloorInfo, slot: 'left' | 'center' | 'right' = 'center') => {
+  const handleOpenFloor = (
+    floor: FloorInfo,
+    slot: 'left' | 'center' | 'right' = 'center',
+    productId?: string
+  ) => {
     setSelectedFloor(floor);
     setSelectedFloorSlot(slot);
+    setSelectedFloorProductId(productId || null);
   };
 
   // Toast feedback
@@ -315,13 +321,20 @@ export default function App() {
       {/* Floor Detail Modal / Immersive Floor Interior Experience */}
       <FloorDetailModal
         floor={selectedFloor}
-        onClose={() => setSelectedFloor(null)}
+        onClose={() => {
+          setSelectedFloor(null);
+          setSelectedFloorProductId(null);
+        }}
         theme={theme}
         onSelectProduct={(p) => setSelectedProduct(p)}
         onQuickAdd={(p) => handleAddToCart(p, 1)}
         onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
-        onSwitchFloor={(newFloor) => setSelectedFloor(newFloor)}
+        onSwitchFloor={(newFloor) => {
+          setSelectedFloor(newFloor);
+          setSelectedFloorProductId(null);
+        }}
         initialSlot={selectedFloorSlot}
+        initialProductId={selectedFloorProductId}
         wishlistIds={wishlistIds}
         onToggleWishlist={handleToggleWishlist}
         cartProductIds={cartItems.map((item) => item.product.id)}

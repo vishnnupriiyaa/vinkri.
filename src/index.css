@@ -67,40 +67,19 @@
   animation-play-state: paused !important;
 }
 
-/* Floor Rectangle 3D Virtual Walk-in Expansion */
-@keyframes floorBlockExpand {
+/* Floor Smooth Virtual Walk-in & Ambient Glow Animations */
+@keyframes floorChamberGlow {
   0% {
-    transform: perspective(900px) scale(1) translateZ(0px);
-    opacity: 0.95;
-    box-shadow: 0 0 0 rgba(210, 245, 58, 0);
+    opacity: 0.4;
+    transform: scale(0.98);
   }
-  40% {
-    transform: perspective(900px) scale(1.4) translateZ(60px);
+  50% {
     opacity: 1;
-    box-shadow: 0 0 50px rgba(210, 245, 58, 0.7);
+    transform: scale(1.02);
   }
   100% {
-    transform: perspective(900px) scale(3.8) translateZ(240px);
-    opacity: 1;
-    box-shadow: 0 0 100px rgba(210, 245, 58, 0.9);
-  }
-}
-
-@keyframes floorBlockExpandLight {
-  0% {
-    transform: perspective(900px) scale(1) translateZ(0px);
-    opacity: 0.95;
-    box-shadow: 0 0 0 rgba(195, 86, 38, 0);
-  }
-  40% {
-    transform: perspective(900px) scale(1.4) translateZ(60px);
-    opacity: 1;
-    box-shadow: 0 0 50px rgba(195, 86, 38, 0.6);
-  }
-  100% {
-    transform: perspective(900px) scale(3.8) translateZ(240px);
-    opacity: 1;
-    box-shadow: 0 0 100px rgba(195, 86, 38, 0.85);
+    opacity: 0.85;
+    transform: scale(1);
   }
 }
 
@@ -110,7 +89,7 @@
     opacity: 0;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.6;
   }
   100% {
     transform: translateX(200%) skewX(-20deg);
@@ -120,31 +99,25 @@
 
 @keyframes virtualFloorWalkIn {
   0% {
-    transform: perspective(1200px) translateZ(-60px) scale(0.94);
-    opacity: 0.7;
-    filter: blur(4px);
+    transform: scale(0.96) translateY(12px);
+    opacity: 0;
   }
   100% {
-    transform: perspective(1200px) translateZ(0px) scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
-    filter: blur(0px);
   }
 }
 
-.animate-floor-expand {
-  animation: floorBlockExpand 0.82s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-floor-expand-light {
-  animation: floorBlockExpandLight 0.82s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-floor-chamber-glow {
+  animation: floorChamberGlow 0.45s ease-out forwards;
 }
 
 .animate-beam-sweep {
-  animation: lightBeamSweep 0.85s ease-out infinite;
+  animation: lightBeamSweep 0.75s ease-out infinite;
 }
 
 .animate-virtual-walkin {
-  animation: virtualFloorWalkIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: virtualFloorWalkIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Tactile prominent window scrollbar for floor product catalog modal */

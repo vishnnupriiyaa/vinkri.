@@ -5,7 +5,7 @@ import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
 
 interface BuildingShowcaseProps {
   theme: ThemeMode;
-  onSelectFloor: (floor: FloorInfo, slot?: 'left' | 'center' | 'right') => void;
+  onSelectFloor: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
   selectedFloorNumber?: number | null;
   onSelectProduct: (product: Product) => void;
   onQuickAdd: (product: Product) => void;
@@ -25,12 +25,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   const [hoveredRoom, setHoveredRoom] = useState<{ floor: number; slot: 'left' | 'center' | 'right'; productId?: string } | null>(null);
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  // Moving-to-floor elevator motion animation states
+  // Moving-to-floor smooth camera zoom transition state
   const [movingFloorNumber, setMovingFloorNumber] = useState<number | null>(null);
   const [isMovingToFloor, setIsMovingToFloor] = useState(false);
-  const [movingFloor, setMovingFloor] = useState<FloorInfo | null>(null);
-  const [expandingFloorNumber, setExpandingFloorNumber] = useState<number | null>(null);
-  const [isExpandingBlock, setIsExpandingBlock] = useState(false);
 
   // Unified 5-story architectural floor configuration matching both light and dark buildings
   const floorsConfig = [
@@ -110,51 +107,63 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     }
   ];
 
-  const triggerMoveToFloor = (floorData: FloorInfo, slot: 'left' | 'center' | 'right' = 'center') => {
+  const triggerMoveToFloor = (
+    floorData: FloorInfo,
+    slot: 'left' | 'center' | 'right' = 'center',
+    productId?: string
+  ) => {
     if (isMovingToFloor) return;
     setMovingFloorNumber(floorData.numeric);
-    setMovingFloor(floorData);
     setIsMovingToFloor(true);
-    setExpandingFloorNumber(floorData.numeric);
-    setIsExpandingBlock(true);
 
-    // Transit time for building zoom & rectangle block expansion animation
+    // Silky smooth, controlled camera push-in and floor portal illumination
     setTimeout(() => {
-      onSelectFloor(floorData, slot);
+      onSelectFloor(floorData, slot, productId);
       setTimeout(() => {
         setIsMovingToFloor(false);
         setMovingFloorNumber(null);
-        setMovingFloor(null);
-        setIsExpandingBlock(false);
-        setExpandingFloorNumber(null);
-      }, 350);
-    }, 720);
+      }, 250);
+    }, 360);
   };
 
-  const getCameraTransform = () => {
-    if (!isMovingToFloor || movingFloorNumber === null) return 'scale(1) translate(0%, 0%)';
-    switch (movingFloorNumber) {
-      case 5:
-        return 'scale(2.6) translateY(34%)';
-      case 4:
-        return 'scale(2.6) translateY(17%)';
-      case 3:
-        return 'scale(2.6) translateY(0%)';
-      case 2:
-        return 'scale(2.6) translateY(-17%)';
-      case 1:
-        return 'scale(2.6) translateY(-34%)';
-      default:
-        return 'scale(1) translate(0%, 0%)';
+  const getCameraStyle = (): React.CSSProperties => {
+    if (!isMovingToFloor || movingFloorNumber === null) {
+      return {
+        transform: 'scale(1)',
+        transformOrigin: '50% 50%',
+        transition: 'transform 400ms cubic-bezier(0.25, 1, 0.5, 1)'
+      };
     }
+
+    const floorCenterYMap: Record<number, number> = {
+      5: 12.7,
+      4: 27.3,
+      3: 41.9,
+      2: 56.5,
+      1: 71.1,
+      0: 86.2
+    };
+
+    const targetY = floorCenterYMap[movingFloorNumber] ?? 50;
+
+    return {
+      transform: 'scale(1.28)',
+      transformOrigin: `50% ${targetY}%`,
+      transition: 'transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1)'
+    };
   };
 
-  const handleRoomClick = (e: React.MouseEvent, productId: string, floorNumber?: number, slot?: 'left' | 'center' | 'right') => {
+  const handleRoomClick = (
+    e: React.MouseEvent,
+    productId: string,
+    floorNumber?: number,
+    slot?: 'left' | 'center' | 'right'
+  ) => {
     e.stopPropagation();
     if (floorNumber) {
       const floorData = FLOORS_DATA.find((f) => f.numeric === floorNumber);
       if (floorData) {
-        triggerMoveToFloor(floorData, slot);
+        triggerMoveToFloor(floorData, slot, productId);
         return;
       }
     }
@@ -162,7 +171,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     if (prod) {
       const parentFloor = FLOORS_DATA.find((f) => f.numeric === prod.floorNumber);
       if (parentFloor) {
-        triggerMoveToFloor(parentFloor, slot);
+        triggerMoveToFloor(parentFloor, slot, productId);
         return;
       }
       onSelectProduct(prod);
@@ -186,13 +195,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
         className="relative w-full transition-all duration-700 overflow-hidden rounded-2xl shadow-2xl"
         style={{ aspectRatio: '1.38 / 1' }}
       >
-        {/* Background Building Structure with Elevator Motion Camera Zoom */}
+        {/* Background Building Structure with Smooth Camera Zoom */}
         <div
-          className="relative w-full h-full transition-transform duration-700 ease-out"
-          style={{
-            transform: getCameraTransform(),
-            transformOrigin: 'center center'
-          }}
+          className="relative w-full h-full will-change-transform"
+          style={getCameraStyle()}
         >
           <img
             src={isDark ? '/assets/aistudio/dark_building.jpg' : '/assets/aistudio/light_building.jpg'}
@@ -369,87 +375,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               ))}
             </div>
           </div>
-
-          {/* 3D Expanding Floor Rectangle Block: Simulates expanding the floor block and entering */}
-          {isExpandingBlock && expandingFloorNumber !== null && (
-            (() => {
-              const expConfig = floorsConfig.find((f) => f.number === expandingFloorNumber);
-              if (!expConfig) return null;
-              return (
-                <div
-                  className={`absolute z-35 pointer-events-none rounded-xl overflow-hidden border-2 shadow-2xl ${
-                    isDark ? 'animate-floor-expand' : 'animate-floor-expand-light'
-                  }`}
-                  style={{
-                    top: expConfig.top,
-                    height: expConfig.height,
-                    left: '2%',
-                    width: '96%',
-                    borderColor: expConfig.color,
-                    transformOrigin: 'center center'
-                  }}
-                >
-                  {/* Internal Spatial Room Grid and Depth Streaks */}
-                  <div
-                    className="absolute inset-0 flex flex-col justify-between p-3"
-                    style={{
-                      backgroundColor: isDark ? 'rgba(10, 7, 5, 0.94)' : 'rgba(250, 246, 240, 0.95)',
-                      backgroundImage: `radial-gradient(circle at center, ${expConfig.color}25 0%, transparent 75%)`
-                    }}
-                  >
-                    {/* Glowing Speed Beam Sweep */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                      <div
-                        className="w-full h-full animate-beam-sweep"
-                        style={{
-                          background: `linear-gradient(90deg, transparent 0%, ${expConfig.color}45 50%, transparent 100%)`
-                        }}
-                      />
-                    </div>
-
-                    {/* Corner Target Reticles */}
-                    <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: expConfig.color }} />
-                    <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: expConfig.color }} />
-                    <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: expConfig.color }} />
-                    <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: expConfig.color }} />
-
-                    {/* Top Entry Indicator */}
-                    <div className="relative z-10 flex items-center justify-between font-mono text-[9px] tracking-widest uppercase">
-                      <div className="flex items-center gap-1.5 font-black" style={{ color: expConfig.color }}>
-                        <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: expConfig.color }} />
-                        <span>ENTERING LEVEL 0{expConfig.number}</span>
-                      </div>
-                      <span className="text-[#a89685] font-bold">HYDERABAD ATELIER</span>
-                    </div>
-
-                    {/* Center Chamber Focus */}
-                    <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto">
-                      <span
-                        className="text-xs sm:text-sm font-black tracking-wider uppercase"
-                        style={{ color: isDark ? '#ffffff' : '#1e140d' }}
-                      >
-                        {expConfig.name}
-                      </span>
-                      <span className="text-[8px] sm:text-[9px] font-mono tracking-widest opacity-80 mt-0.5" style={{ color: expConfig.color }}>
-                        EXPANDING FLOOR BLOCK • STEPPING INSIDE...
-                      </span>
-                    </div>
-
-                    {/* Bottom Progress Bar */}
-                    <div className="relative z-10 w-full bg-white/20 h-1 rounded-full overflow-hidden">
-                      <div
-                        className="h-full animate-pulse transition-all duration-700"
-                        style={{
-                          backgroundColor: expConfig.color,
-                          width: '100%'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })()
-          )}
 
           {/* Interactive Architectural Floor Layers */}
           <div className="absolute inset-0 z-10 pointer-events-auto">
@@ -690,38 +615,45 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     </div>
                   </div>
 
-                  {/* Floor Window Illumination Burst during Elevator Movement */}
+                  {/* Glowing Floor Chamber Entrance Portal when transitioning */}
                   {isMovingToFloor && movingFloorNumber === floor.number && (
                     <div
-                      className="absolute inset-0 pointer-events-none z-30 animate-pulse rounded-lg"
+                      className="absolute inset-0 pointer-events-none z-30 rounded-lg overflow-hidden border-2 animate-floor-chamber-glow"
                       style={{
-                        backgroundColor: `${floor.color}45`,
-                        boxShadow: `inset 0 0 45px ${floor.color}, 0 0 35px ${floor.color}`
+                        borderColor: floor.color,
+                        backgroundColor: isDark ? 'rgba(10, 7, 5, 0.78)' : 'rgba(250, 246, 240, 0.82)',
+                        boxShadow: `0 0 35px ${floor.color}90, inset 0 0 25px ${floor.color}50`
                       }}
-                    />
+                    >
+                      <div
+                        className="absolute inset-0 animate-beam-sweep"
+                        style={{
+                          background: `linear-gradient(90deg, transparent 0%, ${floor.color}45 50%, transparent 100%)`
+                        }}
+                      />
+                      <div className="relative z-10 w-full h-full flex items-center justify-between px-3 sm:px-4">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <span
+                            className="w-2 h-2 rounded-full animate-ping"
+                            style={{ backgroundColor: floor.color }}
+                          />
+                          <span
+                            className="font-mono text-[9px] sm:text-xs font-black tracking-widest uppercase"
+                            style={{ color: floor.color }}
+                          >
+                            ENTERING LEVEL 0{floor.number} · {floor.name}
+                          </span>
+                        </div>
+                        <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-wider text-[#a89685] hidden sm:inline-block">
+                          HYDERABAD ATELIER
+                        </span>
+                      </div>
+                    </div>
                   )}
                 </div>
               );
             })}
           </div>
-
-          {/* Exterior Elevator Lift Carriage Animation */}
-          {isMovingToFloor && (
-            <div
-              className="absolute z-35 right-[1.5%] w-8 sm:w-11 rounded-md border border-white/50 shadow-2xl transition-all duration-700 pointer-events-none flex flex-col items-center justify-center py-1 backdrop-blur-md"
-              style={{
-                top: floorsConfig.find((f) => f.number === movingFloorNumber)?.top || '50%',
-                height: '11%',
-                backgroundColor: isDark ? 'rgba(210, 245, 58, 0.35)' : 'rgba(195, 86, 38, 0.35)',
-                boxShadow: isDark ? '0 0 30px rgba(210, 245, 58, 0.8)' : '0 0 25px rgba(195, 86, 38, 0.7)'
-              }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              <span className="text-[7px] font-mono font-black text-white uppercase mt-0.5">
-                0{movingFloorNumber}
-              </span>
-            </div>
-          )}
 
           {/* Bottom Right Architectural Signature: "IDEAS INTO EVERYDAY OBJECTS →" */}
           <div
@@ -743,59 +675,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Dynamic Expanding Floor Rectangle Overlay for Virtual Walk-in Feeling */}
-        {isExpandingBlock && expandingFloorNumber && (
-          <div
-            className={`absolute z-45 pointer-events-none rounded-2xl overflow-hidden border-2 shadow-2xl transition-all ${
-              isDark
-                ? 'border-[#d2f53a] bg-[#140e0a]/92 text-white animate-floor-expand'
-                : 'border-[#c35626] bg-[#faf6f0]/95 text-[#282019] animate-floor-expand-light'
-            }`}
-            style={{
-              top: floorsConfig.find((f) => f.number === expandingFloorNumber)?.top || '50%',
-              height: floorsConfig.find((f) => f.number === expandingFloorNumber)?.height || '15%',
-              left: '18%',
-              width: '64%',
-              transformOrigin: 'center center'
-            }}
-          >
-            {/* Internal light beam sweep across the expanding glass chamber */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-beam-sweep" />
-
-            {/* Entering Floor Signage */}
-            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-3 text-center">
-              <div className="flex items-center gap-1.5 text-[10px] font-mono font-black uppercase tracking-widest text-[#d2f53a]">
-                <span className="w-2 h-2 rounded-full bg-[#d2f53a] animate-ping" />
-                <span>ENTERING LEVEL 0{expandingFloorNumber}</span>
-              </div>
-              <p className="text-xs sm:text-base font-black tracking-tight text-white mt-0.5">
-                {floorsConfig.find((f) => f.number === expandingFloorNumber)?.name}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Cinematic Elevator In Transit HUD Overlay */}
-        {isMovingToFloor && movingFloor && (
-          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none bg-black/45 backdrop-blur-[1px] transition-all duration-300">
-            <div className="px-5 py-3.5 rounded-2xl bg-black/90 border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.9)] flex flex-col items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono font-black text-[#d2f53a] tracking-widest uppercase">
-                <span className="w-2 h-2 rounded-full bg-[#d2f53a] animate-ping" />
-                <span>ELEVATOR IN TRANSIT • LEVEL 0{movingFloor.number}</span>
-              </div>
-              <span
-                className="text-sm sm:text-base font-extrabold text-white tracking-wide"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                Entering {movingFloor.name}...
-              </span>
-              <div className="w-36 h-1 rounded-full bg-white/20 overflow-hidden mt-1">
-                <div className="h-full bg-gradient-to-r from-[#d2f53a] via-emerald-400 to-[#d2f53a] w-full animate-pulse" />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
