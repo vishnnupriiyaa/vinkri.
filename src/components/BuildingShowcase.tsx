@@ -9,7 +9,8 @@ import {
   Star,
   ShoppingBag,
   Trash2,
-  Heart
+  Heart,
+  Layers
 } from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
@@ -160,6 +161,147 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setTimeout(() => setAddedId(null), 1500);
   };
 
+  const renderShelfCard = (product: Product, bayNum: number, isCapsule: boolean, delayIdx: number) => {
+    const isInCart = cartProductIds.includes(product.id);
+    const isJustAdded = addedId === product.id;
+
+    return (
+      <div
+        key={product.id}
+        onClick={() => onSelectProduct(product)}
+        className={`group/card relative ${
+          isCapsule ? 'rounded-2xl sm:rounded-3xl' : 'rounded-xl sm:rounded-2xl'
+        } p-2 sm:p-3 flex flex-col justify-between transition-all duration-300 cursor-pointer border animate-drop-cascade ${
+          isDark
+            ? 'bg-[#18110b] hover:bg-[#1f150e] border-[#2c1d12] hover:border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(210,245,58,0.15)] hover:scale-[1.015]'
+            : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/70 shadow-[0_3px_12px_rgba(195,86,38,0.06)] hover:shadow-[0_8px_24px_rgba(195,86,38,0.12)] hover:scale-[1.015]'
+        }`}
+        style={{ animationDelay: `${delayIdx * 70 + 50}ms` }}
+      >
+        <div>
+          <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+            <span
+              className={`text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                isDark
+                  ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
+                  : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
+              }`}
+            >
+              BAY 0{bayNum}
+            </span>
+            <div className="flex items-center gap-0.5 text-amber-500 text-[8.5px] sm:text-[9.5px] font-mono font-bold">
+              <Star className="w-2.5 h-2.5 fill-amber-500" />
+              <span>{product.rating}</span>
+            </div>
+          </div>
+
+          {/* Product Image Viewport with visible studio photography */}
+          <div
+            className={`relative aspect-[4/3] sm:aspect-square w-full ${
+              isCapsule ? 'rounded-xl sm:rounded-2xl' : 'rounded-lg sm:rounded-xl'
+            } overflow-hidden border mb-1.5 sm:mb-2 flex items-center justify-center p-1.5 transition-all duration-300 ${
+              isDark
+                ? 'bg-[#090604] border-[#261910] group-hover/card:border-[#d2f53a]/40 shadow-inner'
+                : 'bg-[#faf4ec] border-[#e6dac9] group-hover/card:border-[#c35626]/40 shadow-inner'
+            }`}
+          >
+            <ProductArtwork
+              productId={product.id}
+              aspectRatio="square"
+              theme={theme}
+              objectFit="cover"
+              className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
+            />
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectProduct(product);
+              }}
+              className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10 p-1 sm:p-1.5 rounded-md opacity-0 group-hover/card:opacity-100 transition-opacity backdrop-blur-md border shadow-xs cursor-pointer ${
+                isDark
+                  ? 'bg-black/75 text-white hover:text-[#d2f53a] border-white/20'
+                  : 'bg-white/90 text-[#1e140d] hover:text-[#c35626] border-[#decbb7]'
+              }`}
+              title="Inspect Details"
+            >
+              <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            </button>
+          </div>
+
+          <h4
+            className={`text-[9.5px] sm:text-xs md:text-sm font-black tracking-tight leading-snug line-clamp-1 group-hover/card:underline ${
+              isDark ? 'text-white' : 'text-[#1e140d]'
+            }`}
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {product.name}
+          </h4>
+
+          <p
+            className={`text-[8px] sm:text-[9.5px] line-clamp-1 mt-0.5 ${
+              isDark ? 'text-[#a89685]' : 'text-[#69584b]'
+            }`}
+          >
+            {product.description || product.shortTag}
+          </p>
+        </div>
+
+        <div
+          className={`pt-1.5 mt-1.5 sm:pt-2 sm:mt-2 border-t flex items-center justify-between gap-1 ${
+            isDark ? 'border-[#261910]' : 'border-[#eedfcb]'
+          }`}
+        >
+          <span
+            className={`text-[10.5px] sm:text-xs md:text-sm font-black font-mono ${
+              isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+            }`}
+          >
+            ₹{product.price.toLocaleString('en-IN')}
+          </span>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={(e) => handleQuickAdd(e, product)}
+              className={`py-1 px-1.5 sm:px-2.5 rounded-md sm:rounded-lg text-[8.5px] sm:text-[10px] font-mono font-black uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
+                isJustAdded
+                  ? 'bg-emerald-500 text-white'
+                  : isDark
+                  ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
+                  : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
+              }`}
+            >
+              {isJustAdded ? (
+                <Check className="w-3 h-3 stroke-[3]" />
+              ) : (
+                <>
+                  <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  <span>{isInCart ? '+1' : 'Add'}</span>
+                </>
+              )}
+            </button>
+
+            {isInCart && onRemoveFromCart && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFromCart(product.id);
+                }}
+                className="p-1 rounded-md border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
+                title="Remove from trolley"
+              >
+                <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative w-full flex flex-col justify-center select-none">
       {/* Outer Building Architectural Frame */}
@@ -273,11 +415,67 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           />
         </div>
 
-        {/* 5-Story Stack of Floors with In-Place Vertical Shelf Expansion */}
+        {/* Suspended Floor Quick Reassembly & Floor Selector Bar */}
+        {expandedFloorNumber !== null && (
+          <div
+            className={`w-full px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between border-b transition-all duration-300 z-30 ${
+              isDark
+                ? 'bg-[#140e09] border-[#2c1d12] text-white shadow-md'
+                : 'bg-[#faf4ec] border-[#decbb8] text-[#1e140d] shadow-sm'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setExpandedFloorNumber(null)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] sm:text-xs font-mono font-bold transition-all cursor-pointer ${
+                isDark
+                  ? 'bg-[#22160d] text-[#d2f53a] hover:bg-[#2d1e12] border border-[#3d2919]'
+                  : 'bg-white text-[#c35626] hover:bg-[#fffdfa] border border-[#decbb8]'
+              }`}
+              title="Reassemble the entire 5-story building"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>← Reassemble Building</span>
+            </button>
+
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span
+                className={`hidden sm:inline text-[8.5px] font-mono mr-1 ${
+                  isDark ? 'text-[#8a7563]' : 'text-[#8c7866]'
+                }`}
+              >
+                SELECT FLOOR:
+              </span>
+              {floorsConfig.map((fl) => (
+                <button
+                  key={fl.number}
+                  type="button"
+                  onClick={() => setExpandedFloorNumber(fl.number)}
+                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-mono font-bold transition-all cursor-pointer ${
+                    expandedFloorNumber === fl.number
+                      ? isDark
+                        ? 'bg-[#d2f53a] text-black font-black shadow-xs'
+                        : 'bg-[#c35626] text-white font-black shadow-xs'
+                      : isDark
+                      ? 'bg-[#1b120b] text-[#9c8979] hover:text-white border border-[#2b1c11]'
+                      : 'bg-white/80 text-[#786452] hover:text-[#1e140d] border border-[#dfd2be]'
+                  }`}
+                  title={`Switch to Level 0${fl.number} · ${fl.name}`}
+                >
+                  0{fl.number}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 5-Story Stack of Floors with Dynamic Falling Floors & Hanging Products Physics */}
         <div className="relative w-full flex flex-col">
           {floorsConfig.map((floor) => {
             const isHovered = hoveredFloor === floor.number;
             const isExpanded = expandedFloorNumber === floor.number;
+            const isFloorAbove = expandedFloorNumber !== null && floor.number > expandedFloorNumber;
+            const isFloorBelow = expandedFloorNumber !== null && floor.number < expandedFloorNumber;
             const floorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === floor.number);
 
             // Left badge column dimensions
@@ -287,12 +485,27 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             // Right indicator column dimensions
             const rightMarkerStyle = { left: '79.5%', width: '19%', height: '100%' };
 
-            // Breakdown into 2 shelf tiers of 3 creations each:
-            const shelfRow1Products = floorProducts.slice(3, 6);
-            const shelfRow2Products = floorProducts.slice(6, 9);
+            // 3 Tiers of 3 creations each (All 9 products of the floor):
+            // Tier 1: Hanging Capsule Pods (as seen in video frame 07)
+            const tier1Products = floorProducts.slice(3, 6);
+            // Tier 2: Hanging Showcase Bays
+            const tier2Products = floorProducts.slice(6, 9);
+            // Tier 3: Hanging Atelier Signature Creations
+            const tier3Products = floorProducts.slice(0, 3);
 
             return (
-              <div key={floor.number} className="relative w-full flex flex-col">
+              <div
+                key={floor.number}
+                className={`relative w-full flex flex-col transition-all duration-700 origin-top ${
+                  isExpanded
+                    ? 'z-30 opacity-100 translate-y-0 max-h-none'
+                    : isFloorAbove
+                    ? 'max-h-0 -translate-y-[200px] opacity-0 overflow-hidden pointer-events-none scale-95'
+                    : isFloorBelow
+                    ? 'max-h-0 translate-y-[280px] opacity-0 overflow-hidden pointer-events-none scale-95'
+                    : 'max-h-[220px] opacity-100 translate-y-0 scale-100'
+                }`}
+              >
                 {/* 1. TOP VITRINE WINDOW SLICE (Floor 0X: 3 display windows with original products) */}
                 <div
                   onMouseEnter={() => setHoveredFloor(floor.number)}
@@ -504,13 +717,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   </div>
                 </div>
 
-                {/* 2. THE EXPANDING SHELVES DRAWER (EXACTLY AS SHOWN IN THE VIDEO) */}
-                {/* Expands downwards right inside the building with horizontal wooden beams & vertical dividers, pushing the lower floors down */}
+                {/* 2. THE HANGING SHELVES GANTRY (SUSPENDED DIRECTLY BENEATH THE FLOOR) */}
+                {/* When this floor is clicked, lower floors fall away and these 3 tiers hang suspended */}
                 <div
-                  className={`relative w-full overflow-hidden transition-all duration-700 ease-in-out ${
+                  className={`relative w-full overflow-hidden transition-all duration-700 ease-out ${
                     isExpanded
-                      ? 'max-h-[1400px] opacity-100 z-10'
-                      : 'max-h-0 opacity-0 pointer-events-none'
+                      ? 'max-h-[2200px] opacity-100 z-10'
+                      : 'max-h-0 opacity-0 -translate-y-8 pointer-events-none'
                   }`}
                 >
                   <div
@@ -520,14 +733,23 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         : 'bg-[#faf4ec] border-y border-[#decbb8]'
                     }`}
                   >
-                    {/* Horizontal Wooden Beam Above Expanding Shelves */}
+                    {/* Top Connecting Timber Beam with Brass Joint Rivets */}
                     <div
-                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y ${
+                      className={`w-full h-2.5 sm:h-3 shadow-inner border-y flex items-center justify-around px-8 ${
                         isDark
                           ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
                           : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
                       }`}
-                    />
+                    >
+                      {[0, 1, 2, 3, 4, 5].map((rivet) => (
+                        <div
+                          key={rivet}
+                          className={`w-1 h-1 rounded-full ${
+                            isDark ? 'bg-[#5a4430] border border-black/40' : 'bg-[#c35626]/60 border border-white/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
 
                     {/* Department Quick Header Banner */}
                     <div
@@ -550,7 +772,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                             color: floor.color
                           }}
                         >
-                          LEVEL 0{floor.number} · SHELVES
+                          LEVEL 0{floor.number} · SUSPENDED ATELIER
                         </span>
                         <span
                           className={`text-xs sm:text-sm font-black tracking-tight ${
@@ -564,7 +786,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                             isDark ? 'text-[#8a7563]' : 'text-[#8c7866]'
                           }`}
                         >
-                          (6 Curated Artisan Creations on Display)
+                          (All 9 Artisan Creations on Hanging Shelves)
                         </span>
                       </div>
 
@@ -596,313 +818,89 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                               ? 'bg-[#1f150e] text-[#c9b9a8] hover:text-white border-[#382618]'
                               : 'bg-white text-[#786452] hover:text-[#1e140d] border-[#dfd2be]'
                           }`}
-                          title="Collapse floor shelves"
+                          title="Reassemble building"
                         >
-                          <span>Close</span>
+                          <span>Reassemble</span>
                           <ChevronUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         </button>
                       </div>
                     </div>
 
-                    {/* SHELF TIER 1: 3 CARDS WITH VISIBLE PRODUCT IMAGES */}
+                    {/* HANGING TIER 1: 3 CAPSULE DISPLAY PODS (As seen in video frame 07) */}
                     <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
+                      <div className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider mb-1 px-1 text-inherit opacity-70">
+                        TIER 01 · CURATED PODS
+                      </div>
                       <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                        {shelfRow1Products.map((product, idx) => {
-                          const isInCart = cartProductIds.includes(product.id);
-                          const isJustAdded = addedId === product.id;
-
-                          return (
-                            <div
-                              key={product.id}
-                              onClick={() => onSelectProduct(product)}
-                              className={`group/card relative rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between transition-all duration-300 cursor-pointer border animate-drop-cascade ${
-                                isDark
-                                  ? 'bg-[#18110b] hover:bg-[#1f150e] border-[#2c1d12] hover:border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(210,245,58,0.15)] hover:scale-[1.015]'
-                                  : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/70 shadow-[0_3px_12px_rgba(195,86,38,0.06)] hover:shadow-[0_8px_24px_rgba(195,86,38,0.12)] hover:scale-[1.015]'
-                              }`}
-                              style={{ animationDelay: `${idx * 80 + 50}ms` }}
-                            >
-                              <div>
-                                <div className="flex items-center justify-between mb-1.5">
-                                  <span
-                                    className={`text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
-                                      isDark
-                                        ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
-                                        : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
-                                    }`}
-                                  >
-                                    SHELF 01 · BAY 0{idx + 1}
-                                  </span>
-                                  <div className="flex items-center gap-0.5 text-amber-500 text-[8.5px] sm:text-[9.5px] font-mono font-bold">
-                                    <Star className="w-2.5 h-2.5 fill-amber-500" />
-                                    <span>{product.rating}</span>
-                                  </div>
-                                </div>
-
-                                {/* Product Image Viewport */}
-                                <div
-                                  className={`relative aspect-[4/3] sm:aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden border mb-1.5 sm:mb-2 flex items-center justify-center p-1.5 transition-all duration-300 ${
-                                    isDark
-                                      ? 'bg-[#090604] border-[#261910] group-hover/card:border-[#d2f53a]/40 shadow-inner'
-                                      : 'bg-[#faf4ec] border-[#e6dac9] group-hover/card:border-[#c35626]/40 shadow-inner'
-                                  }`}
-                                >
-                                  <ProductArtwork
-                                    productId={product.id}
-                                    aspectRatio="square"
-                                    theme={theme}
-                                    objectFit="cover"
-                                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
-                                  />
-
-                                  {/* Quick view button */}
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onSelectProduct(product);
-                                    }}
-                                    className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10 p-1 sm:p-1.5 rounded-md opacity-0 group-hover/card:opacity-100 transition-opacity backdrop-blur-md border shadow-xs cursor-pointer ${
-                                      isDark
-                                        ? 'bg-black/75 text-white hover:text-[#d2f53a] border-white/20'
-                                        : 'bg-white/90 text-[#1e140d] hover:text-[#c35626] border-[#decbb7]'
-                                    }`}
-                                    title="View Details"
-                                  >
-                                    <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                  </button>
-                                </div>
-
-                                <h4
-                                  className={`text-[9.5px] sm:text-xs md:text-sm font-black tracking-tight leading-snug line-clamp-1 group-hover/card:underline ${
-                                    isDark ? 'text-white' : 'text-[#1e140d]'
-                                  }`}
-                                  style={{ fontFamily: 'var(--font-display)' }}
-                                >
-                                  {product.name}
-                                </h4>
-
-                                <p
-                                  className={`text-[8px] sm:text-[9.5px] line-clamp-1 mt-0.5 ${
-                                    isDark ? 'text-[#a89685]' : 'text-[#69584b]'
-                                  }`}
-                                >
-                                  {product.description || product.shortTag}
-                                </p>
-                              </div>
-
-                              <div
-                                className={`pt-1.5 mt-1.5 sm:pt-2 sm:mt-2 border-t flex items-center justify-between gap-1 ${
-                                  isDark ? 'border-[#261910]' : 'border-[#eedfcb]'
-                                }`}
-                              >
-                                <span
-                                  className={`text-[10.5px] sm:text-xs md:text-sm font-black font-mono ${
-                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                                  }`}
-                                >
-                                  ₹{product.price.toLocaleString('en-IN')}
-                                </span>
-
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleQuickAdd(e, product)}
-                                    className={`py-1 px-1.5 sm:px-2.5 rounded-md sm:rounded-lg text-[8.5px] sm:text-[10px] font-mono font-black uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
-                                      isJustAdded
-                                        ? 'bg-emerald-500 text-white'
-                                        : isDark
-                                        ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
-                                        : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
-                                    }`}
-                                  >
-                                    {isJustAdded ? (
-                                      <Check className="w-3 h-3 stroke-[3]" />
-                                    ) : (
-                                      <>
-                                        <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                        <span>{isInCart ? '+1' : 'Add'}</span>
-                                      </>
-                                    )}
-                                  </button>
-
-                                  {isInCart && onRemoveFromCart && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRemoveFromCart(product.id);
-                                      }}
-                                      className="p-1 rounded-md border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
-                                      title="Remove from trolley"
-                                    >
-                                      <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+                        {tier1Products.map((product, idx) =>
+                          renderShelfCard(product, idx + 1, true, idx)
+                        )}
                       </div>
                     </div>
 
-                    {/* Horizontal Wooden Divider Beam */}
+                    {/* Horizontal Wooden Divider Beam with Hanging Bracket Studs */}
                     <div
-                      className={`w-full h-1.5 sm:h-2 shadow-inner border-y ${
+                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y flex items-center justify-around px-8 ${
                         isDark
                           ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
                           : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
                       }`}
-                    />
+                    >
+                      {[0, 1, 2, 3].map((stud) => (
+                        <div
+                          key={stud}
+                          className={`w-1 h-1 rounded-full ${
+                            isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
 
-                    {/* SHELF TIER 2: 3 CARDS WITH VISIBLE PRODUCT IMAGES */}
+                    {/* HANGING TIER 2: 3 SHOWCASE DISPLAY BAYS */}
                     <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
+                      <div className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider mb-1 px-1 text-inherit opacity-70">
+                        TIER 02 · ARCHIVAL SHELVES
+                      </div>
                       <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                        {shelfRow2Products.map((product, idx) => {
-                          const isInCart = cartProductIds.includes(product.id);
-                          const isJustAdded = addedId === product.id;
-
-                          return (
-                            <div
-                              key={product.id}
-                              onClick={() => onSelectProduct(product)}
-                              className={`group/card relative rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between transition-all duration-300 cursor-pointer border animate-drop-cascade ${
-                                isDark
-                                  ? 'bg-[#18110b] hover:bg-[#1e150e] border-[#2c1d12] hover:border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(210,245,58,0.15)] hover:scale-[1.015]'
-                                  : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/70 shadow-[0_3px_12px_rgba(195,86,38,0.06)] hover:shadow-[0_8px_24px_rgba(195,86,38,0.12)] hover:scale-[1.015]'
-                              }`}
-                              style={{ animationDelay: `${(idx + 3) * 80 + 50}ms` }}
-                            >
-                              <div>
-                                <div className="flex items-center justify-between mb-1.5">
-                                  <span
-                                    className={`text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
-                                      isDark
-                                        ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
-                                        : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
-                                    }`}
-                                  >
-                                    SHELF 02 · BAY 0{idx + 4}
-                                  </span>
-
-                                  <div className="flex items-center gap-0.5 text-amber-500 text-[8.5px] sm:text-[9.5px] font-mono font-bold">
-                                    <Star className="w-2.5 h-2.5 fill-amber-500" />
-                                    <span>{product.rating}</span>
-                                  </div>
-                                </div>
-
-                                {/* Product Image Viewport */}
-                                <div
-                                  className={`relative aspect-[4/3] sm:aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden border mb-1.5 sm:mb-2 flex items-center justify-center p-1.5 transition-all duration-300 ${
-                                    isDark
-                                      ? 'bg-[#090604] border-[#261910] group-hover/card:border-[#d2f53a]/40 shadow-inner'
-                                      : 'bg-[#faf4ec] border-[#e6dac9] group-hover/card:border-[#c35626]/40 shadow-inner'
-                                  }`}
-                                >
-                                  <ProductArtwork
-                                    productId={product.id}
-                                    aspectRatio="square"
-                                    theme={theme}
-                                    objectFit="cover"
-                                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
-                                  />
-
-                                  {/* Quick view button */}
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onSelectProduct(product);
-                                    }}
-                                    className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10 p-1 sm:p-1.5 rounded-md opacity-0 group-hover/card:opacity-100 transition-opacity backdrop-blur-md border shadow-xs cursor-pointer ${
-                                      isDark
-                                        ? 'bg-black/75 text-white hover:text-[#d2f53a] border-white/20'
-                                        : 'bg-white/90 text-[#1e140d] hover:text-[#c35626] border-[#decbb7]'
-                                    }`}
-                                    title="View Details"
-                                  >
-                                    <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                  </button>
-                                </div>
-
-                                <h4
-                                  className={`text-[9.5px] sm:text-xs md:text-sm font-black tracking-tight leading-snug line-clamp-1 group-hover/card:underline ${
-                                    isDark ? 'text-white' : 'text-[#1e140d]'
-                                  }`}
-                                  style={{ fontFamily: 'var(--font-display)' }}
-                                >
-                                  {product.name}
-                                </h4>
-
-                                <p
-                                  className={`text-[8px] sm:text-[9.5px] line-clamp-1 mt-0.5 ${
-                                    isDark ? 'text-[#a89685]' : 'text-[#69584b]'
-                                  }`}
-                                >
-                                  {product.description || product.shortTag}
-                                </p>
-                              </div>
-
-                              <div
-                                className={`pt-1.5 mt-1.5 sm:pt-2 sm:mt-2 border-t flex items-center justify-between gap-1 ${
-                                  isDark ? 'border-[#261910]' : 'border-[#eedfcb]'
-                                }`}
-                              >
-                                <span
-                                  className={`text-[10.5px] sm:text-xs md:text-sm font-black font-mono ${
-                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                                  }`}
-                                >
-                                  ₹{product.price.toLocaleString('en-IN')}
-                                </span>
-
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleQuickAdd(e, product)}
-                                    className={`py-1 px-1.5 sm:px-2.5 rounded-md sm:rounded-lg text-[8.5px] sm:text-[10px] font-mono font-black uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
-                                      isJustAdded
-                                        ? 'bg-emerald-500 text-white'
-                                        : isDark
-                                        ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
-                                        : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
-                                    }`}
-                                  >
-                                    {isJustAdded ? (
-                                      <Check className="w-3 h-3 stroke-[3]" />
-                                    ) : (
-                                      <>
-                                        <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                        <span>{isInCart ? '+1' : 'Add'}</span>
-                                      </>
-                                    )}
-                                  </button>
-
-                                  {isInCart && onRemoveFromCart && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRemoveFromCart(product.id);
-                                      }}
-                                      className="p-1 rounded-md border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
-                                      title="Remove from trolley"
-                                    >
-                                      <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+                        {tier2Products.map((product, idx) =>
+                          renderShelfCard(product, idx + 4, false, idx + 3)
+                        )}
                       </div>
                     </div>
 
-                    {/* Bottom Horizontal Wooden Beam */}
+                    {/* Horizontal Wooden Divider Beam with Hanging Bracket Studs */}
                     <div
-                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y ${
+                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y flex items-center justify-around px-8 ${
+                        isDark
+                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
+                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
+                      }`}
+                    >
+                      {[0, 1, 2, 3].map((stud) => (
+                        <div
+                          key={stud}
+                          className={`w-1 h-1 rounded-full ${
+                            isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* HANGING TIER 3: 3 ATELIER SIGNATURE CREATIONS */}
+                    <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
+                      <div className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider mb-1 px-1 text-inherit opacity-70">
+                        TIER 03 · VITRINE CHAMBER EDITIONS
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                        {tier3Products.map((product, idx) =>
+                          renderShelfCard(product, idx + 7, false, idx + 6)
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottom Heavy Timber Foundation Sill */}
+                    <div
+                      className={`w-full h-2.5 sm:h-3 shadow-inner border-y ${
                         isDark
                           ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
                           : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
@@ -916,12 +914,16 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           })}
         </div>
 
-        {/* Ground Floor Atelier Storefront (Pushed down when floors expand) */}
+        {/* Ground Floor Atelier Storefront (Falls away smoothly when any floor is expanded) */}
         <div
           onClick={() => {
             if (onOpenStorePhilosophy) onOpenStorePhilosophy();
           }}
-          className="relative w-full cursor-pointer group/atelier leading-none"
+          className={`relative w-full cursor-pointer group/atelier leading-none transition-all duration-700 origin-top ${
+            expandedFloorNumber !== null
+              ? 'max-h-0 translate-y-[280px] opacity-0 overflow-hidden pointer-events-none'
+              : 'max-h-[300px] translate-y-0 opacity-100'
+          }`}
           title="Enter VINKRI Flagship Atelier Boutique • Hyderabad"
         >
           <img

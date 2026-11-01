@@ -903,6 +903,42 @@ export const PRODUCTS_DATA: Product[] = [
     isOnShelf: false,
     imageThumbnail: '/assets/images/moon_tree_light_1792822133142.jpg',
     inStock: true
+  },
+  {
+    id: 'onyx-sphere-lamp',
+    name: 'Carved Translucent Onyx Sphere',
+    category: 'DECOR LAMPS',
+    floorNumber: 1,
+    price: 3699,
+    rating: 4.9,
+    reviewsCount: 62,
+    description: 'Hollowed out sphere sculpted from banded honey onyx, radiating warm organic geological light from its internal LED core.',
+    shortTag: 'Carved Onyx Luminaire',
+    dimensions: '16cm diameter sphere',
+    materials: ['Natural Honey Banded Onyx', 'Solid Walnut Cradle Base'],
+    powerSource: 'USB-C Rechargeable Li-Ion (18hr runtime)',
+    isTopSeller: false,
+    isOnShelf: false,
+    imageThumbnail: '/assets/images/moon_tree_light_1792822133142.jpg',
+    inStock: true
+  },
+  {
+    id: 'brass-cantilever-sconce',
+    name: 'Architectural Brass Cantilever Lamp',
+    category: 'DECOR LAMPS',
+    floorNumber: 1,
+    price: 4899,
+    rating: 4.9,
+    reviewsCount: 48,
+    description: 'Minimalist counter-weighted brass counter-balance arm lamp engineered with precision bearings and hand-brushed satin finish.',
+    shortTag: 'Counter-Weighted Brass',
+    dimensions: '45cm reach × 38cm height',
+    materials: ['Solid Hand-Brushed Brass', 'Cast Iron Counterweight', 'Opal Glass Diffuser'],
+    powerSource: '12V Low Voltage Adapter included',
+    isTopSeller: false,
+    isOnShelf: false,
+    imageThumbnail: '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
+    inStock: true
   }
 ];
 

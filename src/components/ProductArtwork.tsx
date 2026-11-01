@@ -76,7 +76,9 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
     'origami-bronze-crane': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
     // Floor 1 Additional
     'travertine-column-luminaire': '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
-    'smoked-amber-filament': '/assets/images/moon_tree_light_1792822133142.jpg'
+    'smoked-amber-filament': '/assets/images/moon_tree_light_1792822133142.jpg',
+    'onyx-sphere-lamp': '/assets/images/moon_tree_light_1792822133142.jpg',
+    'brass-cantilever-sconce': '/assets/images/crescent_moon_bonsai_1792823851166.jpg'
   };
 
   // Coordinates from the reference image for any remaining items
