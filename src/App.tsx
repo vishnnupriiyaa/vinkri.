@@ -57,19 +57,18 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<FloorInfo | null>(null);
   const [selectedFloorSlot, setSelectedFloorSlot] = useState<'left' | 'center' | 'right'>('center');
-  const [selectedFloorProductId, setSelectedFloorProductId] = useState<string | null>(null);
-  const [floorFilter, setFloorFilter] = useState<number | null>(null);
+  const [floorFilter, setFloorFilter] = useState<number | null>(3); // Level 03 expanded initially as shown in user demo
 
   const handleOpenFloor = (
     floor: FloorInfo,
     slot: 'left' | 'center' | 'right' = 'center',
     productId?: string
   ) => {
-    setSelectedFloor(floor);
-    setSelectedFloorSlot(slot);
-    setSelectedFloorProductId(null);
-    setSelectedProduct(null); // Ensure product modal is closed so user enters the floor page UX
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setFloorFilter(floor.numeric);
+    if (productId) {
+      const prod = PRODUCTS_DATA.find((p) => p.id === productId);
+      if (prod) setSelectedProduct(prod);
+    }
   };
 
   // Toast feedback
@@ -151,12 +150,10 @@ export default function App() {
     setActiveNav(nav);
     if (nav === 'HOME') {
       setSelectedFloor(null);
-      setSelectedFloorProductId(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (nav === 'SHOP') {
       if (selectedFloor) {
         setSelectedFloor(null);
-        setSelectedFloorProductId(null);
       }
       setTimeout(() => {
         const el = document.getElementById('catalog-section');
@@ -221,7 +218,6 @@ export default function App() {
           floor={selectedFloor}
           onBackToBuilding={() => {
             setSelectedFloor(null);
-            setSelectedFloorProductId(null);
           }}
           theme={theme}
           onSelectProduct={(p) => setSelectedProduct(p)}
@@ -229,7 +225,6 @@ export default function App() {
           onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
           onSwitchFloor={(newFloor) => {
             setSelectedFloor(newFloor);
-            setSelectedFloorProductId(null);
           }}
           wishlistIds={wishlistIds}
           onToggleWishlist={handleToggleWishlist}
@@ -264,6 +259,10 @@ export default function App() {
                 onSelectProduct={(p) => setSelectedProduct(p)}
                 onQuickAdd={(p) => handleAddToCart(p, 1)}
                 onOpenStorePhilosophy={() => setInfoModalType('ABOUT')}
+                wishlistIds={wishlistIds}
+                onToggleWishlist={handleToggleWishlist}
+                cartProductIds={cartItems.map((item) => item.product.id)}
+                onRemoveFromCart={handleRemoveCartItem}
               />
             </div>
           </section>

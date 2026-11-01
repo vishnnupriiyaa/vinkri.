@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
-import { Plus, Check, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Plus,
+  Check,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Star,
+  ShoppingBag,
+  Trash2,
+  Heart
+} from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
+import { ProductArtwork } from './ProductArtwork';
 
 interface BuildingShowcaseProps {
   theme: ThemeMode;
-  onSelectFloor: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
+  onSelectFloor?: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
   selectedFloorNumber?: number | null;
   onSelectProduct: (product: Product) => void;
   onQuickAdd: (product: Product) => void;
   onOpenStorePhilosophy?: () => void;
+  wishlistIds?: string[];
+  onToggleWishlist?: (productId: string) => void;
+  cartProductIds?: string[];
+  onRemoveFromCart?: (productId: string) => void;
 }
 
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
@@ -18,26 +34,41 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   selectedFloorNumber,
   onSelectProduct,
   onQuickAdd,
-  onOpenStorePhilosophy
+  onOpenStorePhilosophy,
+  wishlistIds = [],
+  onToggleWishlist,
+  cartProductIds = [],
+  onRemoveFromCart
 }) => {
   const isDark = theme === 'rustic-dark';
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
-  const [hoveredRoom, setHoveredRoom] = useState<{ floor: number; slot: 'left' | 'center' | 'right'; productId?: string } | null>(null);
+  const [hoveredRoom, setHoveredRoom] = useState<{
+    floor: number;
+    slot: 'left' | 'center' | 'right';
+    productId?: string;
+  } | null>(null);
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  // Moving-to-floor smooth camera zoom transition state
-  const [movingFloorNumber, setMovingFloorNumber] = useState<number | null>(null);
-  const [isMovingToFloor, setIsMovingToFloor] = useState(false);
+  // Active in-building expanding floor (starts with null or selectedFloorNumber)
+  const [expandedFloorNumber, setExpandedFloorNumber] = useState<number | null>(3);
 
-  // Unified 5-story architectural floor configuration matching both light and dark buildings
+  // Keep expandedFloorNumber in sync if parent selectedFloorNumber changes
+  useEffect(() => {
+    if (selectedFloorNumber !== undefined) {
+      setExpandedFloorNumber(selectedFloorNumber);
+    }
+  }, [selectedFloorNumber]);
+
+  // Unified 5-story architectural floor configuration matching the exact cropped slices
   const floorsConfig = [
     {
       number: 5,
-      top: '5.8%',
-      height: '13.8%',
       name: 'DESK TOYS',
       color: isDark ? '#3b82f6' : '#2563eb',
       tagline: 'Play. Fidget. Display.',
+      sliceLight: '/assets/aistudio/slices/light_floor5.jpg',
+      sliceDark: '/assets/aistudio/slices/dark_floor5.jpg',
+      aspectRatio: '1376 / 106',
       rooms: [
         { slot: 'left' as const, productId: 'grid-cube', title: 'Grid Cube', price: 1899 },
         { slot: 'center' as const, productId: 'automaton-horse', title: 'Automaton Horse', price: 4499 },
@@ -46,11 +77,12 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     },
     {
       number: 4,
-      top: '20.4%',
-      height: '13.8%',
       name: 'CUSTOM DIORAMAS',
       color: isDark ? '#10b981' : '#059669',
       tagline: 'Mini worlds. Big stories.',
+      sliceLight: '/assets/aistudio/slices/light_floor4.jpg',
+      sliceDark: '/assets/aistudio/slices/dark_floor4.jpg',
+      aspectRatio: '1376 / 105',
       rooms: [
         { slot: 'left' as const, productId: 'mount-everest-light', title: 'Mount Everest Light', price: 2499 },
         { slot: 'center' as const, productId: 'aeroplane-diorama', title: 'Aeroplane Diorama', price: 3299 },
@@ -59,11 +91,12 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     },
     {
       number: 3,
-      top: '35.0%',
-      height: '13.8%',
       name: 'DIECAST CAR STANDS',
       color: isDark ? '#f59e0b' : '#d97706',
       tagline: 'Display. Organize. Collect.',
+      sliceLight: '/assets/aistudio/slices/light_floor3.jpg',
+      sliceDark: '/assets/aistudio/slices/dark_floor3.jpg',
+      aspectRatio: '1376 / 106',
       rooms: [
         { slot: 'left' as const, productId: 'diecast-stack', title: 'Collector 1:64 Stack', price: 2899 },
         { slot: 'center' as const, productId: 'car-showcase', title: 'Car Showcase', price: 3499 },
@@ -72,11 +105,12 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     },
     {
       number: 2,
-      top: '49.6%',
-      height: '13.8%',
       name: 'CUSTOM FIGURINES',
       color: isDark ? '#f43f5e' : '#e11d48',
       tagline: 'People. Moments. Memories.',
+      sliceLight: '/assets/aistudio/slices/light_floor2.jpg',
+      sliceDark: '/assets/aistudio/slices/dark_floor2.jpg',
+      aspectRatio: '1376 / 105',
       rooms: [
         { slot: 'left' as const, productId: 'custom-figurine-duo', title: 'Portrait Duo', price: 4999 },
         { slot: 'center' as const, productId: 'buddha-halo-lamp', title: 'Buddha Halo Lamp', price: 3699 },
@@ -85,167 +119,70 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     },
     {
       number: 1,
-      top: '64.2%',
-      height: '13.8%',
       name: 'DECOR LAMPS',
       color: isDark ? '#f97316' : '#ea580c',
       tagline: 'Light up your space.',
+      sliceLight: '/assets/aistudio/slices/light_floor1.jpg',
+      sliceDark: '/assets/aistudio/slices/dark_floor1.jpg',
+      aspectRatio: '1376 / 105',
       rooms: [
         { slot: 'left' as const, productId: 'crescent-bonsai', title: 'Crescent Moon Bonsai', price: 3199 },
         { slot: 'center' as const, productId: 'moon-tree-light', title: 'Moon Tree Light', price: 2499 },
         { slot: 'right' as const, productId: 'floating-levitron', title: 'Floating Levitron', price: 4999 }
       ]
-    },
-    {
-      number: 0,
-      top: '78.8%',
-      height: '14.8%',
-      name: 'VINKRI FLAGSHIP ATELIER',
-      color: isDark ? '#d2f53a' : '#c35626',
-      tagline: 'Bespoke Atelier & Glass Boutique',
-      rooms: []
     }
   ];
 
-  const triggerMoveToFloor = (
-    floorData: FloorInfo,
-    slot: 'left' | 'center' | 'right' = 'center',
-    productId?: string
-  ) => {
-    if (isMovingToFloor) return;
-    setMovingFloorNumber(floorData.numeric);
-    setIsMovingToFloor(true);
-
-    // Silky smooth, controlled camera push-in and floor portal illumination
-    setTimeout(() => {
-      onSelectFloor(floorData, slot);
-      setTimeout(() => {
-        setIsMovingToFloor(false);
-        setMovingFloorNumber(null);
-      }, 300);
-    }, 420);
-  };
-
-  const getCameraStyle = (): React.CSSProperties => {
-    if (!isMovingToFloor || movingFloorNumber === null) {
-      return {
-        transform: 'scale(1)',
-        transformOrigin: '50% 50%',
-        transition: 'transform 400ms cubic-bezier(0.25, 1, 0.5, 1)'
-      };
-    }
-
-    const floorCenterYMap: Record<number, number> = {
-      5: 12.7,
-      4: 27.3,
-      3: 41.9,
-      2: 56.5,
-      1: 71.1,
-      0: 86.2
-    };
-
-    const targetY = floorCenterYMap[movingFloorNumber] ?? 50;
-
-    return {
-      transform: 'scale(1.42)',
-      transformOrigin: `50% ${targetY}%`,
-      transition: 'transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1)'
-    };
+  const handleToggleFloor = (floorNumber: number) => {
+    setExpandedFloorNumber((prev) => (prev === floorNumber ? null : floorNumber));
   };
 
   const handleRoomClick = (
     e: React.MouseEvent,
     productId: string,
-    floorNumber?: number,
-    slot?: 'left' | 'center' | 'right'
+    floorNumber: number
   ) => {
     e.stopPropagation();
-    if (floorNumber) {
-      const floorData = FLOORS_DATA.find((f) => f.numeric === floorNumber);
-      if (floorData) {
-        triggerMoveToFloor(floorData, slot);
-        return;
-      }
+    // If not already expanded, expand this floor
+    if (expandedFloorNumber !== floorNumber) {
+      setExpandedFloorNumber(floorNumber);
     }
     const prod = PRODUCTS_DATA.find((p) => p.id === productId);
     if (prod) {
-      const parentFloor = FLOORS_DATA.find((f) => f.numeric === prod.floorNumber);
-      if (parentFloor) {
-        triggerMoveToFloor(parentFloor, slot);
-        return;
-      }
       onSelectProduct(prod);
     }
   };
 
-  const handleQuickAddRoom = (e: React.MouseEvent, productId: string) => {
+  const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    const prod = PRODUCTS_DATA.find((p) => p.id === productId);
-    if (prod) {
-      onQuickAdd(prod);
-      setAddedId(productId);
-      setTimeout(() => setAddedId(null), 1500);
-    }
+    onQuickAdd(product);
+    setAddedId(product.id);
+    setTimeout(() => setAddedId(null), 1500);
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-center select-none">
-      {/* Seamless Integrated Building Structure */}
+    <div className="relative w-full flex flex-col justify-center select-none">
+      {/* Outer Building Architectural Frame */}
       <div
-        className="relative w-full transition-all duration-700 overflow-hidden rounded-2xl shadow-2xl"
-        style={{ aspectRatio: '1.38 / 1' }}
+        className={`relative w-full rounded-3xl overflow-hidden shadow-2xl border transition-all duration-500 ${
+          isDark
+            ? 'bg-[#0a0705] border-[#2e2015] shadow-[0_20px_60px_rgba(0,0,0,0.9)]'
+            : 'bg-[#faf6f0] border-[#e2d5c3] shadow-[0_20px_60px_rgba(195,86,38,0.12)]'
+        }`}
       >
-        {/* Background Building Structure with Smooth Camera Zoom */}
-        <div
-          className="relative w-full h-full will-change-transform"
-          style={getCameraStyle()}
-        >
-          <img
-            src={isDark ? '/assets/aistudio/dark_building.jpg' : '/assets/aistudio/light_building.jpg'}
-            alt="VINKRI 5-Story Glass Architectural Atelier • Hyderabad"
-            className="max-w-none absolute transition-all duration-700"
-            style={{
-              left: '-20%',
-              top: '-1%',
-              width: '140%',
-              height: '102%',
-              objectFit: 'cover'
-            }}
-          />
-
-          {/* Theme-Adaptive Atmosphere Blends */}
-          {isDark ? (
-            <>
-              {/* Dark Rustic Mode: Nighttime espresso/charcoal atmospheric blends */}
-              <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0a0705] via-[#0a0705]/60 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#0a0705] to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#0a0705] via-transparent to-transparent pointer-events-none" />
-              <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0a0705]/70 to-transparent pointer-events-none" />
-            </>
-          ) : (
-            <>
-              {/* Warm Beige Mode: Crisp, natural daylight vignette blending into #faf6f0 */}
-              <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#faf6f0] via-[#faf6f0]/50 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#faf6f0] via-[#faf6f0]/40 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#faf6f0] via-[#faf6f0]/60 to-transparent pointer-events-none" />
-              <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#faf6f0] via-[#faf6f0]/50 to-transparent pointer-events-none" />
-            </>
-          )}
-
-          {/* Architectural Rooftop VINKRI Billboard Display with 3D Scaffolding & Spotlights */}
+        {/* Architectural Rooftop VINKRI Billboard Display with 3D Scaffolding & Spotlights */}
+        <div className="relative w-full pt-2.5 px-4 z-20">
           <div
-            className="absolute z-25 flex flex-col items-center cursor-pointer group pointer-events-auto"
-            style={{ top: '0.2%', left: '23%', width: '54%', height: '6.4%' }}
+            className="w-full max-w-[62%] mx-auto flex flex-col items-center cursor-pointer group"
             onClick={() => {
               if (onOpenStorePhilosophy) onOpenStorePhilosophy();
             }}
             title="VINKRI Flagship Rooftop Billboard • Hyderabad Atelier (Click to learn more)"
           >
-            {/* Top Architectural Spotlights (3 overhead floodlights angled downward) */}
-            <div className="w-full flex justify-around px-8 -mb-1 relative z-30 pointer-events-none">
+            {/* Top Spotlights (3 overhead floodlights angled downward) */}
+            <div className="w-full flex justify-around px-8 -mb-0.5 relative z-30 pointer-events-none">
               {[0, 1, 2].map((spot) => (
                 <div key={spot} className="flex flex-col items-center">
-                  {/* Spotlight fixture head */}
                   <div
                     className={`w-2.5 h-1.5 rounded-t-xs border transition-colors ${
                       isDark
@@ -253,9 +190,8 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         : 'bg-[#ebdcd0] border-[#c35626]/50 shadow-[0_1px_4px_rgba(195,86,38,0.15)]'
                     }`}
                   />
-                  {/* Downward light beam cone */}
                   <div
-                    className={`w-6 h-4 -mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity blur-[2px] ${
+                    className={`w-6 h-3 -mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity blur-[2px] ${
                       isDark
                         ? 'bg-gradient-to-b from-[#d2f53a]/40 to-transparent'
                         : 'bg-gradient-to-b from-amber-400/30 to-transparent'
@@ -265,48 +201,16 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               ))}
             </div>
 
-            {/* Main Billboard Housing Enclosure - Matches Theme Mode Palette */}
+            {/* Main Billboard Housing Enclosure */}
             <div
-              className={`relative w-full flex-1 rounded-md flex items-center justify-between px-2 sm:px-3 overflow-hidden transition-all duration-300 border ${
+              className={`relative w-full h-8 sm:h-10 rounded-md flex items-center justify-between px-2 sm:px-4 overflow-hidden transition-all duration-300 border ${
                 isDark
-                  ? 'bg-black/95 border-[#4a3726] shadow-[0_0_35px_rgba(210,245,58,0.35),0_10px_25px_rgba(0,0,0,0.9)] group-hover:border-[#d2f53a] group-hover:shadow-[0_0_45px_rgba(210,245,58,0.65)]'
-                  : 'bg-[#faf6f0] border-[#c35626]/50 shadow-[0_6px_22px_rgba(195,86,38,0.22),0_2px_8px_rgba(60,40,25,0.08)] group-hover:border-[#c35626] group-hover:shadow-[0_8px_30px_rgba(195,86,38,0.38)]'
+                  ? 'bg-black/95 border-[#4a3726] shadow-[0_0_35px_rgba(210,245,58,0.35),0_10px_25px_rgba(0,0,0,0.9)] group-hover:border-[#d2f53a]'
+                  : 'bg-[#faf6f0] border-[#c35626]/50 shadow-[0_6px_22px_rgba(195,86,38,0.22),0_2px_8px_rgba(60,40,25,0.08)] group-hover:border-[#c35626]'
               }`}
             >
-              {/* Corner Metallic Fastener Rivets */}
               <div
-                className={`absolute top-1 left-1 w-1 h-1 rounded-full border ${
-                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
-                }`}
-              />
-              <div
-                className={`absolute top-1 right-1 w-1 h-1 rounded-full border ${
-                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
-                }`}
-              />
-              <div
-                className={`absolute bottom-1 left-1 w-1 h-1 rounded-full border ${
-                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
-                }`}
-              />
-              <div
-                className={`absolute bottom-1 right-1 w-1 h-1 rounded-full border ${
-                  isDark ? 'bg-white/30 border-black/50' : 'bg-[#c35626]/30 border-[#c35626]/60'
-                }`}
-              />
-
-              {/* Internal Luminous Backlight Aura */}
-              <div
-                className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
-                  isDark
-                    ? 'bg-gradient-to-r from-[#d2f53a]/15 via-white/10 to-[#d2f53a]/15 group-hover:opacity-100 opacity-70 animate-pulse'
-                    : 'bg-gradient-to-r from-[#c35626]/8 via-amber-200/25 to-[#c35626]/8 opacity-80 group-hover:opacity-100'
-                }`}
-              />
-
-              {/* Sub-badge Left: HYDERABAD */}
-              <div
-                className={`relative z-10 hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0 ${
+                className={`hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0 ${
                   isDark ? 'text-[#a89685]' : 'text-[#8c6b54]'
                 }`}
               >
@@ -318,8 +222,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 <span>HYD</span>
               </div>
 
-              {/* Center VINKRI Official Logo - Inverts cleanly for light theme beige background */}
-              <div className="relative z-10 flex-1 flex items-center justify-center px-1">
+              <div className="flex-1 flex items-center justify-center px-1">
                 <img
                   src="/assets/aistudio/50547_5739e055.jpg"
                   alt="VINKRI Flagship Billboard"
@@ -331,33 +234,17 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 />
               </div>
 
-              {/* Sub-badge Right: ATELIER */}
-              <div className="relative z-10 hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0">
-                <span className={isDark ? 'text-[#d2f53a]' : 'text-[#c35626] font-semibold'}>ATELIER</span>
+              <div className="hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0">
+                <span className={isDark ? 'text-[#d2f53a]' : 'text-[#c35626] font-semibold'}>
+                  ATELIER
+                </span>
               </div>
-
-              {/* Glowing Neon Edge Accent Strips (Top & Bottom rails) */}
-              <div
-                className={`absolute top-0 inset-x-0 h-[1.5px] transition-colors ${
-                  isDark
-                    ? 'bg-gradient-to-r from-transparent via-[#d2f53a] to-transparent opacity-80 group-hover:opacity-100'
-                    : 'bg-gradient-to-r from-transparent via-[#c35626] to-transparent opacity-90 group-hover:opacity-100'
-                }`}
-              />
-              <div
-                className={`absolute bottom-0 inset-x-0 h-[1.5px] transition-colors ${
-                  isDark
-                    ? 'bg-gradient-to-r from-transparent via-[#d2f53a] to-transparent opacity-80 group-hover:opacity-100'
-                    : 'bg-gradient-to-r from-transparent via-[#c35626] to-transparent opacity-90 group-hover:opacity-100'
-                }`}
-              />
             </div>
 
-            {/* Bottom Architectural Steel Support Struts / Girders */}
-            <div className="w-full flex justify-around px-6 sm:px-12 -mt-0.5 relative z-10 pointer-events-none opacity-85">
+            {/* Bottom Support Struts */}
+            <div className="w-full flex justify-around px-8 -mt-0.5 relative z-10 pointer-events-none opacity-85">
               {[0, 1, 2, 3].map((girder) => (
                 <div key={girder} className="flex flex-col items-center">
-                  {/* Vertical steel strut */}
                   <div
                     className={`w-0.5 sm:w-1 h-1.5 ${
                       isDark
@@ -365,7 +252,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         : 'bg-[#b09d8b] border-x border-[#8c7866]'
                     }`}
                   />
-                  {/* Rooftop anchor base plate */}
                   <div
                     className={`w-2 sm:w-2.5 h-0.5 rounded-full ${
                       isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/80'
@@ -375,90 +261,110 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Interactive Architectural Floor Layers */}
-          <div className="absolute inset-0 z-10 pointer-events-auto">
-            {floorsConfig.map((floor) => {
-              const floorData = FLOORS_DATA.find((f) => f.numeric === floor.number);
-              const isHovered = hoveredFloor === floor.number;
-              const isSelected = selectedFloorNumber === floor.number;
+        {/* Roof Parapet Slice */}
+        <div className="relative w-full -mt-0.5 leading-none">
+          <img
+            src={isDark ? '/assets/aistudio/slices/dark_roof.jpg' : '/assets/aistudio/slices/light_roof.jpg'}
+            alt="Roof"
+            className="w-full h-auto block select-none pointer-events-none"
+            style={{ aspectRatio: '1376 / 45' }}
+          />
+        </div>
 
-              // Left badge column dimensions
-              const leftBadgeStyle = { left: '1.5%', width: '19.5%', height: '100%' };
+        {/* 5-Story Stack of Floors with In-Place Vertical Shelf Expansion */}
+        <div className="relative w-full flex flex-col">
+          {floorsConfig.map((floor) => {
+            const isHovered = hoveredFloor === floor.number;
+            const isExpanded = expandedFloorNumber === floor.number;
+            const floorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === floor.number);
 
-              // Middle 3-room grid dimensions
-              const roomsGridStyle = { left: '21.5%', width: '57%', height: '100%' };
+            // Left badge column dimensions
+            const leftBadgeStyle = { left: '1.5%', width: '19.5%', height: '100%' };
+            // Middle 3-room grid dimensions
+            const roomsGridStyle = { left: '21.5%', width: '57%', height: '100%' };
+            // Right indicator column dimensions
+            const rightMarkerStyle = { left: '79.5%', width: '19%', height: '100%' };
 
-              // Right indicator column dimensions
-              const rightMarkerStyle = { left: '79.5%', width: '19%', height: '100%' };
+            // Breakdown into 2 shelf tiers of 3 creations each:
+            const shelfRow1Products = floorProducts.slice(3, 6);
+            const shelfRow2Products = floorProducts.slice(6, 9);
 
-              return (
+            return (
+              <div key={floor.number} className="relative w-full flex flex-col">
+                {/* 1. TOP VITRINE WINDOW SLICE (Floor 0X: 3 display windows with original products) */}
                 <div
-                  key={floor.number}
                   onMouseEnter={() => setHoveredFloor(floor.number)}
                   onMouseLeave={() => setHoveredFloor(null)}
-                  onClick={() => {
-                    if (floorData) triggerMoveToFloor(floorData);
-                    else if (floor.number === 0 && onOpenStorePhilosophy) onOpenStorePhilosophy();
-                  }}
-                  style={{
-                    top: floor.top,
-                    height: floor.height,
-                    left: '0%',
-                    width: '100%'
-                  }}
-                  className={`absolute cursor-pointer transition-all duration-300 ${
-                    isHovered
+                  onClick={() => handleToggleFloor(floor.number)}
+                  className={`relative w-full cursor-pointer transition-all duration-300 ${
+                    isExpanded
                       ? isDark
-                        ? 'bg-white/[0.03] ring-1 ring-[#d2f53a]/20'
-                        : 'bg-[#c35626]/[0.03] ring-1 ring-[#c35626]/20'
+                        ? 'ring-2 ring-[#d2f53a] shadow-[0_0_25px_rgba(210,245,58,0.25)] z-20'
+                        : 'ring-2 ring-[#c35626] shadow-[0_0_25px_rgba(195,86,38,0.2)] z-20'
+                      : isHovered
+                      ? isDark
+                        ? 'ring-1 ring-[#d2f53a]/40'
+                        : 'ring-1 ring-[#c35626]/40'
                       : ''
                   }`}
+                  style={{ aspectRatio: floor.aspectRatio }}
                 >
-                  {/* Left Column: Interactive Hotspot over Floor Category Badge */}
+                  <img
+                    src={isDark ? floor.sliceDark : floor.sliceLight}
+                    alt={floor.name}
+                    className="w-full h-full object-cover block select-none pointer-events-none"
+                  />
+
+                  {/* Left Column: Floor Category Badge */}
                   <div
-                    onClick={() => {
-                      if (floorData) triggerMoveToFloor(floorData);
-                      else if (floor.number === 0 && onOpenStorePhilosophy) onOpenStorePhilosophy();
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleFloor(floor.number);
                     }}
                     style={leftBadgeStyle}
-                    className="absolute inset-y-0 cursor-pointer flex items-center px-1 sm:px-1.5 z-20 group/badge"
-                    title={`Filter by ${floor.name}`}
+                    className="absolute inset-y-0 cursor-pointer flex items-center px-1 sm:px-2 z-20 group/badge"
+                    title={`Click to ${isExpanded ? 'collapse' : 'open and expand'} Level 0${floor.number} · ${floor.name}`}
                   >
                     <div
-                      className={`w-full h-[88%] rounded-lg transition-all duration-200 flex flex-col justify-center px-1.5 sm:px-2 py-0.5 sm:py-1 border shadow-xs ${
-                        isDark
-                          ? isHovered || isSelected
-                            ? 'bg-[#1e150f]/95 border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(210,245,58,0.2)] ring-1 ring-[#d2f53a]/30'
-                            : 'bg-[#18120d]/80 hover:bg-[#1e150f]/95 border-[#382b20]'
-                          : isHovered || isSelected
-                          ? 'bg-[#faf6f0]/95 border-[#c35626]/60 shadow-[0_4px_16px_rgba(195,86,38,0.15)] ring-1 ring-[#c35626]/30'
+                      className={`w-full h-[88%] rounded-lg transition-all duration-200 flex flex-col justify-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 border shadow-xs ${
+                        isExpanded
+                          ? isDark
+                            ? 'bg-[#1e150f] border-[#d2f53a] shadow-[0_4px_16px_rgba(210,245,58,0.25)]'
+                            : 'bg-[#faf6f0] border-[#c35626] shadow-[0_4px_16px_rgba(195,86,38,0.2)]'
+                          : isDark
+                          ? isHovered
+                            ? 'bg-[#1e150f]/95 border-[#d2f53a]/60'
+                            : 'bg-[#18120d]/85 border-[#382b20]'
+                          : isHovered
+                          ? 'bg-[#faf6f0]/95 border-[#c35626]/60'
                           : 'bg-[#faf6f0]/75 hover:bg-[#faf6f0]/90 border-[#e8ded0]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span
-                          className={`text-[7px] sm:text-[8px] font-mono font-black tracking-wider sm:tracking-widest truncate ${
+                          className={`text-[7px] sm:text-[8px] font-mono font-black tracking-wider truncate ${
                             isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
                           }`}
                         >
                           0{floor.number} · FLOOR
                         </span>
-                        <ChevronRight
-                          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 shrink-0 transition-transform ${
+                        <ChevronDown
+                          className={`w-2.5 h-2.5 shrink-0 transition-transform duration-300 ${
                             isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                          } ${isHovered || isSelected ? 'translate-x-0.5' : 'opacity-40'}`}
+                          } ${isExpanded ? 'rotate-180' : isHovered ? 'translate-y-0.5' : 'opacity-40'}`}
                         />
                       </div>
                       <p
-                        className={`text-[8.5px] sm:text-[10px] font-black tracking-tight leading-none truncate mt-0.5 ${
+                        className={`text-[8px] sm:text-[10px] font-black tracking-tight leading-none truncate mt-0.5 ${
                           isDark ? 'text-white' : 'text-[#1e140d]'
                         }`}
                       >
                         {floor.name}
                       </p>
                       <span
-                        className={`text-[7.5px] truncate block mt-0.5 font-medium ${
+                        className={`text-[7px] truncate block mt-0.5 font-medium ${
                           isDark ? 'text-[#a89685]' : 'text-[#786452]'
                         }`}
                       >
@@ -467,66 +373,71 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     </div>
                   </div>
 
-                  {/* Middle Column: 3 Transparent Glass Chamber Hotspots (Products are visually inside the building!) */}
-                  {floor.rooms.length > 0 ? (
-                    <div
-                      style={roomsGridStyle}
-                      className="absolute inset-y-0 grid grid-cols-3 gap-1 px-1 py-1 z-20"
-                    >
-                      {floor.rooms.map((room) => {
-                        const isThisRoomHovered =
-                          hoveredRoom?.floor === floor.number && hoveredRoom?.slot === room.slot;
-                        const isJustAdded = addedId === room.productId;
+                  {/* Middle Column: 3 Transparent Glass Chamber Hotspots */}
+                  <div
+                    style={roomsGridStyle}
+                    className="absolute inset-y-0 grid grid-cols-3 gap-1 px-1 py-1 z-20"
+                  >
+                    {floor.rooms.map((room) => {
+                      const isThisRoomHovered =
+                        hoveredRoom?.floor === floor.number && hoveredRoom?.slot === room.slot;
+                      const prod = PRODUCTS_DATA.find((p) => p.id === room.productId);
+                      const isJustAdded = addedId === room.productId;
 
-                        return (
+                      return (
+                        <div
+                          key={room.slot}
+                          onMouseEnter={() =>
+                            setHoveredRoom({
+                              floor: floor.number,
+                              slot: room.slot,
+                              productId: room.productId
+                            })
+                          }
+                          onMouseLeave={() => setHoveredRoom(null)}
+                          onClick={(e) => handleRoomClick(e, room.productId, floor.number)}
+                          className={`group/room relative rounded-md cursor-pointer transition-all duration-200 flex flex-col justify-end p-1.5 overflow-hidden border ${
+                            isThisRoomHovered
+                              ? isDark
+                                ? 'bg-white/[0.08] border-white/50 shadow-[inset_0_0_20px_rgba(255,255,255,0.2)]'
+                                : 'bg-[#c35626]/[0.06] border-[#c35626]/60 shadow-[inset_0_0_20px_rgba(195,86,38,0.18)]'
+                              : 'bg-transparent border-transparent hover:bg-white/[0.04]'
+                          }`}
+                          title={`Inspect ${room.title} (₹${room.price.toLocaleString('en-IN')})`}
+                        >
+                          {/* Hover Quick Action Card at bottom of glass bay */}
                           <div
-                            key={room.slot}
-                            onMouseEnter={() =>
-                              setHoveredRoom({ floor: floor.number, slot: room.slot, productId: room.productId })
-                            }
-                            onMouseLeave={() => setHoveredRoom(null)}
-                            onClick={(e) => handleRoomClick(e, room.productId, floor.number, room.slot)}
-                            className={`group/room relative rounded-md cursor-pointer transition-all duration-200 flex flex-col justify-end p-1.5 overflow-hidden border ${
+                            className={`transition-all duration-200 rounded-md p-1 sm:p-1.5 text-left border shadow-2xl z-30 ${
                               isThisRoomHovered
-                                ? isDark
-                                  ? 'bg-white/[0.08] border-white/50 shadow-[inset_0_0_20px_rgba(255,255,255,0.2)] ring-1 ring-white/40'
-                                  : 'bg-[#c35626]/[0.06] border-[#c35626]/60 shadow-[inset_0_0_20px_rgba(195,86,38,0.18)] ring-1 ring-[#c35626]/40'
-                                : 'bg-transparent border-transparent hover:bg-white/[0.04]'
+                                ? 'opacity-100 translate-y-0 pointer-events-auto'
+                                : 'opacity-0 translate-y-2 pointer-events-none'
+                            } ${
+                              isDark
+                                ? 'bg-black/92 text-white border-white/30 backdrop-blur-md'
+                                : 'bg-white/95 text-[#1c140e] border-[#c35626]/30 backdrop-blur-md'
                             }`}
-                            title={`Step inside Level 0${floor.number} · ${room.title} (₹${room.price.toLocaleString('en-IN')})`}
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            {/* Hover Quick Action Pill: Compact & Non-overlapping at the bottom of the glass bay */}
-                            <div
-                              className={`transition-all duration-200 rounded-md p-1.5 text-left border shadow-2xl z-30 ${
-                                isThisRoomHovered
-                                  ? 'opacity-100 translate-y-0 pointer-events-auto'
-                                  : 'opacity-0 translate-y-2 pointer-events-none'
-                              } ${
-                                isDark
-                                  ? 'bg-black/92 text-white border-white/30 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
-                                  : 'bg-white/95 text-[#1c140e] border-[#c35626]/30 backdrop-blur-md shadow-[0_4px_20px_rgba(195,86,38,0.2)]'
-                              }`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <div className="flex items-center justify-between gap-1.5">
-                                <div
-                                  className="min-w-0 flex-1 cursor-pointer"
-                                  onClick={(e) => handleRoomClick(e, room.productId, floor.number, room.slot)}
+                            <div className="flex items-center justify-between gap-1.5">
+                              <div
+                                className="min-w-0 flex-1 cursor-pointer"
+                                onClick={(e) => handleRoomClick(e, room.productId, floor.number)}
+                              >
+                                <p className="text-[9px] sm:text-[10px] font-black truncate leading-tight">
+                                  {room.title}
+                                </p>
+                                <span
+                                  className={`text-[8px] sm:text-[9px] font-bold font-mono ${
+                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                                  }`}
                                 >
-                                  <p className="text-[10px] font-black truncate leading-tight">
-                                    {room.title}
-                                  </p>
-                                  <span
-                                    className={`text-[9px] font-bold font-mono ${
-                                      isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                                    }`}
-                                  >
-                                    ₹{room.price.toLocaleString('en-IN')}
-                                  </span>
-                                </div>
+                                  ₹{room.price.toLocaleString('en-IN')}
+                                </span>
+                              </div>
 
+                              {prod && (
                                 <button
-                                  onClick={(e) => handleQuickAddRoom(e, room.productId)}
+                                  onClick={(e) => handleQuickAdd(e, prod)}
                                   className={`p-1 rounded text-[9px] font-bold flex items-center justify-center cursor-pointer transition-all shrink-0 ${
                                     isJustAdded
                                       ? 'bg-emerald-500 text-white'
@@ -542,59 +453,36 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                                     <Plus className="w-2.5 h-2.5 stroke-[3]" />
                                   )}
                                 </button>
-                              </div>
+                              )}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    /* Ground Floor: Transparent Storefront Hotspot */
-                    <div
-                      onClick={() => {
-                        if (onOpenStorePhilosophy) onOpenStorePhilosophy();
-                      }}
-                      style={roomsGridStyle}
-                      className="absolute inset-y-0 px-2 py-1 flex items-center justify-center cursor-pointer group/store z-20"
-                      title="Enter VINKRI Flagship Boutique • Hyderabad"
-                    >
-                      <div
-                        className={`w-full h-full rounded-md transition-all flex items-center justify-center ${
-                          isDark
-                            ? 'group-hover/store:bg-white/10 group-hover/store:ring-1 group-hover/store:ring-[#d2f53a]/40'
-                            : 'group-hover/store:bg-[#c35626]/10 group-hover/store:ring-1 group-hover/store:ring-[#c35626]/40'
-                        }`}
-                      >
-                        <div
-                          className={`opacity-0 group-hover/store:opacity-100 transition-opacity px-3 py-1 rounded text-[10px] font-extrabold uppercase tracking-widest border shadow-xl ${
-                            isDark
-                              ? 'bg-black/90 text-[#d2f53a] border-white/20'
-                              : 'bg-white/95 text-[#c35626] border-[#dfd2bf]'
-                          }`}
-                        >
-                          Enter Boutique Storefront →
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
 
-                  {/* Right Column: Interactive Hotspot over Floor Number Marker */}
+                  {/* Right Column: Floor Number Marker & Expand Indicator */}
                   <div
-                    onClick={() => {
-                      if (floorData) triggerMoveToFloor(floorData);
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleFloor(floor.number);
                     }}
                     style={rightMarkerStyle}
                     className="absolute inset-y-0 cursor-pointer flex items-center justify-center group/marker z-20"
-                    title={`Floor 0${floor.number}`}
+                    title={`Floor 0${floor.number} - Click to ${isExpanded ? 'collapse' : 'expand'}`}
                   >
                     <div
                       className={`px-2 py-1 rounded-md transition-all flex items-center gap-1 border shadow-xs ${
-                        isDark
-                          ? isHovered || isSelected
-                            ? 'bg-[#1e150f]/95 border-[#d2f53a]/60 shadow-[0_2px_10px_rgba(210,245,58,0.2)] ring-1 ring-[#d2f53a]/30'
+                        isExpanded
+                          ? isDark
+                            ? 'bg-[#1e150f] border-[#d2f53a] shadow-[0_2px_10px_rgba(210,245,58,0.2)]'
+                            : 'bg-white border-[#c35626] shadow-[0_2px_10px_rgba(195,86,38,0.15)]'
+                          : isDark
+                          ? isHovered
+                            ? 'bg-[#1e150f]/95 border-[#d2f53a]/60'
                             : 'bg-[#18120d]/80 hover:bg-[#1e150f]/95 border-[#382b20]'
-                          : isHovered || isSelected
-                          ? 'bg-white/95 border-[#c35626]/60 shadow-[0_2px_10px_rgba(195,86,38,0.15)] ring-1 ring-[#c35626]/30'
+                          : isHovered
+                          ? 'bg-white/95 border-[#c35626]/60'
                           : 'bg-white/60 hover:bg-white/80 border-[#e8ded0]'
                       }`}
                     >
@@ -610,68 +498,448 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                           isDark ? 'text-[#c9b9a8]' : 'text-[#45372d]'
                         }`}
                       >
-                        FLOOR
+                        {isExpanded ? 'CLOSE' : 'EXPAND'}
                       </span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Glowing Floor Chamber Entrance Portal when transitioning */}
-                  {isMovingToFloor && movingFloorNumber === floor.number && (
+                {/* 2. THE EXPANDING SHELVES DRAWER (EXACTLY AS SHOWN IN THE VIDEO) */}
+                {/* Expands downwards right inside the building with horizontal wooden beams & vertical dividers, pushing the lower floors down */}
+                <div
+                  className={`relative w-full overflow-hidden transition-all duration-700 ease-in-out ${
+                    isExpanded
+                      ? 'max-h-[1400px] opacity-100 z-10'
+                      : 'max-h-0 opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <div
+                    className={`w-full transition-colors flex flex-col ${
+                      isDark
+                        ? 'bg-[#120c08] border-y border-[#3d2c1d]'
+                        : 'bg-[#faf4ec] border-y border-[#decbb8]'
+                    }`}
+                  >
+                    {/* Horizontal Wooden Beam Above Expanding Shelves */}
                     <div
-                      className="absolute inset-0 pointer-events-none z-30 rounded-lg overflow-hidden border-2 animate-floor-chamber-glow"
-                      style={{
-                        borderColor: floor.color,
-                        backgroundColor: isDark ? 'rgba(10, 7, 5, 0.78)' : 'rgba(250, 246, 240, 0.82)',
-                        boxShadow: `0 0 35px ${floor.color}90, inset 0 0 25px ${floor.color}50`
-                      }}
+                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y ${
+                        isDark
+                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
+                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
+                      }`}
+                    />
+
+                    {/* Department Quick Header Banner */}
+                    <div
+                      className={`w-full px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between border-b transition-colors ${
+                        isDark
+                          ? 'border-[#2c1d12] bg-[#160f09]/80'
+                          : 'border-[#decbb8] bg-[#f5ede1]/80'
+                      }`}
                     >
-                      <div
-                        className="absolute inset-0 animate-beam-sweep"
-                        style={{
-                          background: `linear-gradient(90deg, transparent 0%, ${floor.color}45 50%, transparent 100%)`
-                        }}
-                      />
-                      <div className="relative z-10 w-full h-full flex items-center justify-between px-3 sm:px-4">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <span
-                            className="w-2 h-2 rounded-full animate-ping"
-                            style={{ backgroundColor: floor.color }}
-                          />
-                          <span
-                            className="font-mono text-[9px] sm:text-xs font-black tracking-widest uppercase"
-                            style={{ color: floor.color }}
-                          >
-                            ENTERING LEVEL 0{floor.number} · {floor.name}
-                          </span>
-                        </div>
-                        <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-wider text-[#a89685] hidden sm:inline-block">
-                          HYDERABAD ATELIER
+                      <div className="flex items-center gap-1.5 sm:gap-2.5">
+                        <div
+                          className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full animate-pulse"
+                          style={{ backgroundColor: floor.color }}
+                        />
+                        <span
+                          className="text-[8px] sm:text-[10px] font-mono font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded border"
+                          style={{
+                            backgroundColor: `${floor.color}15`,
+                            borderColor: `${floor.color}40`,
+                            color: floor.color
+                          }}
+                        >
+                          LEVEL 0{floor.number} · SHELVES
+                        </span>
+                        <span
+                          className={`text-xs sm:text-sm font-black tracking-tight ${
+                            isDark ? 'text-white' : 'text-[#1e140d]'
+                          }`}
+                        >
+                          {floor.name}
+                        </span>
+                        <span
+                          className={`hidden md:inline text-[9px] font-mono ${
+                            isDark ? 'text-[#8a7563]' : 'text-[#8c7866]'
+                          }`}
+                        >
+                          (6 Curated Artisan Creations on Display)
                         </span>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
 
-          {/* Bottom Right Architectural Signature: "IDEAS INTO EVERYDAY OBJECTS →" */}
-          <div
-            onClick={() => {
-              if (onOpenStorePhilosophy) onOpenStorePhilosophy();
-            }}
-            style={{ bottom: '2.5%', right: '2.5%' }}
-            className="absolute z-20 cursor-pointer group"
-          >
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        {onSelectFloor && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onSelectFloor(
+                                FLOORS_DATA.find((f) => f.numeric === floor.number) || FLOORS_DATA[0]
+                              )
+                            }
+                            className={`text-[8.5px] sm:text-[10px] font-mono font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-md border transition-all flex items-center gap-1 cursor-pointer ${
+                              isDark
+                                ? 'bg-[#1f150e] text-[#d2f53a] hover:bg-[#281b12] border-[#382618]'
+                                : 'bg-white text-[#c35626] hover:bg-[#fbf7f2] border-[#dfd2be]'
+                            }`}
+                            title="View full floor page with catalog"
+                          >
+                            <span>Floor View</span>
+                            <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFloor(floor.number)}
+                          className={`text-[8.5px] sm:text-[10px] font-mono font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border transition-all flex items-center gap-1 cursor-pointer ${
+                            isDark
+                              ? 'bg-[#1f150e] text-[#c9b9a8] hover:text-white border-[#382618]'
+                              : 'bg-white text-[#786452] hover:text-[#1e140d] border-[#dfd2be]'
+                          }`}
+                          title="Collapse floor shelves"
+                        >
+                          <span>Close</span>
+                          <ChevronUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* SHELF TIER 1: 3 CARDS WITH VISIBLE PRODUCT IMAGES */}
+                    <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                        {shelfRow1Products.map((product, idx) => {
+                          const isInCart = cartProductIds.includes(product.id);
+                          const isJustAdded = addedId === product.id;
+
+                          return (
+                            <div
+                              key={product.id}
+                              onClick={() => onSelectProduct(product)}
+                              className={`group/card relative rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between transition-all duration-300 cursor-pointer border animate-drop-cascade ${
+                                isDark
+                                  ? 'bg-[#18110b] hover:bg-[#1f150e] border-[#2c1d12] hover:border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(210,245,58,0.15)] hover:scale-[1.015]'
+                                  : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/70 shadow-[0_3px_12px_rgba(195,86,38,0.06)] hover:shadow-[0_8px_24px_rgba(195,86,38,0.12)] hover:scale-[1.015]'
+                              }`}
+                              style={{ animationDelay: `${idx * 80 + 50}ms` }}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span
+                                    className={`text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                                      isDark
+                                        ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
+                                        : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
+                                    }`}
+                                  >
+                                    SHELF 01 · BAY 0{idx + 1}
+                                  </span>
+                                  <div className="flex items-center gap-0.5 text-amber-500 text-[8.5px] sm:text-[9.5px] font-mono font-bold">
+                                    <Star className="w-2.5 h-2.5 fill-amber-500" />
+                                    <span>{product.rating}</span>
+                                  </div>
+                                </div>
+
+                                {/* Product Image Viewport */}
+                                <div
+                                  className={`relative aspect-[4/3] sm:aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden border mb-1.5 sm:mb-2 flex items-center justify-center p-1.5 transition-all duration-300 ${
+                                    isDark
+                                      ? 'bg-[#090604] border-[#261910] group-hover/card:border-[#d2f53a]/40 shadow-inner'
+                                      : 'bg-[#faf4ec] border-[#e6dac9] group-hover/card:border-[#c35626]/40 shadow-inner'
+                                  }`}
+                                >
+                                  <ProductArtwork
+                                    productId={product.id}
+                                    aspectRatio="square"
+                                    theme={theme}
+                                    objectFit="cover"
+                                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
+                                  />
+
+                                  {/* Quick view button */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onSelectProduct(product);
+                                    }}
+                                    className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10 p-1 sm:p-1.5 rounded-md opacity-0 group-hover/card:opacity-100 transition-opacity backdrop-blur-md border shadow-xs cursor-pointer ${
+                                      isDark
+                                        ? 'bg-black/75 text-white hover:text-[#d2f53a] border-white/20'
+                                        : 'bg-white/90 text-[#1e140d] hover:text-[#c35626] border-[#decbb7]'
+                                    }`}
+                                    title="View Details"
+                                  >
+                                    <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                  </button>
+                                </div>
+
+                                <h4
+                                  className={`text-[9.5px] sm:text-xs md:text-sm font-black tracking-tight leading-snug line-clamp-1 group-hover/card:underline ${
+                                    isDark ? 'text-white' : 'text-[#1e140d]'
+                                  }`}
+                                  style={{ fontFamily: 'var(--font-display)' }}
+                                >
+                                  {product.name}
+                                </h4>
+
+                                <p
+                                  className={`text-[8px] sm:text-[9.5px] line-clamp-1 mt-0.5 ${
+                                    isDark ? 'text-[#a89685]' : 'text-[#69584b]'
+                                  }`}
+                                >
+                                  {product.description || product.shortTag}
+                                </p>
+                              </div>
+
+                              <div
+                                className={`pt-1.5 mt-1.5 sm:pt-2 sm:mt-2 border-t flex items-center justify-between gap-1 ${
+                                  isDark ? 'border-[#261910]' : 'border-[#eedfcb]'
+                                }`}
+                              >
+                                <span
+                                  className={`text-[10.5px] sm:text-xs md:text-sm font-black font-mono ${
+                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                                  }`}
+                                >
+                                  ₹{product.price.toLocaleString('en-IN')}
+                                </span>
+
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleQuickAdd(e, product)}
+                                    className={`py-1 px-1.5 sm:px-2.5 rounded-md sm:rounded-lg text-[8.5px] sm:text-[10px] font-mono font-black uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
+                                      isJustAdded
+                                        ? 'bg-emerald-500 text-white'
+                                        : isDark
+                                        ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
+                                        : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
+                                    }`}
+                                  >
+                                    {isJustAdded ? (
+                                      <Check className="w-3 h-3 stroke-[3]" />
+                                    ) : (
+                                      <>
+                                        <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                        <span>{isInCart ? '+1' : 'Add'}</span>
+                                      </>
+                                    )}
+                                  </button>
+
+                                  {isInCart && onRemoveFromCart && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRemoveFromCart(product.id);
+                                      }}
+                                      className="p-1 rounded-md border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
+                                      title="Remove from trolley"
+                                    >
+                                      <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Horizontal Wooden Divider Beam */}
+                    <div
+                      className={`w-full h-1.5 sm:h-2 shadow-inner border-y ${
+                        isDark
+                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
+                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
+                      }`}
+                    />
+
+                    {/* SHELF TIER 2: 3 CARDS WITH VISIBLE PRODUCT IMAGES */}
+                    <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
+                        {shelfRow2Products.map((product, idx) => {
+                          const isInCart = cartProductIds.includes(product.id);
+                          const isJustAdded = addedId === product.id;
+
+                          return (
+                            <div
+                              key={product.id}
+                              onClick={() => onSelectProduct(product)}
+                              className={`group/card relative rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between transition-all duration-300 cursor-pointer border animate-drop-cascade ${
+                                isDark
+                                  ? 'bg-[#18110b] hover:bg-[#1e150e] border-[#2c1d12] hover:border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(210,245,58,0.15)] hover:scale-[1.015]'
+                                  : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/70 shadow-[0_3px_12px_rgba(195,86,38,0.06)] hover:shadow-[0_8px_24px_rgba(195,86,38,0.12)] hover:scale-[1.015]'
+                              }`}
+                              style={{ animationDelay: `${(idx + 3) * 80 + 50}ms` }}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span
+                                    className={`text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+                                      isDark
+                                        ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
+                                        : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
+                                    }`}
+                                  >
+                                    SHELF 02 · BAY 0{idx + 4}
+                                  </span>
+
+                                  <div className="flex items-center gap-0.5 text-amber-500 text-[8.5px] sm:text-[9.5px] font-mono font-bold">
+                                    <Star className="w-2.5 h-2.5 fill-amber-500" />
+                                    <span>{product.rating}</span>
+                                  </div>
+                                </div>
+
+                                {/* Product Image Viewport */}
+                                <div
+                                  className={`relative aspect-[4/3] sm:aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden border mb-1.5 sm:mb-2 flex items-center justify-center p-1.5 transition-all duration-300 ${
+                                    isDark
+                                      ? 'bg-[#090604] border-[#261910] group-hover/card:border-[#d2f53a]/40 shadow-inner'
+                                      : 'bg-[#faf4ec] border-[#e6dac9] group-hover/card:border-[#c35626]/40 shadow-inner'
+                                  }`}
+                                >
+                                  <ProductArtwork
+                                    productId={product.id}
+                                    aspectRatio="square"
+                                    theme={theme}
+                                    objectFit="cover"
+                                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
+                                  />
+
+                                  {/* Quick view button */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onSelectProduct(product);
+                                    }}
+                                    className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10 p-1 sm:p-1.5 rounded-md opacity-0 group-hover/card:opacity-100 transition-opacity backdrop-blur-md border shadow-xs cursor-pointer ${
+                                      isDark
+                                        ? 'bg-black/75 text-white hover:text-[#d2f53a] border-white/20'
+                                        : 'bg-white/90 text-[#1e140d] hover:text-[#c35626] border-[#decbb7]'
+                                    }`}
+                                    title="View Details"
+                                  >
+                                    <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                  </button>
+                                </div>
+
+                                <h4
+                                  className={`text-[9.5px] sm:text-xs md:text-sm font-black tracking-tight leading-snug line-clamp-1 group-hover/card:underline ${
+                                    isDark ? 'text-white' : 'text-[#1e140d]'
+                                  }`}
+                                  style={{ fontFamily: 'var(--font-display)' }}
+                                >
+                                  {product.name}
+                                </h4>
+
+                                <p
+                                  className={`text-[8px] sm:text-[9.5px] line-clamp-1 mt-0.5 ${
+                                    isDark ? 'text-[#a89685]' : 'text-[#69584b]'
+                                  }`}
+                                >
+                                  {product.description || product.shortTag}
+                                </p>
+                              </div>
+
+                              <div
+                                className={`pt-1.5 mt-1.5 sm:pt-2 sm:mt-2 border-t flex items-center justify-between gap-1 ${
+                                  isDark ? 'border-[#261910]' : 'border-[#eedfcb]'
+                                }`}
+                              >
+                                <span
+                                  className={`text-[10.5px] sm:text-xs md:text-sm font-black font-mono ${
+                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
+                                  }`}
+                                >
+                                  ₹{product.price.toLocaleString('en-IN')}
+                                </span>
+
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleQuickAdd(e, product)}
+                                    className={`py-1 px-1.5 sm:px-2.5 rounded-md sm:rounded-lg text-[8.5px] sm:text-[10px] font-mono font-black uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
+                                      isJustAdded
+                                        ? 'bg-emerald-500 text-white'
+                                        : isDark
+                                        ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
+                                        : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
+                                    }`}
+                                  >
+                                    {isJustAdded ? (
+                                      <Check className="w-3 h-3 stroke-[3]" />
+                                    ) : (
+                                      <>
+                                        <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                        <span>{isInCart ? '+1' : 'Add'}</span>
+                                      </>
+                                    )}
+                                  </button>
+
+                                  {isInCart && onRemoveFromCart && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRemoveFromCart(product.id);
+                                      }}
+                                      className="p-1 rounded-md border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
+                                      title="Remove from trolley"
+                                    >
+                                      <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Bottom Horizontal Wooden Beam */}
+                    <div
+                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y ${
+                        isDark
+                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
+                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Ground Floor Atelier Storefront (Pushed down when floors expand) */}
+        <div
+          onClick={() => {
+            if (onOpenStorePhilosophy) onOpenStorePhilosophy();
+          }}
+          className="relative w-full cursor-pointer group/atelier leading-none"
+          title="Enter VINKRI Flagship Atelier Boutique • Hyderabad"
+        >
+          <img
+            src={isDark ? '/assets/aistudio/slices/dark_ground.jpg' : '/assets/aistudio/slices/light_ground.jpg'}
+            alt="VINKRI Flagship Atelier Boutique"
+            className="w-full h-auto block select-none pointer-events-none"
+            style={{ aspectRatio: '1376 / 196' }}
+          />
+
+          <div className="absolute inset-x-0 bottom-3 flex justify-center pointer-events-none">
             <div
-              className={`text-[8px] sm:text-[11px] font-extrabold tracking-[0.12em] sm:tracking-[0.2em] uppercase px-2 sm:px-3 py-1 sm:py-1.5 rounded-md backdrop-blur-md transition-all flex items-center gap-1 sm:gap-1.5 border shadow-lg ${
+              className={`opacity-0 group-hover/atelier:opacity-100 transition-opacity px-3 py-1 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-widest border shadow-xl ${
                 isDark
-                  ? 'bg-black/85 hover:bg-black text-[#d2f53a] border-white/20 group-hover:border-[#d2f53a]'
-                  : 'bg-[#faf6f0]/95 hover:bg-white text-[#c35626] border-[#dfd2bf] shadow-md group-hover:border-[#c35626]'
+                  ? 'bg-black/90 text-[#d2f53a] border-white/20'
+                  : 'bg-white/95 text-[#c35626] border-[#dfd2bf]'
               }`}
             >
-              <span>IDEAS INTO EVERYDAY OBJECTS</span>
-              <span className="transition-transform group-hover:translate-x-1">→</span>
+              Enter Boutique Storefront →
             </div>
           </div>
         </div>

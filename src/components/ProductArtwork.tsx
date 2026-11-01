@@ -53,7 +53,30 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
     'pit-lane-garage': '/assets/images/diecast_car_stand_1792823666503.jpg',
     'rotary-acrylic-pod': '/assets/images/car_showcase_1792822133725.jpg',
     'amber-crystal-orb': '/assets/images/moon_tree_light_1792822133142.jpg',
-    'infinity-mirror-prism': '/assets/images/floating_levitron_1792823852255.jpg'
+    'infinity-mirror-prism': '/assets/images/floating_levitron_1792823852255.jpg',
+    // Floor 5 Additional
+    'kinetic-gyro-ring': '/assets/images/grid_cube_toy_1792822134419.jpg',
+    'mag-lev-top': '/assets/images/automaton_horse_1792823850330.jpg',
+    'articulated-chameleon': '/assets/images/chrome_serpent_1792823850606.jpg',
+    'perpetual-pendulum-track': '/assets/images/basketball_shooter_1792823665203.jpg',
+    // Floor 4 Additional
+    'kyoto-rain-temple': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    'deep-sea-trench': '/assets/images/aeroplane_diorama_1792823666542.jpg',
+    'cyberpunk-alley-nook': '/assets/images/mount_everest_light_1792822132587.jpg',
+    'enchanted-moss-hollow': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    // Floor 3 Additional
+    'vintage-gas-station': '/assets/images/diecast_car_stand_1792823666503.jpg',
+    'carbon-apex-dock': '/assets/images/car_showcase_1792822133725.jpg',
+    'touge-hairpin-stand': '/assets/images/tiered_track_rack_1792823874061.jpg',
+    'dust-free-pod': '/assets/images/car_showcase_1792822133725.jpg',
+    // Floor 2 Additional
+    'family-heirloom-trio': '/assets/images/custom_couple_figurine_1792823872735.jpg',
+    'cyber-mecha-companion': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
+    'mini-pet-portrait': '/assets/images/custom_couple_figurine_1792823872735.jpg',
+    'origami-bronze-crane': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
+    // Floor 1 Additional
+    'travertine-column-luminaire': '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
+    'smoked-amber-filament': '/assets/images/moon_tree_light_1792822133142.jpg'
   };
 
   // Coordinates from the reference image for any remaining items
