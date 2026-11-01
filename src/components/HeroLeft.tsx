@@ -123,7 +123,7 @@ export const HeroLeft: React.FC<HeroLeftProps> = ({
 
         {/* 3 product cards in horizontal grid */}
         <div className="grid grid-cols-3 gap-3">
-          {topSellers.map((product) => (
+          {topSellers.slice(0, 3).map((product) => (
             <div
               key={product.id}
               onClick={() => onSelectProduct(product)}

@@ -50,8 +50,8 @@ export default function App() {
   // Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Store Entrance Preview State (off by default so user lands straight into the building showcase)
-  const [isEntranceOpen, setIsEntranceOpen] = useState(false);
+  // Store Entrance Landing Experience (true on first load to display logo entrance)
+  const [isEntranceOpen, setIsEntranceOpen] = useState(true);
 
   // Modals state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -79,7 +79,7 @@ export default function App() {
     setIsDarkRoomOpen(true);
   };
 
-  const topSellers = PRODUCTS_DATA.filter((p) => p.isTopSeller);
+  const topSellers = PRODUCTS_DATA.filter((p) => p.isTopSeller).slice(0, 3);
   const shelfProducts = PRODUCTS_DATA.filter((p) => p.isOnShelf);
 
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -200,6 +200,7 @@ export default function App() {
         onOpenVirtualStudio={() => handleOpenDarkRoom()}
         activeNav={activeNav}
         onNavClick={handleNavClick}
+        onOpenEntrance={() => setIsEntranceOpen(true)}
       />
 
       {/* 2. Sub-Header Carousel ("ON THE SHELF") - shown on main building view */}
@@ -372,6 +373,12 @@ export default function App() {
         type={infoModalType}
         onClose={() => setInfoModalType(null)}
         theme={theme}
+      />
+
+      {/* Cinematic Logo Entrance Landing Overlay */}
+      <LogoEntranceIntro
+        isOpen={isEntranceOpen}
+        onEnterStore={() => setIsEntranceOpen(false)}
       />
 
       {/* Toast Notification */}

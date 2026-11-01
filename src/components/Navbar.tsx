@@ -14,6 +14,7 @@ interface NavbarProps {
   onOpenVirtualStudio: () => void;
   activeNav: string;
   onNavClick: (nav: string) => void;
+  onOpenEntrance?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -27,7 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTracker,
   onOpenVirtualStudio,
   activeNav,
-  onNavClick
+  onNavClick,
+  onOpenEntrance
 }) => {
   const isDark = theme === 'rustic-dark';
   const navItems = ['HOME', 'ABOUT', 'SHOP', 'PROCESS', 'CONTACT'];
@@ -42,8 +44,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Left: Brand Official Logo */}
         <div className="flex items-center">
           <button
-            onClick={() => onNavClick('HOME')}
+            onClick={() => {
+              onNavClick('HOME');
+              if (onOpenEntrance) {
+                onOpenEntrance();
+              }
+            }}
             className="group flex items-center gap-2 focus:outline-none cursor-pointer py-1"
+            title="VINKRI Home (Click to replay brand intro)"
             aria-label="VINKRI Home"
           >
             <div
