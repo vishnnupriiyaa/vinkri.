@@ -1,33 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Plus,
-  Check,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  Star,
-  ShoppingBag,
-  Trash2,
-  Heart,
-  Layers
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { RotateCcw, Play, Eye, ShoppingBag, Check, Sparkles } from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
-import { ProductArtwork } from './ProductArtwork';
 
 interface BuildingShowcaseProps {
   theme: ThemeMode;
   onSelectFloor?: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
   selectedFloorNumber?: number | null;
-  onSelectProduct: (product: Product) => void;
-  onQuickAdd: (product: Product) => void;
+  onSelectProduct?: (product: Product) => void;
+  onQuickAdd?: (product: Product) => void;
   onOpenStorePhilosophy?: () => void;
   wishlistIds?: string[];
   onToggleWishlist?: (productId: string) => void;
   cartProductIds?: string[];
   onRemoveFromCart?: (productId: string) => void;
+  isEntranceOpen?: boolean;
 }
+
+const FLOOR_CATEGORIES = [
+  { number: 5, name: 'LEVEL 05', category: 'DESK TOYS', tagline: 'Play. Fidget. Display.' },
+  { number: 4, name: 'LEVEL 04', category: 'CUSTOM DIORAMAS', tagline: 'Mini worlds. Big stories.' },
+  { number: 3, name: 'LEVEL 03', category: 'DIECAST CAR STANDS', tagline: 'Display. Organize. Collect.' },
+  { number: 2, name: 'LEVEL 02', category: 'CUSTOM FIGURINES', tagline: 'People. Moments. Memories.' },
+  { number: 1, name: 'LEVEL 01', category: 'LUXURY CASES & STANDS', tagline: 'Preserve. Protect. Illuminate.' },
+];
 
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   theme,
@@ -35,915 +32,685 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   selectedFloorNumber,
   onSelectProduct,
   onQuickAdd,
-  onOpenStorePhilosophy,
-  wishlistIds = [],
-  onToggleWishlist,
   cartProductIds = [],
-  onRemoveFromCart
+  isEntranceOpen = false
 }) => {
   const isDark = theme === 'rustic-dark';
-  const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
-  const [hoveredRoom, setHoveredRoom] = useState<{
-    floor: number;
-    slot: 'left' | 'center' | 'right';
-    productId?: string;
-  } | null>(null);
-  const [addedId, setAddedId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Active in-building expanding floor (starts with null or selectedFloorNumber)
-  const [expandedFloorNumber, setExpandedFloorNumber] = useState<number | null>(3);
+  // Active floor number (default: 3, matching the reference video)
+  const [activeFloor, setActiveFloor] = useState<number>(3);
 
-  // Keep expandedFloorNumber in sync if parent selectedFloorNumber changes
+  // Whether the drop down is expanded (false = intact 5-story cabinet, true = drop down state)
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  // Active hovered product niche index (0 to 5)
+  const [hoveredProductIndex, setHoveredProductIndex] = useState<number | null>(null);
+
+  // Quick-add feedback
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
+
+  // Synchronize when selectedFloorNumber changes externally
   useEffect(() => {
-    if (selectedFloorNumber !== undefined) {
-      setExpandedFloorNumber(selectedFloorNumber);
+    if (selectedFloorNumber !== undefined && selectedFloorNumber !== null) {
+      setActiveFloor(selectedFloorNumber);
+      setIsExpanded(true);
     }
   }, [selectedFloorNumber]);
 
-  // Unified 5-story architectural floor configuration matching the exact cropped slices
-  const floorsConfig = [
-    {
-      number: 5,
-      name: 'DESK TOYS',
-      color: isDark ? '#3b82f6' : '#2563eb',
-      tagline: 'Play. Fidget. Display.',
-      sliceLight: '/assets/aistudio/slices/light_floor5.jpg',
-      sliceDark: '/assets/aistudio/slices/dark_floor5.jpg',
-      aspectRatio: '1376 / 106',
-      rooms: [
-        { slot: 'left' as const, productId: 'grid-cube', title: 'Grid Cube', price: 1899 },
-        { slot: 'center' as const, productId: 'automaton-horse', title: 'Automaton Horse', price: 4499 },
-        { slot: 'right' as const, productId: 'chrome-snake', title: 'Chrome Serpent', price: 2799 }
-      ]
-    },
-    {
-      number: 4,
-      name: 'CUSTOM DIORAMAS',
-      color: isDark ? '#10b981' : '#059669',
-      tagline: 'Mini worlds. Big stories.',
-      sliceLight: '/assets/aistudio/slices/light_floor4.jpg',
-      sliceDark: '/assets/aistudio/slices/dark_floor4.jpg',
-      aspectRatio: '1376 / 105',
-      rooms: [
-        { slot: 'left' as const, productId: 'mount-everest-light', title: 'Mount Everest Light', price: 2499 },
-        { slot: 'center' as const, productId: 'aeroplane-diorama', title: 'Aeroplane Diorama', price: 3299 },
-        { slot: 'right' as const, productId: 'bonsai-sanctuary', title: 'Bonsai Sanctuary', price: 3899 }
-      ]
-    },
-    {
-      number: 3,
-      name: 'DIECAST CAR STANDS',
-      color: isDark ? '#f59e0b' : '#d97706',
-      tagline: 'Display. Organize. Collect.',
-      sliceLight: '/assets/aistudio/slices/light_floor3.jpg',
-      sliceDark: '/assets/aistudio/slices/dark_floor3.jpg',
-      aspectRatio: '1376 / 106',
-      rooms: [
-        { slot: 'left' as const, productId: 'diecast-stack', title: 'Collector 1:64 Stack', price: 2899 },
-        { slot: 'center' as const, productId: 'car-showcase', title: 'Car Showcase', price: 3499 },
-        { slot: 'right' as const, productId: 'tiered-track-rack', title: 'Track Showcase', price: 2699 }
-      ]
-    },
-    {
-      number: 2,
-      name: 'CUSTOM FIGURINES',
-      color: isDark ? '#f43f5e' : '#e11d48',
-      tagline: 'People. Moments. Memories.',
-      sliceLight: '/assets/aistudio/slices/light_floor2.jpg',
-      sliceDark: '/assets/aistudio/slices/dark_floor2.jpg',
-      aspectRatio: '1376 / 105',
-      rooms: [
-        { slot: 'left' as const, productId: 'custom-figurine-duo', title: 'Portrait Duo', price: 4999 },
-        { slot: 'center' as const, productId: 'buddha-halo-lamp', title: 'Buddha Halo Lamp', price: 3699 },
-        { slot: 'right' as const, productId: 'shiva-trishul-lamp', title: 'Shiva Trishul Aura', price: 3799 }
-      ]
-    },
-    {
-      number: 1,
-      name: 'DECOR LAMPS',
-      color: isDark ? '#f97316' : '#ea580c',
-      tagline: 'Light up your space.',
-      sliceLight: '/assets/aistudio/slices/light_floor1.jpg',
-      sliceDark: '/assets/aistudio/slices/dark_floor1.jpg',
-      aspectRatio: '1376 / 105',
-      rooms: [
-        { slot: 'left' as const, productId: 'crescent-bonsai', title: 'Crescent Moon Bonsai', price: 3199 },
-        { slot: 'center' as const, productId: 'moon-tree-light', title: 'Moon Tree Light', price: 2499 },
-        { slot: 'right' as const, productId: 'floating-levitron', title: 'Floating Levitron', price: 4999 }
-      ]
+  // Handle floor click toggle
+  const handleToggleFloor = (floorNum?: number) => {
+    if (floorNum !== undefined) {
+      if (activeFloor === floorNum && isExpanded) {
+        setIsExpanded(false);
+        return;
+      }
+      setActiveFloor(floorNum);
+      setIsExpanded(true);
+      const floorInfo = FLOORS_DATA.find((f) => f.numeric === floorNum);
+      if (floorInfo && onSelectFloor) onSelectFloor(floorInfo);
+      return;
     }
-  ];
 
-  const handleToggleFloor = (floorNumber: number) => {
-    setExpandedFloorNumber((prev) => (prev === floorNumber ? null : floorNumber));
+    setIsExpanded((prev) => {
+      const next = !prev;
+      if (next) {
+        const floorInfo = FLOORS_DATA.find((f) => f.numeric === activeFloor);
+        if (floorInfo && onSelectFloor) onSelectFloor(floorInfo);
+      }
+      return next;
+    });
   };
 
-  const handleRoomClick = (
-    e: React.MouseEvent,
-    productId: string,
-    floorNumber: number
-  ) => {
+  // Replay animation sequence from start
+  const handleReplaySequence = () => {
+    setIsExpanded(false);
+    setTimeout(() => {
+      setIsExpanded(true);
+    }, 1200);
+  };
+
+  const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
-    // If not already expanded, expand this floor
-    if (expandedFloorNumber !== floorNumber) {
-      setExpandedFloorNumber(floorNumber);
-    }
-    const prod = PRODUCTS_DATA.find((p) => p.id === productId);
-    if (prod) {
-      onSelectProduct(prod);
-    }
+    if (onQuickAdd) onQuickAdd(product);
+    setJustAddedId(product.id);
+    setTimeout(() => setJustAddedId(null), 1400);
   };
 
-  const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
-    e.stopPropagation();
-    onQuickAdd(product);
-    setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 1500);
-  };
+  // Products belonging to the active floor (9 items)
+  const allFloorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === activeFloor);
+  
+  // The 6 products displayed inside the empty animation space of Rows 2 & 3
+  const nicheProducts = allFloorProducts.slice(3, 9);
 
-  const renderShelfCard = (product: Product, bayNum: number, isCapsule: boolean, delayIdx: number) => {
-    const isInCart = cartProductIds.includes(product.id);
-    const isJustAdded = addedId === product.id;
+  const currentFloorConfig =
+    FLOOR_CATEGORIES.find((f) => f.number === activeFloor) || FLOOR_CATEGORIES[2];
 
-    return (
-      <div
-        key={product.id}
-        onClick={() => onSelectProduct(product)}
-        className={`group/card relative ${
-          isCapsule ? 'rounded-2xl sm:rounded-3xl' : 'rounded-xl sm:rounded-2xl'
-        } p-2 sm:p-3 flex flex-col justify-between transition-all duration-300 cursor-pointer border animate-drop-cascade ${
-          isDark
-            ? 'bg-[#18110b] hover:bg-[#1f150e] border-[#2c1d12] hover:border-[#d2f53a]/60 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(210,245,58,0.15)] hover:scale-[1.015]'
-            : 'bg-white hover:bg-[#fffdfa] border-[#e2d5c3] hover:border-[#c35626]/70 shadow-[0_3px_12px_rgba(195,86,38,0.06)] hover:shadow-[0_8px_24px_rgba(195,86,38,0.12)] hover:scale-[1.015]'
-        }`}
-        style={{ animationDelay: `${delayIdx * 70 + 50}ms` }}
-      >
-        <div>
-          <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-            <span
-              className={`text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
-                isDark
-                  ? 'bg-[#0f0a07] text-[#9c8979] border-[#2b1c11]'
-                  : 'bg-[#faf4ec] text-[#69584b] border-[#ded4c3]'
-              }`}
-            >
-              BAY 0{bayNum}
-            </span>
-            <div className="flex items-center gap-0.5 text-amber-500 text-[8.5px] sm:text-[9.5px] font-mono font-bold">
-              <Star className="w-2.5 h-2.5 fill-amber-500" />
-              <span>{product.rating}</span>
-            </div>
-          </div>
-
-          {/* Product Image Viewport with visible studio photography */}
-          <div
-            className={`relative aspect-[4/3] sm:aspect-square w-full ${
-              isCapsule ? 'rounded-xl sm:rounded-2xl' : 'rounded-lg sm:rounded-xl'
-            } overflow-hidden border mb-1.5 sm:mb-2 flex items-center justify-center p-1.5 transition-all duration-300 ${
-              isDark
-                ? 'bg-[#090604] border-[#261910] group-hover/card:border-[#d2f53a]/40 shadow-inner'
-                : 'bg-[#faf4ec] border-[#e6dac9] group-hover/card:border-[#c35626]/40 shadow-inner'
-            }`}
-          >
-            <ProductArtwork
-              productId={product.id}
-              aspectRatio="square"
-              theme={theme}
-              objectFit="cover"
-              className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300"
-            />
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelectProduct(product);
-              }}
-              className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10 p-1 sm:p-1.5 rounded-md opacity-0 group-hover/card:opacity-100 transition-opacity backdrop-blur-md border shadow-xs cursor-pointer ${
-                isDark
-                  ? 'bg-black/75 text-white hover:text-[#d2f53a] border-white/20'
-                  : 'bg-white/90 text-[#1e140d] hover:text-[#c35626] border-[#decbb7]'
-              }`}
-              title="Inspect Details"
-            >
-              <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            </button>
-          </div>
-
-          <h4
-            className={`text-[9.5px] sm:text-xs md:text-sm font-black tracking-tight leading-snug line-clamp-1 group-hover/card:underline ${
-              isDark ? 'text-white' : 'text-[#1e140d]'
-            }`}
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            {product.name}
-          </h4>
-
-          <p
-            className={`text-[8px] sm:text-[9.5px] line-clamp-1 mt-0.5 ${
-              isDark ? 'text-[#a89685]' : 'text-[#69584b]'
-            }`}
-          >
-            {product.description || product.shortTag}
-          </p>
-        </div>
-
-        <div
-          className={`pt-1.5 mt-1.5 sm:pt-2 sm:mt-2 border-t flex items-center justify-between gap-1 ${
-            isDark ? 'border-[#261910]' : 'border-[#eedfcb]'
-          }`}
-        >
-          <span
-            className={`text-[10.5px] sm:text-xs md:text-sm font-black font-mono ${
-              isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-            }`}
-          >
-            ₹{product.price.toLocaleString('en-IN')}
-          </span>
-
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => handleQuickAdd(e, product)}
-              className={`py-1 px-1.5 sm:px-2.5 rounded-md sm:rounded-lg text-[8.5px] sm:text-[10px] font-mono font-black uppercase transition-all duration-200 flex items-center gap-1 cursor-pointer active:scale-95 ${
-                isJustAdded
-                  ? 'bg-emerald-500 text-white'
-                  : isDark
-                  ? 'bg-[#d2f53a] hover:bg-[#bce427] text-black font-black'
-                  : 'bg-[#c35626] hover:bg-[#a8471d] text-white font-black'
-              }`}
-            >
-              {isJustAdded ? (
-                <Check className="w-3 h-3 stroke-[3]" />
-              ) : (
-                <>
-                  <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                  <span>{isInCart ? '+1' : 'Add'}</span>
-                </>
-              )}
-            </button>
-
-            {isInCart && onRemoveFromCart && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveFromCart(product.id);
-                }}
-                className="p-1 rounded-md border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 transition-all cursor-pointer"
-                title="Remove from trolley"
-              >
-                <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Hero shelf image
+  const heroImageSrc =
+    activeFloor === 3
+      ? isDark
+        ? '/assets/aistudio/dark_floor3_hero.jpg'
+        : '/assets/aistudio/building_floor3_hero.jpg'
+      : isDark
+      ? `/assets/aistudio/crops/dark_floor${activeFloor}.jpg`
+      : `/assets/aistudio/crops/light_floor${activeFloor}.jpg`;
 
   return (
-    <div className="relative w-full flex flex-col justify-center select-none">
-      {/* Outer Building Architectural Frame */}
+    <div
+      ref={containerRef}
+      className="relative w-full flex flex-col items-center select-none font-sans"
+    >
+      {/* ============================================================== */}
+      {/* 1. TOP INTERACTIVE CONTROLLER BAR                              */}
+      {/* ============================================================== */}
       <div
-        className={`relative w-full rounded-3xl overflow-hidden shadow-2xl border transition-all duration-500 ${
+        className={`w-full max-w-[656px] mb-3 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between gap-2 border transition-all duration-300 shadow-sm ${
           isDark
-            ? 'bg-[#0a0705] border-[#2e2015] shadow-[0_20px_60px_rgba(0,0,0,0.9)]'
-            : 'bg-[#faf6f0] border-[#e2d5c3] shadow-[0_20px_60px_rgba(195,86,38,0.12)]'
+            ? 'bg-[#150e09] border-[#2c1d12] text-[#f7f2ea]'
+            : 'bg-[#faf6f0] border-[#decbb8] text-[#2c1e13]'
         }`}
       >
-        {/* Architectural Rooftop VINKRI Billboard Display with 3D Scaffolding & Spotlights */}
-        <div className="relative w-full pt-2.5 px-4 z-20">
-          <div
-            className="w-full max-w-[62%] mx-auto flex flex-col items-center cursor-pointer group"
-            onClick={() => {
-              if (onOpenStorePhilosophy) onOpenStorePhilosophy();
-            }}
-            title="VINKRI Flagship Rooftop Billboard • Hyderabad Atelier (Click to learn more)"
-          >
-            {/* Top Spotlights (3 overhead floodlights angled downward) */}
-            <div className="w-full flex justify-around px-8 -mb-0.5 relative z-30 pointer-events-none">
-              {[0, 1, 2].map((spot) => (
-                <div key={spot} className="flex flex-col items-center">
-                  <div
-                    className={`w-2.5 h-1.5 rounded-t-xs border transition-colors ${
-                      isDark
-                        ? 'bg-[#2a2017] border-[#4a3928] shadow-[0_0_8px_rgba(210,245,58,0.5)]'
-                        : 'bg-[#ebdcd0] border-[#c35626]/50 shadow-[0_1px_4px_rgba(195,86,38,0.15)]'
-                    }`}
-                  />
-                  <div
-                    className={`w-6 h-3 -mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity blur-[2px] ${
-                      isDark
-                        ? 'bg-gradient-to-b from-[#d2f53a]/40 to-transparent'
-                        : 'bg-gradient-to-b from-amber-400/30 to-transparent'
-                    }`}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Main Billboard Housing Enclosure */}
-            <div
-              className={`relative w-full h-8 sm:h-10 rounded-md flex items-center justify-between px-2 sm:px-4 overflow-hidden transition-all duration-300 border ${
-                isDark
-                  ? 'bg-black/95 border-[#4a3726] shadow-[0_0_35px_rgba(210,245,58,0.35),0_10px_25px_rgba(0,0,0,0.9)] group-hover:border-[#d2f53a]'
-                  : 'bg-[#faf6f0] border-[#c35626]/50 shadow-[0_6px_22px_rgba(195,86,38,0.22),0_2px_8px_rgba(60,40,25,0.08)] group-hover:border-[#c35626]'
-              }`}
-            >
-              <div
-                className={`hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0 ${
-                  isDark ? 'text-[#a89685]' : 'text-[#8c6b54]'
-                }`}
-              >
-                <span
-                  className={`w-1 h-1 rounded-full animate-pulse ${
-                    isDark ? 'bg-emerald-400' : 'bg-[#c35626]'
-                  }`}
-                />
-                <span>HYD</span>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center px-1">
-                <img
-                  src="/assets/aistudio/50547_5739e055.jpg"
-                  alt="VINKRI Flagship Billboard"
-                  className={`h-4 sm:h-5 md:h-6 w-auto max-w-[85%] object-contain group-hover:scale-105 transition-all duration-300 ${
-                    isDark
-                      ? 'filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'
-                      : 'filter invert mix-blend-multiply drop-shadow-[0_1px_3px_rgba(195,86,38,0.25)]'
-                  }`}
-                />
-              </div>
-
-              <div className="hidden sm:flex items-center gap-1 text-[7px] font-mono font-bold tracking-widest shrink-0">
-                <span className={isDark ? 'text-[#d2f53a]' : 'text-[#c35626] font-semibold'}>
-                  ATELIER
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom Support Struts */}
-            <div className="w-full flex justify-around px-8 -mt-0.5 relative z-10 pointer-events-none opacity-85">
-              {[0, 1, 2, 3].map((girder) => (
-                <div key={girder} className="flex flex-col items-center">
-                  <div
-                    className={`w-0.5 sm:w-1 h-1.5 ${
-                      isDark
-                        ? 'bg-[#3d2f21] border-x border-[#1a130c]'
-                        : 'bg-[#b09d8b] border-x border-[#8c7866]'
-                    }`}
-                  />
-                  <div
-                    className={`w-2 sm:w-2.5 h-0.5 rounded-full ${
-                      isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/80'
-                    }`}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Roof Parapet Slice */}
-        <div className="relative w-full -mt-0.5 leading-none">
-          <img
-            src={isDark ? '/assets/aistudio/slices/dark_roof.jpg' : '/assets/aistudio/slices/light_roof.jpg'}
-            alt="Roof"
-            className="w-full h-auto block select-none pointer-events-none"
-            style={{ aspectRatio: '1376 / 45' }}
-          />
-        </div>
-
-        {/* Suspended Floor Quick Reassembly & Floor Selector Bar */}
-        {expandedFloorNumber !== null && (
-          <div
-            className={`w-full px-3 py-2 sm:px-4 sm:py-2.5 flex items-center justify-between border-b transition-all duration-300 z-30 ${
-              isDark
-                ? 'bg-[#140e09] border-[#2c1d12] text-white shadow-md'
-                : 'bg-[#faf4ec] border-[#decbb8] text-[#1e140d] shadow-sm'
+        {/* Toggle / Reassemble Button */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleToggleFloor()}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-black uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 shadow-sm ${
+              isExpanded
+                ? isDark
+                  ? 'bg-[#e5a045] hover:bg-[#cca348] text-black font-black'
+                  : 'bg-[#008ba8] hover:bg-[#00748d] text-white font-black'
+                : isDark
+                ? 'bg-[#26170d] hover:bg-[#382314] text-[#f5c27d] border border-[#4a2e19]'
+                : 'bg-white hover:bg-neutral-100 text-[#006078] border border-[#decbb8]'
             }`}
           >
-            <button
-              type="button"
-              onClick={() => setExpandedFloorNumber(null)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] sm:text-xs font-mono font-bold transition-all cursor-pointer ${
-                isDark
-                  ? 'bg-[#22160d] text-[#d2f53a] hover:bg-[#2d1e12] border border-[#3d2919]'
-                  : 'bg-white text-[#c35626] hover:bg-[#fffdfa] border border-[#decbb8]'
-              }`}
-              title="Reassemble the entire 5-story building"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>← Reassemble Building</span>
-            </button>
+            <RotateCcw className="w-3 h-3" />
+            <span>{isExpanded ? 'Reassemble Cabinet' : 'Click Floor to Drop Down'}</span>
+          </button>
 
-            <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Active floor category badge */}
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono font-bold">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isExpanded
+                  ? isDark
+                    ? 'bg-[#e5a045] animate-pulse'
+                    : 'bg-[#008ba8] animate-pulse'
+                  : 'bg-emerald-500'
+              }`}
+            />
+            <span className="opacity-90">
+              {currentFloorConfig.name} • {currentFloorConfig.category}
+            </span>
+          </div>
+        </div>
+
+        {/* Floor Selection Pills (05 - 01) */}
+        <div className="flex items-center gap-1">
+          {FLOOR_CATEGORIES.map((f) => {
+            const isActive = activeFloor === f.number;
+            return (
+              <button
+                key={f.number}
+                type="button"
+                onClick={() => handleToggleFloor(f.number)}
+                className={`px-2.5 py-1 rounded text-[9.5px] font-mono font-black transition-all cursor-pointer ${
+                  isActive
+                    ? isDark
+                      ? 'bg-[#e5a045] text-black shadow-xs font-black'
+                      : 'bg-[#008ba8] text-white shadow-xs font-black'
+                    : isDark
+                    ? 'bg-[#20140c] text-[#a89685] hover:text-white border border-[#301f13]'
+                    : 'bg-white text-[#69584b] hover:text-[#1e140d] border border-[#decbb8]'
+                }`}
+                title={`Floor 0${f.number}: ${f.category} (Click to drop down products)`}
+              >
+                0{f.number}
+              </button>
+            );
+          })}
+
+          {/* Sequence Replay */}
+          <button
+            type="button"
+            onClick={handleReplaySequence}
+            className={`p-1.5 ml-1 rounded border transition-colors cursor-pointer ${
+              isDark
+                ? 'bg-[#20140c] text-[#a89685] hover:text-white border-[#301f13]'
+                : 'bg-white text-[#69584b] hover:text-[#1e140d] border-[#decbb8]'
+            }`}
+            title="Replay Video Drop Down Animation"
+          >
+            <Play className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 2. THE 656PX ARCHITECTURAL BUILDING VIEWPORT                    */}
+      {/* Exact UI Graphic from Video with Product Images in Empty Space  */}
+      {/* ============================================================== */}
+      <div
+        className={`relative w-full max-w-[656px] rounded-2xl overflow-hidden border transition-all duration-300 shadow-2xl ${
+          isDark
+            ? 'bg-[#0a0705] border-[#2e2015] shadow-[0_20px_50px_rgba(0,0,0,0.85)]'
+            : 'bg-[#faf6f0] border-[#decbb8] shadow-[0_20px_50px_rgba(195,86,38,0.12)]'
+        }`}
+      >
+        <div className="relative w-full flex flex-col items-center">
+          {/* ----------------------------------------------------------- */}
+          {/* SECTION A: UPPER SHELVING STRUCTURE                         */}
+          {/* Dimensions: 656 x 284px                                     */}
+          {/* Moves UPWARD and leaves canvas during drop down             */}
+          {/* ----------------------------------------------------------- */}
+          <motion.div
+            initial={false}
+            animate={{
+              y: isExpanded ? -380 : 0,
+              opacity: isExpanded ? 0 : 1,
+              height: isExpanded ? 0 : 'auto',
+              marginBottom: isExpanded ? 0 : undefined
+            }}
+            transition={{
+              duration: 0.75,
+              ease: [0.25, 1, 0.5, 1]
+            }}
+            className="w-full overflow-hidden origin-top select-none pointer-events-none"
+            style={{ width: '656px', maxWidth: '100%' }}
+          >
+            <img
+              src={
+                isDark
+                  ? '/assets/aistudio/dark_upper_floors.jpg'
+                  : '/assets/aistudio/building_upper_floors.jpg'
+              }
+              alt="Upper Shelving Structure"
+              className="w-full h-auto block select-none"
+              style={{ aspectRatio: '656 / 284' }}
+            />
+          </motion.div>
+
+          {/* ----------------------------------------------------------- */}
+          {/* SECTION B: HERO PRODUCT SHOWCASE (SELECTED FLOOR)           */}
+          {/* Dimensions: 656 x 104px                                     */}
+          {/* Interactive Trigger: Clicking triggers the drop down        */}
+          {/* ----------------------------------------------------------- */}
+          <div
+            onClick={() => handleToggleFloor()}
+            className="group/shelf relative w-full z-30 select-none cursor-pointer"
+            style={{ width: '656px', maxWidth: '100%' }}
+            title={isExpanded ? 'Click to reassemble cabinet' : 'Click to trigger video drop down'}
+          >
+            <img
+              src={heroImageSrc}
+              alt={`${currentFloorConfig.name} Showcase`}
+              className="w-full h-auto block select-none pointer-events-none group-hover/shelf:brightness-105 transition-[filter]"
+              style={{ aspectRatio: '656 / 104' }}
+            />
+
+            {/* Subtle Interactive Hover Prompt */}
+            <div className="absolute inset-0 bg-black/0 group-hover/shelf:bg-black/15 transition-colors flex items-center justify-between px-4 pointer-events-none">
               <span
-                className={`hidden sm:inline text-[8.5px] font-mono mr-1 ${
-                  isDark ? 'text-[#8a7563]' : 'text-[#8c7866]'
+                className={`text-[8.5px] sm:text-[9.5px] font-mono font-black uppercase px-2.5 py-1 rounded backdrop-blur-md border shadow-xs transition-opacity ${
+                  isExpanded
+                    ? isDark
+                      ? 'bg-[#22160d]/90 text-[#e5a045] border-[#e5a045]/60'
+                      : 'bg-[#008ba8]/90 text-white border-white/40'
+                    : isDark
+                    ? 'bg-[#150e09]/90 text-[#c2b09e] border-[#382618]'
+                    : 'bg-white/90 text-[#3a2517] border-[#decbb8]'
                 }`}
               >
-                SELECT FLOOR:
+                {currentFloorConfig.name} • {currentFloorConfig.category}
               </span>
-              {floorsConfig.map((fl) => (
-                <button
-                  key={fl.number}
-                  type="button"
-                  onClick={() => setExpandedFloorNumber(fl.number)}
-                  className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-mono font-bold transition-all cursor-pointer ${
-                    expandedFloorNumber === fl.number
-                      ? isDark
-                        ? 'bg-[#d2f53a] text-black font-black shadow-xs'
-                        : 'bg-[#c35626] text-white font-black shadow-xs'
-                      : isDark
-                      ? 'bg-[#1b120b] text-[#9c8979] hover:text-white border border-[#2b1c11]'
-                      : 'bg-white/80 text-[#786452] hover:text-[#1e140d] border border-[#dfd2be]'
-                  }`}
-                  title={`Switch to Level 0${fl.number} · ${fl.name}`}
-                >
-                  0{fl.number}
-                </button>
-              ))}
+
+              <span
+                className={`text-[8px] sm:text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded backdrop-blur-md border transition-all ${
+                  isExpanded
+                    ? 'bg-emerald-600 text-white border-emerald-400 opacity-90'
+                    : 'opacity-0 group-hover/shelf:opacity-100 ' +
+                      (isDark
+                        ? 'bg-[#e5a045] text-black border-[#e5a045]'
+                        : 'bg-[#008ba8] text-white border-[#005a6e]')
+                }`}
+              >
+                {isExpanded ? 'CLICK TO REASSEMBLE' : 'CLICK FLOOR TO EXPAND'}
+              </span>
             </div>
           </div>
-        )}
 
-        {/* 5-Story Stack of Floors with Dynamic Falling Floors & Hanging Products Physics */}
-        <div className="relative w-full flex flex-col">
-          {floorsConfig.map((floor) => {
-            const isHovered = hoveredFloor === floor.number;
-            const isExpanded = expandedFloorNumber === floor.number;
-            const isFloorAbove = expandedFloorNumber !== null && floor.number > expandedFloorNumber;
-            const isFloorBelow = expandedFloorNumber !== null && floor.number < expandedFloorNumber;
-            const floorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === floor.number);
+          {/* ----------------------------------------------------------- */}
+          {/* SECTION C: THE 3-ROW SUSPENDED GANTRY                       */}
+          {/* EXACT UI GRAPHIC FROM THE REFERENCE VIDEO                   */}
+          {/* Row 1: THREE SOLID BLUE RECTANGULAR BLOCKS (DROPS DOWN)     */}
+          {/* Rows 2 & 3: EMPTY ANIMATION SPACE FILLED WITH PRODUCT IMAGES*/}
+          {/* ----------------------------------------------------------- */}
+          <motion.div
+            initial={false}
+            animate={{
+              height: isExpanded ? 'auto' : 0,
+              opacity: isExpanded ? 1 : 0
+            }}
+            transition={{
+              duration: 0.65,
+              ease: [0.25, 1, 0.5, 1]
+            }}
+            className="relative w-full overflow-hidden z-20"
+            style={{ width: '656px', maxWidth: '100%' }}
+          >
+            {/* The Exact Architectural SVG Graphic */}
+            <svg
+              viewBox="0 0 656 248"
+              className="w-full h-auto block select-none"
+              style={{ aspectRatio: '656 / 248' }}
+            >
+              <defs>
+                {/* Light Mode Wood Gradients */}
+                <linearGradient id="lightWoodBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#d3c2af" />
+                  <stop offset="40%" stopColor="#bea892" />
+                  <stop offset="100%" stopColor="#9a836d" />
+                </linearGradient>
+                <linearGradient id="lightWoodPost" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#9a836d" />
+                  <stop offset="30%" stopColor="#d3c2af" />
+                  <stop offset="70%" stopColor="#bea892" />
+                  <stop offset="100%" stopColor="#8a735d" />
+                </linearGradient>
 
-            // Left badge column dimensions
-            const leftBadgeStyle = { left: '1.5%', width: '19.5%', height: '100%' };
-            // Middle 3-room grid dimensions
-            const roomsGridStyle = { left: '21.5%', width: '57%', height: '100%' };
-            // Right indicator column dimensions
-            const rightMarkerStyle = { left: '79.5%', width: '19%', height: '100%' };
+                {/* Dark Mode Wood Gradients */}
+                <linearGradient id="darkWoodBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#3a2517" />
+                  <stop offset="40%" stopColor="#26160d" />
+                  <stop offset="100%" stopColor="#160c06" />
+                </linearGradient>
+                <linearGradient id="darkWoodPost" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#160c06" />
+                  <stop offset="30%" stopColor="#3a2517" />
+                  <stop offset="70%" stopColor="#26160d" />
+                  <stop offset="100%" stopColor="#140a05" />
+                </linearGradient>
 
-            // 3 Tiers of 3 creations each (All 9 products of the floor):
-            // Tier 1: Hanging Capsule Pods (as seen in video frame 07)
-            const tier1Products = floorProducts.slice(3, 6);
-            // Tier 2: Hanging Showcase Bays
-            const tier2Products = floorProducts.slice(6, 9);
-            // Tier 3: Hanging Atelier Signature Creations
-            const tier3Products = floorProducts.slice(0, 3);
+                {/* Exact Reference Video Blue Gradient (Light Theme) */}
+                <linearGradient id="videoBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#0096b5" />
+                  <stop offset="50%" stopColor="#008ba8" />
+                  <stop offset="100%" stopColor="#007994" />
+                </linearGradient>
 
-            return (
-              <div
-                key={floor.number}
-                className={`relative w-full flex flex-col transition-all duration-700 origin-top ${
-                  isExpanded
-                    ? 'z-30 opacity-100 translate-y-0 max-h-none'
-                    : isFloorAbove
-                    ? 'max-h-0 -translate-y-[200px] opacity-0 overflow-hidden pointer-events-none scale-95'
-                    : isFloorBelow
-                    ? 'max-h-0 translate-y-[280px] opacity-0 overflow-hidden pointer-events-none scale-95'
-                    : 'max-h-[220px] opacity-100 translate-y-0 scale-100'
-                }`}
+                {/* Dark Theme Matching Color (Warm Amber-Gold / Cognac) */}
+                <linearGradient id="darkBlockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#e5a045" />
+                  <stop offset="60%" stopColor="#c48235" />
+                  <stop offset="100%" stopColor="#965f21" />
+                </linearGradient>
+
+                {/* Niche Ambient Warm Light Glow Filter */}
+                <radialGradient id="nicheLightGlow" cx="50%" cy="30%" r="60%">
+                  <stop offset="0%" stopColor="#fff8eb" stopOpacity={isDark ? "0.12" : "0.7"} />
+                  <stop offset="100%" stopColor="#fff8eb" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              {/* ------------------------------------------------------- */}
+              {/* ROW 1: 3 COMPARTMENTS WITH THREE SOLID BLUE BLOCKS      */}
+              {/* ------------------------------------------------------- */}
+              {/* Top Connecting Wooden Beam */}
+              <rect
+                x="0"
+                y="0"
+                width="656"
+                height="8"
+                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
+              />
+
+              {/* Row 1 Background Cells */}
+              <rect x="14" y="8" width="202" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
+              <rect x="226" y="8" width="204" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
+              <rect x="440" y="8" width="202" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
+
+              {/* Outer Left & Right Wooden Frame Pillars */}
+              <rect x="0" y="8" width="14" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="642" y="8" width="14" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+
+              {/* Interior Vertical Wooden Dividers */}
+              <rect x="216" y="8" width="10" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="430" y="8" width="10" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+
+              {/* THREE SOLID BLUE RECTANGULAR BLOCKS (DROPS DOWN) */}
+              <g
+                style={{
+                  transform: isExpanded ? 'translateY(0px)' : 'translateY(-70px)',
+                  opacity: isExpanded ? 1 : 0,
+                  transition: 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s, opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s'
+                }}
               >
-                {/* 1. TOP VITRINE WINDOW SLICE (Floor 0X: 3 display windows with original products) */}
-                <div
-                  onMouseEnter={() => setHoveredFloor(floor.number)}
-                  onMouseLeave={() => setHoveredFloor(null)}
-                  onClick={() => handleToggleFloor(floor.number)}
-                  className={`relative w-full cursor-pointer transition-all duration-300 ${
-                    isExpanded
-                      ? isDark
-                        ? 'ring-2 ring-[#d2f53a] shadow-[0_0_25px_rgba(210,245,58,0.25)] z-20'
-                        : 'ring-2 ring-[#c35626] shadow-[0_0_25px_rgba(195,86,38,0.2)] z-20'
-                      : isHovered
-                      ? isDark
-                        ? 'ring-1 ring-[#d2f53a]/40'
-                        : 'ring-1 ring-[#c35626]/40'
-                      : ''
-                  }`}
-                  style={{ aspectRatio: floor.aspectRatio }}
-                >
-                  <img
-                    src={isDark ? floor.sliceDark : floor.sliceLight}
-                    alt={floor.name}
-                    className="w-full h-full object-cover block select-none pointer-events-none"
-                  />
+                {/* Column 1 Blue Block */}
+                <rect
+                  x="28"
+                  y="14"
+                  width="174"
+                  height="54"
+                  rx="14"
+                  ry="14"
+                  fill={isDark ? 'url(#darkBlockGrad)' : 'url(#videoBlueGrad)'}
+                  stroke={isDark ? '#e5a045' : '#00596c'}
+                  strokeWidth="2"
+                  className="cursor-pointer transition-transform hover:scale-[1.01]"
+                  onClick={() => allFloorProducts[0] && onSelectProduct && onSelectProduct(allFloorProducts[0])}
+                />
 
-                  {/* Left Column: Floor Category Badge */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleFloor(floor.number);
-                    }}
-                    style={leftBadgeStyle}
-                    className="absolute inset-y-0 cursor-pointer flex items-center px-1 sm:px-2 z-20 group/badge"
-                    title={`Click to ${isExpanded ? 'collapse' : 'open and expand'} Level 0${floor.number} · ${floor.name}`}
-                  >
+                {/* Column 2 Blue Block */}
+                <rect
+                  x="240"
+                  y="14"
+                  width="176"
+                  height="54"
+                  rx="14"
+                  ry="14"
+                  fill={isDark ? 'url(#darkBlockGrad)' : 'url(#videoBlueGrad)'}
+                  stroke={isDark ? '#e5a045' : '#00596c'}
+                  strokeWidth="2"
+                  className="cursor-pointer transition-transform hover:scale-[1.01]"
+                  onClick={() => allFloorProducts[1] && onSelectProduct && onSelectProduct(allFloorProducts[1])}
+                />
+
+                {/* Column 3 Blue Block */}
+                <rect
+                  x="454"
+                  y="14"
+                  width="174"
+                  height="54"
+                  rx="14"
+                  ry="14"
+                  fill={isDark ? 'url(#darkBlockGrad)' : 'url(#videoBlueGrad)'}
+                  stroke={isDark ? '#e5a045' : '#00596c'}
+                  strokeWidth="2"
+                  className="cursor-pointer transition-transform hover:scale-[1.01]"
+                  onClick={() => allFloorProducts[2] && onSelectProduct && onSelectProduct(allFloorProducts[2])}
+                />
+              </g>
+
+              {/* ------------------------------------------------------- */}
+              {/* ROW 2: THREE COMPARTMENTS WITH PRODUCT IMAGES           */}
+              {/* ------------------------------------------------------- */}
+              {/* Middle Horizontal Beam 1 */}
+              <rect
+                x="0"
+                y="74"
+                width="656"
+                height="8"
+                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
+              />
+
+              {/* Row 2 Background Cells */}
+              <rect x="14" y="82" width="202" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
+              <rect x="226" y="82" width="204" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
+              <rect x="440" y="82" width="202" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
+
+              {/* Ambient Spotlight Gradients in Row 2 */}
+              <rect x="14" y="82" width="202" height="70" fill="url(#nicheLightGlow)" />
+              <rect x="226" y="82" width="204" height="70" fill="url(#nicheLightGlow)" />
+              <rect x="440" y="82" width="202" height="70" fill="url(#nicheLightGlow)" />
+
+              {/* Outer Pillars & Inner Dividers */}
+              <rect x="0" y="82" width="14" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="642" y="82" width="14" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="216" y="82" width="10" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="430" y="82" width="10" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+
+              {/* ------------------------------------------------------- */}
+              {/* ROW 3: THREE COMPARTMENTS WITH PRODUCT IMAGES           */}
+              {/* ------------------------------------------------------- */}
+              {/* Middle Horizontal Beam 2 */}
+              <rect
+                x="0"
+                y="152"
+                width="656"
+                height="8"
+                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
+              />
+
+              {/* Row 3 Background Cells */}
+              <rect x="14" y="160" width="202" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
+              <rect x="226" y="160" width="204" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
+              <rect x="440" y="160" width="202" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
+
+              {/* Ambient Spotlight Gradients in Row 3 */}
+              <rect x="14" y="160" width="202" height="72" fill="url(#nicheLightGlow)" />
+              <rect x="226" y="160" width="204" height="72" fill="url(#nicheLightGlow)" />
+              <rect x="440" y="160" width="202" height="72" fill="url(#nicheLightGlow)" />
+
+              {/* Outer Pillars & Inner Dividers */}
+              <rect x="0" y="160" width="14" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="642" y="160" width="14" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="216" y="160" width="10" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="430" y="160" width="10" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+
+              {/* Bottom Foundation Wooden Beam */}
+              <rect
+                x="0"
+                y="232"
+                width="656"
+                height="16"
+                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
+              />
+            </svg>
+
+            {/* ========================================================= */}
+            {/* PRODUCT IMAGES DIRECTLY IN THE EMPTY SPACES (ROWS 2 & 3)  */}
+            {/* Pixel-perfect coordinates mapped directly to niches       */}
+            {/* ========================================================= */}
+            <div className="absolute inset-0 z-25 pointer-events-none">
+              {/* ROW 2: 3 Compartments with Product Images */}
+              <div
+                className="absolute flex items-center justify-between pointer-events-auto"
+                style={{
+                  top: '33.06%', // 82px / 248px
+                  height: '28.22%', // 70px / 248px
+                  left: '2.13%', // 14px / 656px
+                  right: '2.13%' // 14px / 656px
+                }}
+              >
+                {[0, 1, 2].map((i) => {
+                  const prod = nicheProducts[i];
+                  if (!prod) return <div key={i} className="flex-1" />;
+                  const isHovered = hoveredProductIndex === i;
+
+                  return (
                     <div
-                      className={`w-full h-[88%] rounded-lg transition-all duration-200 flex flex-col justify-center px-1.5 sm:px-2.5 py-0.5 sm:py-1 border shadow-xs ${
-                        isExpanded
-                          ? isDark
-                            ? 'bg-[#1e150f] border-[#d2f53a] shadow-[0_4px_16px_rgba(210,245,58,0.25)]'
-                            : 'bg-[#faf6f0] border-[#c35626] shadow-[0_4px_16px_rgba(195,86,38,0.2)]'
-                          : isDark
-                          ? isHovered
-                            ? 'bg-[#1e150f]/95 border-[#d2f53a]/60'
-                            : 'bg-[#18120d]/85 border-[#382b20]'
-                          : isHovered
-                          ? 'bg-[#faf6f0]/95 border-[#c35626]/60'
-                          : 'bg-[#faf6f0]/75 hover:bg-[#faf6f0]/90 border-[#e8ded0]'
-                      }`}
+                      key={prod.id}
+                      onMouseEnter={() => setHoveredProductIndex(i)}
+                      onMouseLeave={() => setHoveredProductIndex(null)}
+                      onClick={() => onSelectProduct && onSelectProduct(prod)}
+                      className="group/niche relative flex-1 h-full mx-1 flex flex-col items-center justify-center p-1.5 cursor-pointer overflow-hidden transition-all duration-300"
                     >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`text-[7px] sm:text-[8px] font-mono font-black tracking-wider truncate ${
-                            isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                          }`}
-                        >
-                          0{floor.number} · FLOOR
-                        </span>
-                        <ChevronDown
-                          className={`w-2.5 h-2.5 shrink-0 transition-transform duration-300 ${
-                            isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                          } ${isExpanded ? 'rotate-180' : isHovered ? 'translate-y-0.5' : 'opacity-40'}`}
-                        />
-                      </div>
-                      <p
-                        className={`text-[8px] sm:text-[10px] font-black tracking-tight leading-none truncate mt-0.5 ${
-                          isDark ? 'text-white' : 'text-[#1e140d]'
+                      {/* Product Image resting inside the niche */}
+                      <img
+                        src={prod.imageThumbnail}
+                        alt={prod.name}
+                        className="max-h-[82%] max-w-[85%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
+                      />
+
+                      {/* Floating Product Name & Price Badge on Hover */}
+                      <div
+                        className={`absolute bottom-1 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-sm ${
+                          isHovered
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-2'
+                        } ${
+                          isDark
+                            ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
+                            : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
                         }`}
                       >
-                        {floor.name}
-                      </p>
-                      <span
-                        className={`text-[7px] truncate block mt-0.5 font-medium ${
-                          isDark ? 'text-[#a89685]' : 'text-[#786452]'
-                        }`}
-                      >
-                        {floor.tagline}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Middle Column: 3 Transparent Glass Chamber Hotspots */}
-                  <div
-                    style={roomsGridStyle}
-                    className="absolute inset-y-0 grid grid-cols-3 gap-1 px-1 py-1 z-20"
-                  >
-                    {floor.rooms.map((room) => {
-                      const isThisRoomHovered =
-                        hoveredRoom?.floor === floor.number && hoveredRoom?.slot === room.slot;
-                      const prod = PRODUCTS_DATA.find((p) => p.id === room.productId);
-                      const isJustAdded = addedId === room.productId;
-
-                      return (
-                        <div
-                          key={room.slot}
-                          onMouseEnter={() =>
-                            setHoveredRoom({
-                              floor: floor.number,
-                              slot: room.slot,
-                              productId: room.productId
-                            })
-                          }
-                          onMouseLeave={() => setHoveredRoom(null)}
-                          onClick={(e) => handleRoomClick(e, room.productId, floor.number)}
-                          className={`group/room relative rounded-md cursor-pointer transition-all duration-200 flex flex-col justify-end p-1.5 overflow-hidden border ${
-                            isThisRoomHovered
-                              ? isDark
-                                ? 'bg-white/[0.08] border-white/50 shadow-[inset_0_0_20px_rgba(255,255,255,0.2)]'
-                                : 'bg-[#c35626]/[0.06] border-[#c35626]/60 shadow-[inset_0_0_20px_rgba(195,86,38,0.18)]'
-                              : 'bg-transparent border-transparent hover:bg-white/[0.04]'
-                          }`}
-                          title={`Inspect ${room.title} (₹${room.price.toLocaleString('en-IN')})`}
-                        >
-                          {/* Hover Quick Action Card at bottom of glass bay */}
-                          <div
-                            className={`transition-all duration-200 rounded-md p-1 sm:p-1.5 text-left border shadow-2xl z-30 ${
-                              isThisRoomHovered
-                                ? 'opacity-100 translate-y-0 pointer-events-auto'
-                                : 'opacity-0 translate-y-2 pointer-events-none'
-                            } ${
-                              isDark
-                                ? 'bg-black/92 text-white border-white/30 backdrop-blur-md'
-                                : 'bg-white/95 text-[#1c140e] border-[#c35626]/30 backdrop-blur-md'
-                            }`}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div className="flex items-center justify-between gap-1.5">
-                              <div
-                                className="min-w-0 flex-1 cursor-pointer"
-                                onClick={(e) => handleRoomClick(e, room.productId, floor.number)}
-                              >
-                                <p className="text-[9px] sm:text-[10px] font-black truncate leading-tight">
-                                  {room.title}
-                                </p>
-                                <span
-                                  className={`text-[8px] sm:text-[9px] font-bold font-mono ${
-                                    isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                                  }`}
-                                >
-                                  ₹{room.price.toLocaleString('en-IN')}
-                                </span>
-                              </div>
-
-                              {prod && (
-                                <button
-                                  onClick={(e) => handleQuickAdd(e, prod)}
-                                  className={`p-1 rounded text-[9px] font-bold flex items-center justify-center cursor-pointer transition-all shrink-0 ${
-                                    isJustAdded
-                                      ? 'bg-emerald-500 text-white'
-                                      : isDark
-                                      ? 'bg-[#d2f53a] text-black hover:scale-105'
-                                      : 'bg-[#c35626] text-white hover:scale-105'
-                                  }`}
-                                  title="Quick Add to Trolley"
-                                >
-                                  {isJustAdded ? (
-                                    <Check className="w-2.5 h-2.5" />
-                                  ) : (
-                                    <Plus className="w-2.5 h-2.5 stroke-[3]" />
-                                  )}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Right Column: Floor Number Marker & Expand Indicator */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleFloor(floor.number);
-                    }}
-                    style={rightMarkerStyle}
-                    className="absolute inset-y-0 cursor-pointer flex items-center justify-center group/marker z-20"
-                    title={`Floor 0${floor.number} - Click to ${isExpanded ? 'collapse' : 'expand'}`}
-                  >
-                    <div
-                      className={`px-2 py-1 rounded-md transition-all flex items-center gap-1 border shadow-xs ${
-                        isExpanded
-                          ? isDark
-                            ? 'bg-[#1e150f] border-[#d2f53a] shadow-[0_2px_10px_rgba(210,245,58,0.2)]'
-                            : 'bg-white border-[#c35626] shadow-[0_2px_10px_rgba(195,86,38,0.15)]'
-                          : isDark
-                          ? isHovered
-                            ? 'bg-[#1e150f]/95 border-[#d2f53a]/60'
-                            : 'bg-[#18120d]/80 hover:bg-[#1e150f]/95 border-[#382b20]'
-                          : isHovered
-                          ? 'bg-white/95 border-[#c35626]/60'
-                          : 'bg-white/60 hover:bg-white/80 border-[#e8ded0]'
-                      }`}
-                    >
-                      <span
-                        className={`text-[9px] font-mono font-black ${
-                          isDark ? 'text-[#d2f53a]' : 'text-[#c35626]'
-                        }`}
-                      >
-                        0{floor.number}
-                      </span>
-                      <span
-                        className={`text-[8px] font-bold uppercase tracking-wider ${
-                          isDark ? 'text-[#c9b9a8]' : 'text-[#45372d]'
-                        }`}
-                      >
-                        {isExpanded ? 'CLOSE' : 'EXPAND'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. THE HANGING SHELVES GANTRY (SUSPENDED DIRECTLY BENEATH THE FLOOR) */}
-                {/* When this floor is clicked, lower floors fall away and these 3 tiers hang suspended */}
-                <div
-                  className={`relative w-full overflow-hidden transition-all duration-700 ease-out ${
-                    isExpanded
-                      ? 'max-h-[2200px] opacity-100 z-10'
-                      : 'max-h-0 opacity-0 -translate-y-8 pointer-events-none'
-                  }`}
-                >
-                  <div
-                    className={`w-full transition-colors flex flex-col ${
-                      isDark
-                        ? 'bg-[#120c08] border-y border-[#3d2c1d]'
-                        : 'bg-[#faf4ec] border-y border-[#decbb8]'
-                    }`}
-                  >
-                    {/* Top Connecting Timber Beam with Brass Joint Rivets */}
-                    <div
-                      className={`w-full h-2.5 sm:h-3 shadow-inner border-y flex items-center justify-around px-8 ${
-                        isDark
-                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
-                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
-                      }`}
-                    >
-                      {[0, 1, 2, 3, 4, 5].map((rivet) => (
-                        <div
-                          key={rivet}
-                          className={`w-1 h-1 rounded-full ${
-                            isDark ? 'bg-[#5a4430] border border-black/40' : 'bg-[#c35626]/60 border border-white/60'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Department Quick Header Banner */}
-                    <div
-                      className={`w-full px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between border-b transition-colors ${
-                        isDark
-                          ? 'border-[#2c1d12] bg-[#160f09]/80'
-                          : 'border-[#decbb8] bg-[#f5ede1]/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 sm:gap-2.5">
-                        <div
-                          className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full animate-pulse"
-                          style={{ backgroundColor: floor.color }}
-                        />
-                        <span
-                          className="text-[8px] sm:text-[10px] font-mono font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded border"
-                          style={{
-                            backgroundColor: `${floor.color}15`,
-                            borderColor: `${floor.color}40`,
-                            color: floor.color
-                          }}
-                        >
-                          LEVEL 0{floor.number} · SUSPENDED ATELIER
+                        <span className="text-[8.5px] font-bold truncate max-w-[95px]">
+                          {prod.name}
                         </span>
                         <span
-                          className={`text-xs sm:text-sm font-black tracking-tight ${
-                            isDark ? 'text-white' : 'text-[#1e140d]'
+                          className={`text-[8.5px] font-mono font-black ${
+                            isDark ? 'text-[#e5a045]' : 'text-[#008ba8]'
                           }`}
                         >
-                          {floor.name}
+                          ₹{prod.price}
                         </span>
-                        <span
-                          className={`hidden md:inline text-[9px] font-mono ${
-                            isDark ? 'text-[#8a7563]' : 'text-[#8c7866]'
-                          }`}
-                        >
-                          (All 9 Artisan Creations on Hanging Shelves)
-                        </span>
-                      </div>
 
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        {onSelectFloor && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onSelectFloor(
-                                FLOORS_DATA.find((f) => f.numeric === floor.number) || FLOORS_DATA[0]
-                              )
-                            }
-                            className={`text-[8.5px] sm:text-[10px] font-mono font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-md border transition-all flex items-center gap-1 cursor-pointer ${
-                              isDark
-                                ? 'bg-[#1f150e] text-[#d2f53a] hover:bg-[#281b12] border-[#382618]'
-                                : 'bg-white text-[#c35626] hover:bg-[#fbf7f2] border-[#dfd2be]'
-                            }`}
-                            title="View full floor page with catalog"
-                          >
-                            <span>Floor View</span>
-                            <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                          </button>
-                        )}
                         <button
                           type="button"
-                          onClick={() => handleToggleFloor(floor.number)}
-                          className={`text-[8.5px] sm:text-[10px] font-mono font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border transition-all flex items-center gap-1 cursor-pointer ${
-                            isDark
-                              ? 'bg-[#1f150e] text-[#c9b9a8] hover:text-white border-[#382618]'
-                              : 'bg-white text-[#786452] hover:text-[#1e140d] border-[#dfd2be]'
+                          onClick={(e) => handleQuickAdd(prod, e)}
+                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors ${
+                            justAddedId === prod.id
+                              ? 'bg-emerald-500 text-white'
+                              : isDark
+                              ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
+                              : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
                           }`}
-                          title="Reassemble building"
+                          title="Quick Add"
                         >
-                          <span>Reassemble</span>
-                          <ChevronUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                          {justAddedId === prod.id ? (
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          ) : (
+                            <ShoppingBag className="w-2.5 h-2.5" />
+                          )}
                         </button>
                       </div>
                     </div>
-
-                    {/* HANGING TIER 1: 3 CAPSULE DISPLAY PODS (As seen in video frame 07) */}
-                    <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
-                      <div className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider mb-1 px-1 text-inherit opacity-70">
-                        TIER 01 · CURATED PODS
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                        {tier1Products.map((product, idx) =>
-                          renderShelfCard(product, idx + 1, true, idx)
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Horizontal Wooden Divider Beam with Hanging Bracket Studs */}
-                    <div
-                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y flex items-center justify-around px-8 ${
-                        isDark
-                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
-                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
-                      }`}
-                    >
-                      {[0, 1, 2, 3].map((stud) => (
-                        <div
-                          key={stud}
-                          className={`w-1 h-1 rounded-full ${
-                            isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/60'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* HANGING TIER 2: 3 SHOWCASE DISPLAY BAYS */}
-                    <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
-                      <div className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider mb-1 px-1 text-inherit opacity-70">
-                        TIER 02 · ARCHIVAL SHELVES
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                        {tier2Products.map((product, idx) =>
-                          renderShelfCard(product, idx + 4, false, idx + 3)
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Horizontal Wooden Divider Beam with Hanging Bracket Studs */}
-                    <div
-                      className={`w-full h-2 sm:h-2.5 shadow-inner border-y flex items-center justify-around px-8 ${
-                        isDark
-                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
-                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
-                      }`}
-                    >
-                      {[0, 1, 2, 3].map((stud) => (
-                        <div
-                          key={stud}
-                          className={`w-1 h-1 rounded-full ${
-                            isDark ? 'bg-[#5a4430]' : 'bg-[#c35626]/60'
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* HANGING TIER 3: 3 ATELIER SIGNATURE CREATIONS */}
-                    <div className="relative w-full px-2 sm:px-4 py-2 sm:py-3">
-                      <div className="text-[7.5px] sm:text-[8.5px] font-mono font-bold uppercase tracking-wider mb-1 px-1 text-inherit opacity-70">
-                        TIER 03 · VITRINE CHAMBER EDITIONS
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
-                        {tier3Products.map((product, idx) =>
-                          renderShelfCard(product, idx + 7, false, idx + 6)
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Bottom Heavy Timber Foundation Sill */}
-                    <div
-                      className={`w-full h-2.5 sm:h-3 shadow-inner border-y ${
-                        isDark
-                          ? 'bg-gradient-to-r from-[#2c1d12] via-[#3d2919] to-[#2c1d12] border-[#4a3421]'
-                          : 'bg-gradient-to-r from-[#decbb7] via-[#e8dbcc] to-[#decbb7] border-[#ccb7a0]'
-                      }`}
-                    />
-                  </div>
-                </div>
-
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
 
-        {/* Ground Floor Atelier Storefront (Falls away smoothly when any floor is expanded) */}
-        <div
-          onClick={() => {
-            if (onOpenStorePhilosophy) onOpenStorePhilosophy();
-          }}
-          className={`relative w-full cursor-pointer group/atelier leading-none transition-all duration-700 origin-top ${
-            expandedFloorNumber !== null
-              ? 'max-h-0 translate-y-[280px] opacity-0 overflow-hidden pointer-events-none'
-              : 'max-h-[300px] translate-y-0 opacity-100'
-          }`}
-          title="Enter VINKRI Flagship Atelier Boutique • Hyderabad"
-        >
-          <img
-            src={isDark ? '/assets/aistudio/slices/dark_ground.jpg' : '/assets/aistudio/slices/light_ground.jpg'}
-            alt="VINKRI Flagship Atelier Boutique"
-            className="w-full h-auto block select-none pointer-events-none"
-            style={{ aspectRatio: '1376 / 196' }}
-          />
+              {/* ROW 3: 3 Compartments with Product Images */}
+              <div
+                className="absolute flex items-center justify-between pointer-events-auto"
+                style={{
+                  top: '64.51%', // 160px / 248px
+                  height: '29.03%', // 72px / 248px
+                  left: '2.13%', // 14px / 656px
+                  right: '2.13%' // 14px / 656px
+                }}
+              >
+                {[3, 4, 5].map((i) => {
+                  const prod = nicheProducts[i];
+                  if (!prod) return <div key={i} className="flex-1" />;
+                  const isHovered = hoveredProductIndex === i;
 
-          <div className="absolute inset-x-0 bottom-3 flex justify-center pointer-events-none">
-            <div
-              className={`opacity-0 group-hover/atelier:opacity-100 transition-opacity px-3 py-1 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-widest border shadow-xl ${
-                isDark
-                  ? 'bg-black/90 text-[#d2f53a] border-white/20'
-                  : 'bg-white/95 text-[#c35626] border-[#dfd2bf]'
-              }`}
-            >
-              Enter Boutique Storefront →
+                  return (
+                    <div
+                      key={prod.id}
+                      onMouseEnter={() => setHoveredProductIndex(i)}
+                      onMouseLeave={() => setHoveredProductIndex(null)}
+                      onClick={() => onSelectProduct && onSelectProduct(prod)}
+                      className="group/niche relative flex-1 h-full mx-1 flex flex-col items-center justify-center p-1.5 cursor-pointer overflow-hidden transition-all duration-300"
+                    >
+                      {/* Product Image resting inside the niche */}
+                      <img
+                        src={prod.imageThumbnail}
+                        alt={prod.name}
+                        className="max-h-[82%] max-w-[85%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
+                      />
+
+                      {/* Floating Product Name & Price Badge on Hover */}
+                      <div
+                        className={`absolute bottom-1 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-sm ${
+                          isHovered
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-2'
+                        } ${
+                          isDark
+                            ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
+                            : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
+                        }`}
+                      >
+                        <span className="text-[8.5px] font-bold truncate max-w-[95px]">
+                          {prod.name}
+                        </span>
+                        <span
+                          className={`text-[8.5px] font-mono font-black ${
+                            isDark ? 'text-[#e5a045]' : 'text-[#008ba8]'
+                          }`}
+                        >
+                          ₹{prod.price}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={(e) => handleQuickAdd(prod, e)}
+                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors ${
+                            justAddedId === prod.id
+                              ? 'bg-emerald-500 text-white'
+                              : isDark
+                              ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
+                              : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
+                          }`}
+                          title="Quick Add"
+                        >
+                          {justAddedId === prod.id ? (
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          ) : (
+                            <ShoppingBag className="w-2.5 h-2.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </motion.div>
+
+          {/* ----------------------------------------------------------- */}
+          {/* SECTION D: LOWER PRODUCT SECTION (FLOORS 2, 1 & GROUND)     */}
+          {/* Dimensions: 656 x 380px                                     */}
+          {/* Moves DOWNWARD and leaves canvas during drop down           */}
+          {/* ----------------------------------------------------------- */}
+          <motion.div
+            initial={false}
+            animate={{
+              y: isExpanded ? 420 : 0,
+              opacity: isExpanded ? 0 : 1,
+              height: isExpanded ? 0 : 'auto',
+              marginTop: isExpanded ? 0 : undefined
+            }}
+            transition={{
+              duration: 0.75,
+              ease: [0.25, 1, 0.5, 1]
+            }}
+            className="w-full overflow-hidden origin-top select-none pointer-events-none"
+            style={{ width: '656px', maxWidth: '100%' }}
+          >
+            <img
+              src={
+                isDark
+                  ? '/assets/aistudio/dark_lower_floors.jpg'
+                  : '/assets/aistudio/building_lower_floors.jpg'
+              }
+              alt="Lower Product Section"
+              className="w-full h-auto block select-none"
+              style={{ aspectRatio: '656 / 380' }}
+            />
+          </motion.div>
         </div>
       </div>
     </div>

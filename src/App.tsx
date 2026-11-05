@@ -50,14 +50,14 @@ export default function App() {
   // Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Store Entrance Landing Experience (true on first load to display logo entrance)
-  const [isEntranceOpen, setIsEntranceOpen] = useState(true);
+  // Store Entrance Landing Experience (accessible anytime via navbar brand logo)
+  const [isEntranceOpen, setIsEntranceOpen] = useState(false);
 
   // Modals state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<FloorInfo | null>(null);
   const [selectedFloorSlot, setSelectedFloorSlot] = useState<'left' | 'center' | 'right'>('center');
-  const [floorFilter, setFloorFilter] = useState<number | null>(3); // Level 03 expanded initially as shown in user demo
+  const [floorFilter, setFloorFilter] = useState<number | null>(null); // Starts unexpanded with full building intact; clicking any floor triggers drop animation
 
   const handleOpenFloor = (
     floor: FloorInfo,
@@ -264,6 +264,7 @@ export default function App() {
                 onToggleWishlist={handleToggleWishlist}
                 cartProductIds={cartItems.map((item) => item.product.id)}
                 onRemoveFromCart={handleRemoveCartItem}
+                isEntranceOpen={isEntranceOpen}
               />
             </div>
           </section>
