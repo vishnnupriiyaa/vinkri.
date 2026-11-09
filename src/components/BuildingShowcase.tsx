@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RotateCcw, Play, Eye, ShoppingBag, Check, Sparkles } from 'lucide-react';
+import { RotateCcw, Play, ShoppingBag, Check, Sparkles, Info } from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
 
@@ -18,12 +18,103 @@ interface BuildingShowcaseProps {
   isEntranceOpen?: boolean;
 }
 
-const FLOOR_CATEGORIES = [
-  { number: 5, name: 'LEVEL 05', category: 'DESK TOYS', tagline: 'Play. Fidget. Display.' },
-  { number: 4, name: 'LEVEL 04', category: 'CUSTOM DIORAMAS', tagline: 'Mini worlds. Big stories.' },
-  { number: 3, name: 'LEVEL 03', category: 'DIECAST CAR STANDS', tagline: 'Display. Organize. Collect.' },
-  { number: 2, name: 'LEVEL 02', category: 'CUSTOM FIGURINES', tagline: 'People. Moments. Memories.' },
-  { number: 1, name: 'LEVEL 01', category: 'LUXURY CASES & STANDS', tagline: 'Preserve. Protect. Illuminate.' },
+interface BuildingSlice {
+  id: string;
+  floorNumber?: number; // 5, 4, 3, 2, 1
+  name: string;
+  category: string;
+  tagline: string;
+  tabColor: string;
+  tabBorder: string;
+  height: number; // in pixels on 656px width
+  lightSrc: string;
+  darkSrc: string;
+}
+
+// 7 exact slices forming the 656 x 768px architectural building cabinet
+const BUILDING_SLICES: BuildingSlice[] = [
+  {
+    id: 'roof',
+    name: 'ROOF PARAPET',
+    category: '',
+    tagline: '',
+    tabColor: '#334155',
+    tabBorder: '#475569',
+    height: 44,
+    lightSrc: '/assets/aistudio/crops/light_roof.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_roof.jpg'
+  },
+  {
+    id: 'floor5',
+    floorNumber: 5,
+    name: 'LEVEL 05',
+    category: 'DESK TOYS',
+    tagline: 'Play. Fidget. Display.',
+    tabColor: '#1e40af',
+    tabBorder: '#3b82f6',
+    height: 118,
+    lightSrc: '/assets/aistudio/crops/light_floor5.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_floor5.jpg'
+  },
+  {
+    id: 'floor4',
+    floorNumber: 4,
+    name: 'LEVEL 04',
+    category: 'CUSTOM DIORAMAS',
+    tagline: 'Mini worlds. Big stories.',
+    tabColor: '#047857',
+    tabBorder: '#10b981',
+    height: 122,
+    lightSrc: '/assets/aistudio/crops/light_floor4.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_floor4.jpg'
+  },
+  {
+    id: 'floor3',
+    floorNumber: 3,
+    name: 'LEVEL 03',
+    category: 'DIECAST CAR STANDS',
+    tagline: 'Display. Organize. Collect.',
+    tabColor: '#b45309',
+    tabBorder: '#f59e0b',
+    height: 104,
+    lightSrc: '/assets/aistudio/crops/light_floor3.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_floor3.jpg'
+  },
+  {
+    id: 'floor2',
+    floorNumber: 2,
+    name: 'LEVEL 02',
+    category: 'CUSTOM FIGURINES',
+    tagline: 'People. Moments. Memories.',
+    tabColor: '#881337',
+    tabBorder: '#f43f5e',
+    height: 114,
+    lightSrc: '/assets/aistudio/crops/light_floor2.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_floor2.jpg'
+  },
+  {
+    id: 'floor1',
+    floorNumber: 1,
+    name: 'LEVEL 01',
+    category: 'DECOR LAMPS',
+    tagline: 'Light up your space.',
+    tabColor: '#92400e',
+    tabBorder: '#d97706',
+    height: 124,
+    lightSrc: '/assets/aistudio/crops/light_floor1.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_floor1.jpg'
+  },
+  {
+    id: 'ground',
+    name: 'GROUND ATELIER',
+    category: '',
+    tagline: '',
+    tabColor: '#1c1917',
+    tabBorder: '#44403c',
+    height: 142,
+    lightSrc: '/assets/aistudio/crops/light_ground.jpg',
+    darkSrc: '/assets/aistudio/crops/dark_ground.jpg'
+  }
 ];
 
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
@@ -31,20 +122,21 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   onSelectFloor,
   selectedFloorNumber,
   onSelectProduct,
-  onQuickAdd,
-  cartProductIds = [],
-  isEntranceOpen = false
+  onQuickAdd
 }) => {
   const isDark = theme === 'rustic-dark';
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Active floor number (default: 3, matching the reference video)
+  // Active floor number (1 to 5, default: 3 matching reference video hero)
   const [activeFloor, setActiveFloor] = useState<number>(3);
 
-  // Whether the drop down is expanded (false = intact 5-story cabinet, true = drop down state)
+  // Whether drop down is expanded (false = intact 5-story cabinet, true = drop down state)
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // Active hovered product niche index (0 to 5)
+  // Hovered floor number when cabinet is intact
+  const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
+
+  // Hovered product niche index (0 to 8)
   const [hoveredProductIndex, setHoveredProductIndex] = useState<number | null>(null);
 
   // Quick-add feedback
@@ -58,7 +150,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     }
   }, [selectedFloorNumber]);
 
-  // Handle floor click toggle
+  // Handle floor click toggle with immediate responsiveness
   const handleToggleFloor = (floorNum?: number) => {
     if (floorNum !== undefined) {
       if (activeFloor === floorNum && isExpanded) {
@@ -87,7 +179,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setIsExpanded(false);
     setTimeout(() => {
       setIsExpanded(true);
-    }, 1200);
+    }, 900);
   };
 
   const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
@@ -97,24 +189,29 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setTimeout(() => setJustAddedId(null), 1400);
   };
 
-  // Products belonging to the active floor (9 items)
+  // Find active slice index
+  const activeIndex = BUILDING_SLICES.findIndex((s) => s.floorNumber === activeFloor);
+  const safeActiveIndex = activeIndex >= 0 ? activeIndex : 3;
+
+  // Slices above the active floor (slides UP)
+  const upperSlices = BUILDING_SLICES.slice(0, safeActiveIndex);
+
+  // The active floor slice itself (stays in place as the showcase header)
+  const heroSlice = BUILDING_SLICES[safeActiveIndex];
+
+  // Slices below the active floor (slides DOWN)
+  const lowerSlices = BUILDING_SLICES.slice(safeActiveIndex + 1);
+
+  // All 9 distinct, non-repeating products for the active floor (matching their images & descriptions)
   const allFloorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === activeFloor);
-  
-  // The 6 products displayed inside the empty animation space of Rows 2 & 3
-  const nicheProducts = allFloorProducts.slice(3, 9);
+  const nicheProducts = allFloorProducts.slice(0, 9);
 
-  const currentFloorConfig =
-    FLOOR_CATEGORIES.find((f) => f.number === activeFloor) || FLOOR_CATEGORIES[2];
-
-  // Hero shelf image
-  const heroImageSrc =
-    activeFloor === 3
-      ? isDark
-        ? '/assets/aistudio/dark_floor3_hero.jpg'
-        : '/assets/aistudio/building_floor3_hero.jpg'
-      : isDark
-      ? `/assets/aistudio/crops/dark_floor${activeFloor}.jpg`
-      : `/assets/aistudio/crops/light_floor${activeFloor}.jpg`;
+  // Row 1 products (replaced the solid brown/blue blocks)
+  const row1Products = nicheProducts.slice(0, 3);
+  // Row 2 products
+  const row2Products = nicheProducts.slice(3, 6);
+  // Row 3 products
+  const row3Products = nicheProducts.slice(6, 9);
 
   return (
     <div
@@ -123,6 +220,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     >
       {/* ============================================================== */}
       {/* 1. TOP INTERACTIVE CONTROLLER BAR                              */}
+      {/* Clean, Uniform Floor Selector For All 5 Floors                 */}
       {/* ============================================================== */}
       <div
         className={`w-full max-w-[656px] mb-3 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between gap-2 border transition-all duration-300 shadow-sm ${
@@ -139,14 +237,14 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-black uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 shadow-sm ${
               isExpanded
                 ? isDark
-                  ? 'bg-[#e5a045] hover:bg-[#cca348] text-black font-black'
-                  : 'bg-[#008ba8] hover:bg-[#00748d] text-white font-black'
+                  ? 'bg-[#e5a045] hover:bg-[#cca348] text-black font-black ring-2 ring-[#e5a045]/40'
+                  : 'bg-[#008ba8] hover:bg-[#00748d] text-white font-black ring-2 ring-[#008ba8]/40'
                 : isDark
                 ? 'bg-[#26170d] hover:bg-[#382314] text-[#f5c27d] border border-[#4a2e19]'
                 : 'bg-white hover:bg-neutral-100 text-[#006078] border border-[#decbb8]'
             }`}
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
             <span>{isExpanded ? 'Reassemble Cabinet' : 'Click Floor to Drop Down'}</span>
           </button>
 
@@ -161,33 +259,38 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   : 'bg-emerald-500'
               }`}
             />
-            <span className="opacity-90">
-              {currentFloorConfig.name} • {currentFloorConfig.category}
+            <span className="opacity-90 font-black">
+              {heroSlice.name} • {heroSlice.category}
             </span>
           </div>
         </div>
 
-        {/* Floor Selection Pills (05 - 01) */}
-        <div className="flex items-center gap-1">
-          {FLOOR_CATEGORIES.map((f) => {
-            const isActive = activeFloor === f.number;
+        {/* Floor Selection Tabs (05 - 01) - 100% Uniform & Consistent */}
+        <div className="flex items-center gap-1 flex-wrap">
+          {[5, 4, 3, 2, 1].map((floorNum) => {
+            const isActive = activeFloor === floorNum && isExpanded;
+            const slice = BUILDING_SLICES.find((s) => s.floorNumber === floorNum);
+
             return (
               <button
-                key={f.number}
+                key={floorNum}
                 type="button"
-                onClick={() => handleToggleFloor(f.number)}
-                className={`px-2.5 py-1 rounded text-[9.5px] font-mono font-black transition-all cursor-pointer ${
+                onClick={() => handleToggleFloor(floorNum)}
+                className={`px-2 py-1 rounded text-[9.5px] font-mono font-black transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
                   isActive
                     ? isDark
-                      ? 'bg-[#e5a045] text-black shadow-xs font-black'
-                      : 'bg-[#008ba8] text-white shadow-xs font-black'
+                      ? 'bg-[#e5a045] text-black shadow-md font-black ring-1 ring-[#e5a045]'
+                      : 'bg-[#008ba8] text-white shadow-md font-black ring-1 ring-[#008ba8]'
                     : isDark
-                    ? 'bg-[#20140c] text-[#a89685] hover:text-white border border-[#301f13]'
-                    : 'bg-white text-[#69584b] hover:text-[#1e140d] border border-[#decbb8]'
+                    ? 'bg-[#20140c] text-[#c2b09e] hover:text-white hover:bg-[#301f13] border border-[#301f13]'
+                    : 'bg-white text-[#69584b] hover:text-[#1e140d] hover:bg-neutral-50 border border-[#decbb8]'
                 }`}
-                title={`Floor 0${f.number}: ${f.category} (Click to drop down products)`}
+                title={`Floor 0${floorNum}: ${slice?.category || ''} (Click to drop down products)`}
               >
-                0{f.number}
+                <span>0{floorNum}</span>
+                <span className="hidden md:inline text-[8.5px] font-bold opacity-85 uppercase">
+                  {floorNum === 5 ? 'TOYS' : floorNum === 4 ? 'DIORAMA' : floorNum === 3 ? 'CARS' : floorNum === 2 ? 'FIGURES' : 'LAMPS'}
+                </span>
               </button>
             );
           })}
@@ -196,7 +299,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           <button
             type="button"
             onClick={handleReplaySequence}
-            className={`p-1.5 ml-1 rounded border transition-colors cursor-pointer ${
+            className={`p-1.5 ml-1 rounded border transition-colors cursor-pointer active:scale-95 ${
               isDark
                 ? 'bg-[#20140c] text-[#a89685] hover:text-white border-[#301f13]'
                 : 'bg-white text-[#69584b] hover:text-[#1e140d] border-[#decbb8]'
@@ -210,7 +313,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
       {/* ============================================================== */}
       {/* 2. THE 656PX ARCHITECTURAL BUILDING VIEWPORT                    */}
-      {/* Exact UI Graphic from Video with Product Images in Empty Space  */}
+      {/* Clean Drop Down Mechanics For All Floors                       */}
       {/* ============================================================== */}
       <div
         className={`relative w-full max-w-[656px] rounded-2xl overflow-hidden border transition-all duration-300 shadow-2xl ${
@@ -221,17 +324,15 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       >
         <div className="relative w-full flex flex-col items-center">
           {/* ----------------------------------------------------------- */}
-          {/* SECTION A: UPPER SHELVING STRUCTURE                         */}
-          {/* Dimensions: 656 x 284px                                     */}
-          {/* Moves UPWARD and leaves canvas during drop down             */}
+          {/* SECTION A: UPPER SLICES (ALL FLOORS ABOVE ACTIVE FLOOR)     */}
+          {/* Slides UPWARD and leaves canvas during drop down            */}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
             animate={{
-              y: isExpanded ? -380 : 0,
+              y: isExpanded ? -450 : 0,
               opacity: isExpanded ? 0 : 1,
-              height: isExpanded ? 0 : 'auto',
-              marginBottom: isExpanded ? 0 : undefined
+              height: isExpanded ? 0 : 'auto'
             }}
             transition={{
               duration: 0.75,
@@ -240,22 +341,20 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className="w-full overflow-hidden origin-top select-none pointer-events-none"
             style={{ width: '656px', maxWidth: '100%' }}
           >
-            <img
-              src={
-                isDark
-                  ? '/assets/aistudio/dark_upper_floors.jpg'
-                  : '/assets/aistudio/building_upper_floors.jpg'
-              }
-              alt="Upper Shelving Structure"
-              className="w-full h-auto block select-none"
-              style={{ aspectRatio: '656 / 284' }}
-            />
+            {upperSlices.map((slice) => (
+              <img
+                key={slice.id}
+                src={isDark ? slice.darkSrc : slice.lightSrc}
+                alt={slice.name}
+                className="w-full h-auto block select-none"
+                style={{ aspectRatio: `656 / ${slice.height}` }}
+              />
+            ))}
           </motion.div>
 
           {/* ----------------------------------------------------------- */}
-          {/* SECTION B: HERO PRODUCT SHOWCASE (SELECTED FLOOR)           */}
-          {/* Dimensions: 656 x 104px                                     */}
-          {/* Interactive Trigger: Clicking triggers the drop down        */}
+          {/* SECTION B: HERO PRODUCT SHOWCASE (ACTIVE FLOOR)             */}
+          {/* Stays in place as the showcase header during drop down      */}
           {/* ----------------------------------------------------------- */}
           <div
             onClick={() => handleToggleFloor()}
@@ -264,13 +363,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             title={isExpanded ? 'Click to reassemble cabinet' : 'Click to trigger video drop down'}
           >
             <img
-              src={heroImageSrc}
-              alt={`${currentFloorConfig.name} Showcase`}
+              src={isDark ? heroSlice.darkSrc : heroSlice.lightSrc}
+              alt={`${heroSlice.name} Showcase`}
               className="w-full h-auto block select-none pointer-events-none group-hover/shelf:brightness-105 transition-[filter]"
-              style={{ aspectRatio: '656 / 104' }}
+              style={{ aspectRatio: `656 / ${heroSlice.height}` }}
             />
 
-            {/* Subtle Interactive Hover Prompt */}
+            {/* Interactive Hover Prompt on Hero Shelf */}
             <div className="absolute inset-0 bg-black/0 group-hover/shelf:bg-black/15 transition-colors flex items-center justify-between px-4 pointer-events-none">
               <span
                 className={`text-[8.5px] sm:text-[9.5px] font-mono font-black uppercase px-2.5 py-1 rounded backdrop-blur-md border shadow-xs transition-opacity ${
@@ -283,7 +382,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     : 'bg-white/90 text-[#3a2517] border-[#decbb8]'
                 }`}
               >
-                {currentFloorConfig.name} • {currentFloorConfig.category}
+                {heroSlice.name} • {heroSlice.category}
               </span>
 
               <span
@@ -296,16 +395,67 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         : 'bg-[#008ba8] text-white border-[#005a6e]')
                 }`}
               >
-                {isExpanded ? 'CLICK TO REASSEMBLE' : 'CLICK FLOOR TO EXPAND'}
+                {isExpanded ? 'CLICK TO REASSEMBLE ↺' : 'CLICK FLOOR TO EXPAND ▾'}
               </span>
             </div>
           </div>
 
+          {/* Quick Floor Switcher Strip when Expanded (Uniform styling for all 5 floors) */}
+          {isExpanded && (
+            <div
+              className={`w-full py-1.5 px-3 flex items-center justify-between border-b z-25 transition-colors ${
+                isDark
+                  ? 'bg-[#120c07] border-[#2c1d12] text-[#f7f2ea]'
+                  : 'bg-[#f5ece1] border-[#decbb8] text-[#2c1e13]'
+              }`}
+              style={{ width: '656px', maxWidth: '100%' }}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[8.5px] font-mono font-bold tracking-wider opacity-75">
+                  SELECT LEVEL:
+                </span>
+                <span className="text-[9px] font-mono font-black text-amber-500">
+                  0{activeFloor} {heroSlice.category}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                {[5, 4, 3, 2, 1].map((floorNum) => {
+                  const isCurrent = activeFloor === floorNum;
+                  return (
+                    <button
+                      key={floorNum}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleFloor(floorNum);
+                      }}
+                      className={`px-2 py-0.5 rounded text-[8.5px] font-mono font-black transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
+                        isCurrent
+                          ? isDark
+                            ? 'bg-[#e5a045] text-black ring-1 ring-[#e5a045] font-black shadow-xs'
+                            : 'bg-[#008ba8] text-white ring-1 ring-[#008ba8] font-black shadow-xs'
+                          : isDark
+                          ? 'bg-[#1e130a] text-[#c2b09e] hover:text-white hover:bg-[#2e1c10] border border-[#301f13]'
+                          : 'bg-white text-[#69584b] hover:text-[#1e140d] hover:bg-neutral-100 border border-[#decbb8]'
+                      }`}
+                    >
+                      <span>0{floorNum}</span>
+                      <span className="text-[7.5px] font-semibold opacity-85 hidden sm:inline">
+                        {floorNum === 5 ? 'TOYS' : floorNum === 4 ? 'DIORAMA' : floorNum === 3 ? 'CARS' : floorNum === 2 ? 'FIGURES' : 'LAMPS'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ----------------------------------------------------------- */}
           {/* SECTION C: THE 3-ROW SUSPENDED GANTRY                       */}
-          {/* EXACT UI GRAPHIC FROM THE REFERENCE VIDEO                   */}
-          {/* Row 1: THREE SOLID BLUE RECTANGULAR BLOCKS (DROPS DOWN)     */}
-          {/* Rows 2 & 3: EMPTY ANIMATION SPACE FILLED WITH PRODUCT IMAGES*/}
+          {/* ALL 3 ROWS FILLED WITH UNIQUE, MATCHING PRODUCT IMAGES      */}
+          {/* Row 1: Products 0, 1, 2 (Animate Down with Drop Down)       */}
+          {/* Row 2: Products 3, 4, 5                                     */}
+          {/* Row 3: Products 6, 7, 8                                     */}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
@@ -320,7 +470,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className="relative w-full overflow-hidden z-20"
             style={{ width: '656px', maxWidth: '100%' }}
           >
-            {/* The Exact Architectural SVG Graphic */}
+            {/* The Architectural Wooden Cabinet SVG Structure */}
             <svg
               viewBox="0 0 656 248"
               className="w-full h-auto block select-none"
@@ -353,29 +503,15 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   <stop offset="100%" stopColor="#140a05" />
                 </linearGradient>
 
-                {/* Exact Reference Video Blue Gradient (Light Theme) */}
-                <linearGradient id="videoBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#0096b5" />
-                  <stop offset="50%" stopColor="#008ba8" />
-                  <stop offset="100%" stopColor="#007994" />
-                </linearGradient>
-
-                {/* Dark Theme Matching Color (Warm Amber-Gold / Cognac) */}
-                <linearGradient id="darkBlockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#e5a045" />
-                  <stop offset="60%" stopColor="#c48235" />
-                  <stop offset="100%" stopColor="#965f21" />
-                </linearGradient>
-
-                {/* Niche Ambient Warm Light Glow Filter */}
-                <radialGradient id="nicheLightGlow" cx="50%" cy="30%" r="60%">
-                  <stop offset="0%" stopColor="#fff8eb" stopOpacity={isDark ? "0.12" : "0.7"} />
+                {/* Niche Ambient Glow */}
+                <radialGradient id="nicheAmbientGlow" cx="50%" cy="30%" r="60%">
+                  <stop offset="0%" stopColor="#fff8eb" stopOpacity={isDark ? '0.12' : '0.65'} />
                   <stop offset="100%" stopColor="#fff8eb" stopOpacity="0" />
                 </radialGradient>
               </defs>
 
               {/* ------------------------------------------------------- */}
-              {/* ROW 1: 3 COMPARTMENTS WITH THREE SOLID BLUE BLOCKS      */}
+              {/* ROW 1: 3 COMPARTMENTS                                   */}
               {/* ------------------------------------------------------- */}
               {/* Top Connecting Wooden Beam */}
               <rect
@@ -391,6 +527,11 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               <rect x="226" y="8" width="204" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
               <rect x="440" y="8" width="202" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
 
+              {/* Ambient Glow in Row 1 */}
+              <rect x="14" y="8" width="202" height="66" fill="url(#nicheAmbientGlow)" />
+              <rect x="226" y="8" width="204" height="66" fill="url(#nicheAmbientGlow)" />
+              <rect x="440" y="8" width="202" height="66" fill="url(#nicheAmbientGlow)" />
+
               {/* Outer Left & Right Wooden Frame Pillars */}
               <rect x="0" y="8" width="14" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
               <rect x="642" y="8" width="14" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
@@ -399,62 +540,8 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               <rect x="216" y="8" width="10" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
               <rect x="430" y="8" width="10" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
 
-              {/* THREE SOLID BLUE RECTANGULAR BLOCKS (DROPS DOWN) */}
-              <g
-                style={{
-                  transform: isExpanded ? 'translateY(0px)' : 'translateY(-70px)',
-                  opacity: isExpanded ? 1 : 0,
-                  transition: 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s, opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.15s'
-                }}
-              >
-                {/* Column 1 Blue Block */}
-                <rect
-                  x="28"
-                  y="14"
-                  width="174"
-                  height="54"
-                  rx="14"
-                  ry="14"
-                  fill={isDark ? 'url(#darkBlockGrad)' : 'url(#videoBlueGrad)'}
-                  stroke={isDark ? '#e5a045' : '#00596c'}
-                  strokeWidth="2"
-                  className="cursor-pointer transition-transform hover:scale-[1.01]"
-                  onClick={() => allFloorProducts[0] && onSelectProduct && onSelectProduct(allFloorProducts[0])}
-                />
-
-                {/* Column 2 Blue Block */}
-                <rect
-                  x="240"
-                  y="14"
-                  width="176"
-                  height="54"
-                  rx="14"
-                  ry="14"
-                  fill={isDark ? 'url(#darkBlockGrad)' : 'url(#videoBlueGrad)'}
-                  stroke={isDark ? '#e5a045' : '#00596c'}
-                  strokeWidth="2"
-                  className="cursor-pointer transition-transform hover:scale-[1.01]"
-                  onClick={() => allFloorProducts[1] && onSelectProduct && onSelectProduct(allFloorProducts[1])}
-                />
-
-                {/* Column 3 Blue Block */}
-                <rect
-                  x="454"
-                  y="14"
-                  width="174"
-                  height="54"
-                  rx="14"
-                  ry="14"
-                  fill={isDark ? 'url(#darkBlockGrad)' : 'url(#videoBlueGrad)'}
-                  stroke={isDark ? '#e5a045' : '#00596c'}
-                  strokeWidth="2"
-                  className="cursor-pointer transition-transform hover:scale-[1.01]"
-                  onClick={() => allFloorProducts[2] && onSelectProduct && onSelectProduct(allFloorProducts[2])}
-                />
-              </g>
-
               {/* ------------------------------------------------------- */}
-              {/* ROW 2: THREE COMPARTMENTS WITH PRODUCT IMAGES           */}
+              {/* ROW 2: 3 COMPARTMENTS                                   */}
               {/* ------------------------------------------------------- */}
               {/* Middle Horizontal Beam 1 */}
               <rect
@@ -470,10 +557,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               <rect x="226" y="82" width="204" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
               <rect x="440" y="82" width="202" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
 
-              {/* Ambient Spotlight Gradients in Row 2 */}
-              <rect x="14" y="82" width="202" height="70" fill="url(#nicheLightGlow)" />
-              <rect x="226" y="82" width="204" height="70" fill="url(#nicheLightGlow)" />
-              <rect x="440" y="82" width="202" height="70" fill="url(#nicheLightGlow)" />
+              {/* Ambient Glow in Row 2 */}
+              <rect x="14" y="82" width="202" height="70" fill="url(#nicheAmbientGlow)" />
+              <rect x="226" y="82" width="204" height="70" fill="url(#nicheAmbientGlow)" />
+              <rect x="440" y="82" width="202" height="70" fill="url(#nicheAmbientGlow)" />
 
               {/* Outer Pillars & Inner Dividers */}
               <rect x="0" y="82" width="14" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
@@ -482,7 +569,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               <rect x="430" y="82" width="10" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
 
               {/* ------------------------------------------------------- */}
-              {/* ROW 3: THREE COMPARTMENTS WITH PRODUCT IMAGES           */}
+              {/* ROW 3: 3 COMPARTMENTS                                   */}
               {/* ------------------------------------------------------- */}
               {/* Middle Horizontal Beam 2 */}
               <rect
@@ -498,10 +585,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               <rect x="226" y="160" width="204" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
               <rect x="440" y="160" width="202" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
 
-              {/* Ambient Spotlight Gradients in Row 3 */}
-              <rect x="14" y="160" width="202" height="72" fill="url(#nicheLightGlow)" />
-              <rect x="226" y="160" width="204" height="72" fill="url(#nicheLightGlow)" />
-              <rect x="440" y="160" width="202" height="72" fill="url(#nicheLightGlow)" />
+              {/* Ambient Glow in Row 3 */}
+              <rect x="14" y="160" width="202" height="72" fill="url(#nicheAmbientGlow)" />
+              <rect x="226" y="160" width="204" height="72" fill="url(#nicheAmbientGlow)" />
+              <rect x="440" y="160" width="202" height="72" fill="url(#nicheAmbientGlow)" />
 
               {/* Outer Pillars & Inner Dividers */}
               <rect x="0" y="160" width="14" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
@@ -520,11 +607,103 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </svg>
 
             {/* ========================================================= */}
-            {/* PRODUCT IMAGES DIRECTLY IN THE EMPTY SPACES (ROWS 2 & 3)  */}
-            {/* Pixel-perfect coordinates mapped directly to niches       */}
+            {/* PRODUCT COMPARTMENTS IN ALL 3 ROWS (9 UNIQUE PRODUCTS)    */}
+            {/* All Products Display Authentic Matching Images & Details  */}
             {/* ========================================================= */}
             <div className="absolute inset-0 z-25 pointer-events-none">
-              {/* ROW 2: 3 Compartments with Product Images */}
+              {/* ------------------------------------------------------- */}
+              {/* ROW 1: PRODUCTS 0, 1, 2 (ENTRANCE DROP DOWN ANIMATION)  */}
+              {/* Replaced the solid brown/blue blocks                    */}
+              {/* ------------------------------------------------------- */}
+              <motion.div
+                initial={false}
+                animate={{
+                  y: isExpanded ? 0 : -60,
+                  opacity: isExpanded ? 1 : 0
+                }}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.25, 1, 0.5, 1],
+                  delay: 0.12
+                }}
+                className="absolute flex items-center justify-between pointer-events-auto"
+                style={{
+                  top: '3.23%', // 8px / 248px
+                  height: '26.61%', // 66px / 248px
+                  left: '2.13%', // 14px / 656px
+                  right: '2.13%' // 14px / 656px
+                }}
+              >
+                {[0, 1, 2].map((i) => {
+                  const prod = row1Products[i];
+                  if (!prod) return <div key={i} className="flex-1" />;
+                  const isHovered = hoveredProductIndex === i;
+
+                  return (
+                    <div
+                      key={prod.id}
+                      onMouseEnter={() => setHoveredProductIndex(i)}
+                      onMouseLeave={() => setHoveredProductIndex(null)}
+                      onClick={() => onSelectProduct && onSelectProduct(prod)}
+                      className="group/niche relative flex-1 h-full mx-1 flex flex-col items-center justify-center p-1.5 cursor-pointer overflow-hidden transition-all duration-300 rounded-xl"
+                    >
+                      {/* Product Image resting inside the compartment */}
+                      <img
+                        src={prod.imageThumbnail}
+                        alt={prod.name}
+                        className="max-h-[88%] max-w-[88%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
+                      />
+
+                      {/* Floating Product Info Pill & Matching Description on Hover */}
+                      <div
+                        className={`absolute bottom-0.5 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-md ${
+                          isHovered
+                            ? 'opacity-100 translate-y-0 z-30'
+                            : 'opacity-0 translate-y-2 pointer-events-none'
+                        } ${
+                          isDark
+                            ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
+                            : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
+                        }`}
+                      >
+                        <span className="text-[8.5px] font-bold truncate max-w-[90px]">
+                          {prod.name}
+                        </span>
+                        <span
+                          className={`text-[8.5px] font-mono font-black ${
+                            isDark ? 'text-[#e5a045]' : 'text-[#008ba8]'
+                          }`}
+                        >
+                          ₹{prod.price}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={(e) => handleQuickAdd(prod, e)}
+                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
+                            justAddedId === prod.id
+                              ? 'bg-emerald-500 text-white'
+                              : isDark
+                              ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
+                              : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
+                          }`}
+                          title="Quick Add to Cart"
+                        >
+                          {justAddedId === prod.id ? (
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          ) : (
+                            <ShoppingBag className="w-2.5 h-2.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </motion.div>
+
+              {/* ------------------------------------------------------- */}
+              {/* ROW 2: PRODUCTS 3, 4, 5                                 */}
+              {/* ------------------------------------------------------- */}
               <div
                 className="absolute flex items-center justify-between pointer-events-auto"
                 style={{
@@ -534,8 +713,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   right: '2.13%' // 14px / 656px
                 }}
               >
-                {[0, 1, 2].map((i) => {
-                  const prod = nicheProducts[i];
+                {[0, 1, 2].map((idx) => {
+                  const i = idx + 3;
+                  const prod = row2Products[idx];
                   if (!prod) return <div key={i} className="flex-1" />;
                   const isHovered = hoveredProductIndex === i;
 
@@ -551,22 +731,22 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       <img
                         src={prod.imageThumbnail}
                         alt={prod.name}
-                        className="max-h-[82%] max-w-[85%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
+                        className="max-h-[85%] max-w-[88%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
                       />
 
                       {/* Floating Product Name & Price Badge on Hover */}
                       <div
                         className={`absolute bottom-1 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-sm ${
                           isHovered
-                            ? 'opacity-100 translate-y-0'
-                            : 'opacity-0 translate-y-2'
+                            ? 'opacity-100 translate-y-0 z-30'
+                            : 'opacity-0 translate-y-2 pointer-events-none'
                         } ${
                           isDark
                             ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
                             : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
                         }`}
                       >
-                        <span className="text-[8.5px] font-bold truncate max-w-[95px]">
+                        <span className="text-[8.5px] font-bold truncate max-w-[90px]">
                           {prod.name}
                         </span>
                         <span
@@ -580,14 +760,14 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         <button
                           type="button"
                           onClick={(e) => handleQuickAdd(prod, e)}
-                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors ${
+                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
                             justAddedId === prod.id
                               ? 'bg-emerald-500 text-white'
                               : isDark
                               ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
                               : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
                           }`}
-                          title="Quick Add"
+                          title="Quick Add to Cart"
                         >
                           {justAddedId === prod.id ? (
                             <Check className="w-2.5 h-2.5 stroke-[3]" />
@@ -601,7 +781,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 })}
               </div>
 
-              {/* ROW 3: 3 Compartments with Product Images */}
+              {/* ------------------------------------------------------- */}
+              {/* ROW 3: PRODUCTS 6, 7, 8                                 */}
+              {/* ------------------------------------------------------- */}
               <div
                 className="absolute flex items-center justify-between pointer-events-auto"
                 style={{
@@ -611,8 +793,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   right: '2.13%' // 14px / 656px
                 }}
               >
-                {[3, 4, 5].map((i) => {
-                  const prod = nicheProducts[i];
+                {[0, 1, 2].map((idx) => {
+                  const i = idx + 6;
+                  const prod = row3Products[idx];
                   if (!prod) return <div key={i} className="flex-1" />;
                   const isHovered = hoveredProductIndex === i;
 
@@ -628,22 +811,22 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       <img
                         src={prod.imageThumbnail}
                         alt={prod.name}
-                        className="max-h-[82%] max-w-[85%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
+                        className="max-h-[85%] max-w-[88%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
                       />
 
                       {/* Floating Product Name & Price Badge on Hover */}
                       <div
                         className={`absolute bottom-1 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-sm ${
                           isHovered
-                            ? 'opacity-100 translate-y-0'
-                            : 'opacity-0 translate-y-2'
+                            ? 'opacity-100 translate-y-0 z-30'
+                            : 'opacity-0 translate-y-2 pointer-events-none'
                         } ${
                           isDark
                             ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
                             : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
                         }`}
                       >
-                        <span className="text-[8.5px] font-bold truncate max-w-[95px]">
+                        <span className="text-[8.5px] font-bold truncate max-w-[90px]">
                           {prod.name}
                         </span>
                         <span
@@ -657,14 +840,14 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         <button
                           type="button"
                           onClick={(e) => handleQuickAdd(prod, e)}
-                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors ${
+                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
                             justAddedId === prod.id
                               ? 'bg-emerald-500 text-white'
                               : isDark
                               ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
                               : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
                           }`}
-                          title="Quick Add"
+                          title="Quick Add to Cart"
                         >
                           {justAddedId === prod.id ? (
                             <Check className="w-2.5 h-2.5 stroke-[3]" />
@@ -681,17 +864,15 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           </motion.div>
 
           {/* ----------------------------------------------------------- */}
-          {/* SECTION D: LOWER PRODUCT SECTION (FLOORS 2, 1 & GROUND)     */}
-          {/* Dimensions: 656 x 380px                                     */}
-          {/* Moves DOWNWARD and leaves canvas during drop down           */}
+          {/* SECTION D: LOWER SLICES (ALL FLOORS BELOW ACTIVE FLOOR)     */}
+          {/* Slides DOWNWARD and leaves canvas during drop down          */}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
             animate={{
-              y: isExpanded ? 420 : 0,
+              y: isExpanded ? 450 : 0,
               opacity: isExpanded ? 0 : 1,
-              height: isExpanded ? 0 : 'auto',
-              marginTop: isExpanded ? 0 : undefined
+              height: isExpanded ? 0 : 'auto'
             }}
             transition={{
               duration: 0.75,
@@ -700,17 +881,114 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className="w-full overflow-hidden origin-top select-none pointer-events-none"
             style={{ width: '656px', maxWidth: '100%' }}
           >
-            <img
-              src={
-                isDark
-                  ? '/assets/aistudio/dark_lower_floors.jpg'
-                  : '/assets/aistudio/building_lower_floors.jpg'
-              }
-              alt="Lower Product Section"
-              className="w-full h-auto block select-none"
-              style={{ aspectRatio: '656 / 380' }}
-            />
+            {lowerSlices.map((slice) => (
+              <img
+                key={slice.id}
+                src={isDark ? slice.darkSrc : slice.lightSrc}
+                alt={slice.name}
+                className="w-full h-auto block select-none"
+                style={{ aspectRatio: `656 / ${slice.height}` }}
+              />
+            ))}
           </motion.div>
+
+          {/* =========================================================== */}
+          {/* 3. INTACT-STATE INTERACTIVE FLOOR OVERLAY & UNIFORM TABS    */}
+          {/* Clean, Uniform Floor Indicators (05 - 01)                   */}
+          {/* =========================================================== */}
+          {!isExpanded && (
+            <div className="absolute inset-0 z-40 pointer-events-auto">
+              {/* Subtle top banner prompt */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-3 py-1 rounded-full backdrop-blur-md border text-[8.5px] font-mono font-bold uppercase tracking-widest shadow-md opacity-90 animate-pulse bg-black/60 text-amber-200 border-amber-500/40">
+                ✦ CLICK ANY FLOOR TO DROP DOWN & SHOW PRODUCTS ✦
+              </div>
+
+              {/* Exact Floor Hit Areas with Uniform Colored Tabs */}
+              {[
+                { floor: 5, top: '5.73%', height: '15.36%', slice: BUILDING_SLICES[1] },
+                { floor: 4, top: '21.09%', height: '15.89%', slice: BUILDING_SLICES[2] },
+                { floor: 3, top: '36.98%', height: '13.54%', slice: BUILDING_SLICES[3] },
+                { floor: 2, top: '50.52%', height: '14.84%', slice: BUILDING_SLICES[4] },
+                { floor: 1, top: '65.36%', height: '16.15%', slice: BUILDING_SLICES[5] }
+              ].map(({ floor, top, height, slice }) => {
+                const isHovered = hoveredFloor === floor;
+
+                return (
+                  <div
+                    key={floor}
+                    onMouseEnter={() => setHoveredFloor(floor)}
+                    onMouseLeave={() => setHoveredFloor(null)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleFloor(floor);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      handleToggleFloor(floor);
+                    }}
+                    className="absolute left-0 right-0 cursor-pointer group/fl-zone transition-all duration-200 flex items-center justify-between px-3 select-none"
+                    style={{ top, height }}
+                    title={`Click to open ${slice.name}: ${slice.category}`}
+                  >
+                    {/* Hover highlight bounding box */}
+                    <div
+                      className={`absolute inset-x-2 inset-y-1 rounded-xl pointer-events-none transition-all duration-200 border ${
+                        isHovered
+                          ? isDark
+                            ? 'bg-[#e5a045]/20 border-[#e5a045] shadow-[0_0_25px_rgba(229,160,69,0.35)]'
+                            : 'bg-[#008ba8]/20 border-[#008ba8] shadow-[0_0_25px_rgba(0,139,168,0.35)]'
+                          : 'border-transparent bg-black/0 hover:bg-black/5'
+                      }`}
+                    />
+
+                    {/* Left: Uniform Colored Floor Tab */}
+                    <div
+                      className={`relative z-10 px-2.5 py-1.5 rounded-md backdrop-blur-md transition-all duration-200 border flex flex-col shadow-sm ${
+                        isHovered ? 'scale-105 shadow-md ring-1 ring-white/30' : 'opacity-90'
+                      }`}
+                      style={{
+                        backgroundColor: `${slice.tabColor}dd`,
+                        borderColor: slice.tabBorder,
+                        color: '#ffffff'
+                      }}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        <span className="text-[8.5px] font-mono font-black tracking-wider text-white/90">
+                          0{floor} · FLOOR
+                        </span>
+                      </div>
+                      <span className="text-[9.5px] font-black tracking-tight leading-none mt-0.5">
+                        {slice.category}
+                      </span>
+                      <span className="text-[7.5px] font-medium opacity-85 leading-tight mt-0.5">
+                        {slice.tagline}
+                      </span>
+                    </div>
+
+                    {/* Right: Vertical Floor Indicator Badge + Action Button */}
+                    <div className="relative z-10 flex items-center gap-2">
+                      {isHovered && (
+                        <div
+                          className={`px-2.5 py-1 rounded-md backdrop-blur-md transition-all duration-200 text-[8.5px] font-mono font-black tracking-wider border shadow-md animate-bounce ${
+                            isDark
+                              ? 'bg-[#e5a045] text-black border-[#e5a045]'
+                              : 'bg-[#008ba8] text-white border-[#00596c]'
+                          }`}
+                        >
+                          DROP DOWN ▾
+                        </div>
+                      )}
+
+                      <div className="px-2 py-1 rounded text-[8.5px] font-mono font-black tracking-wider border shadow-sm bg-black/70 text-white/90 border-white/20">
+                        0{floor} FLOOR
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

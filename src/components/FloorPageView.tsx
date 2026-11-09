@@ -545,14 +545,6 @@ export const FloorPageView: React.FC<FloorPageViewProps> = ({
                       >
                         {product.name}
                       </h3>
-
-                      <p
-                        className={`text-xs line-clamp-2 leading-relaxed ${
-                          isDark ? 'text-[#b3a191]' : 'text-[#69584b]'
-                        }`}
-                      >
-                        {product.description}
-                      </p>
                     </div>
 
                     {/* Dimensions & Material Chips */}
@@ -854,14 +846,6 @@ export const FloorPageView: React.FC<FloorPageViewProps> = ({
                                 >
                                   {product.name}
                                 </h4>
-
-                                <p
-                                  className={`text-[11px] line-clamp-2 leading-relaxed ${
-                                    isDark ? 'text-[#a89685]' : 'text-[#69584b]'
-                                  }`}
-                                >
-                                  {product.description}
-                                </p>
                               </div>
                             </div>
 
@@ -1156,14 +1140,6 @@ export const FloorPageView: React.FC<FloorPageViewProps> = ({
                           >
                             {product.name}
                           </h3>
-
-                          <p
-                            className={`text-xs line-clamp-2 leading-relaxed ${
-                              isDark ? 'text-[#b3a191]' : 'text-[#69584b]'
-                            }`}
-                          >
-                            {product.description}
-                          </p>
                         </div>
 
                         {/* Dimensions & Materials */}

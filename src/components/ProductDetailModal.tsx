@@ -166,15 +166,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </span>
               </div>
 
-              {/* Description */}
-              <p
-                className={`text-xs sm:text-[13px] leading-relaxed mb-4 ${
-                  isDark ? 'text-[#b8a797]' : 'text-[#5d4c3f]'
-                }`}
-              >
-                {product.description}
-              </p>
-
               {/* Finish Selector */}
               <div className="mb-3">
                 <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5 opacity-80">

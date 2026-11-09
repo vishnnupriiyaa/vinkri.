@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PRODUCTS_DATA } from '../data/products';
 
 interface ProductArtworkProps {
   productId: string;
@@ -21,78 +22,10 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
   const isDark = theme === 'rustic-dark';
   const [imgError, setImgError] = useState(false);
 
-  // Direct studio photography for all major categories (Desk Toys, Dioramas, Diecast Stands, Figurines, Lamps)
-  const directImages: Record<string, string> = {
-    // Top 3 Sellers & Lamps
-    'moon-tree-light': '/assets/images/moon_tree_light_1792822133142.jpg',
-    'crescent-bonsai': '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
-    'floating-levitron': '/assets/images/floating_levitron_1792823852255.jpg',
-    // Dioramas
-    'mount-everest-light': '/assets/images/mount_everest_light_1792822132587.jpg',
-    'aeroplane-diorama': '/assets/images/aeroplane_diorama_1792823666542.jpg',
-    'bonsai-sanctuary': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
-    // Diecast Car Stands
-    'car-showcase': '/assets/images/car_showcase_1792822133725.jpg',
-    'diecast-stack': '/assets/images/diecast_car_stand_1792823666503.jpg',
-    'tiered-track-rack': '/assets/images/tiered_track_rack_1792823874061.jpg',
-    // Desk Toys
-    'grid-cube': '/assets/images/grid_cube_toy_1792822134419.jpg',
-    'basketball-shooter': '/assets/images/basketball_shooter_1792823665203.jpg',
-    'candy-dispenser': '/assets/images/candy_dispenser_1792823665976.jpg',
-    'automaton-horse': '/assets/images/automaton_horse_1792823850330.jpg',
-    'chrome-snake': '/assets/images/chrome_serpent_1792823850606.jpg',
-    // Custom Figurines
-    'buddha-halo-lamp': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
-    'shiva-trishul-lamp': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
-    'custom-figurine-duo': '/assets/images/custom_couple_figurine_1792823872735.jpg',
-    'zen-monk-figurine': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
-    'sacred-ganesha-halo': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
-    // Floor additions
-    'fuji-dawn-diorama': '/assets/images/mount_everest_light_1792822132587.jpg',
-    'aurora-fjord-pod': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
-    'pit-lane-garage': '/assets/images/diecast_car_stand_1792823666503.jpg',
-    'rotary-acrylic-pod': '/assets/images/car_showcase_1792822133725.jpg',
-    'amber-crystal-orb': '/assets/images/moon_tree_light_1792822133142.jpg',
-    'infinity-mirror-prism': '/assets/images/floating_levitron_1792823852255.jpg',
-    // Floor 5 Additional
-    'kinetic-gyro-ring': '/assets/images/grid_cube_toy_1792822134419.jpg',
-    'mag-lev-top': '/assets/images/automaton_horse_1792823850330.jpg',
-    'articulated-chameleon': '/assets/images/chrome_serpent_1792823850606.jpg',
-    'perpetual-pendulum-track': '/assets/images/basketball_shooter_1792823665203.jpg',
-    // Floor 4 Additional
-    'kyoto-rain-temple': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
-    'deep-sea-trench': '/assets/images/aeroplane_diorama_1792823666542.jpg',
-    'cyberpunk-alley-nook': '/assets/images/mount_everest_light_1792822132587.jpg',
-    'enchanted-moss-hollow': '/assets/images/bonsai_sanctuary_1792823852211.jpg',
-    // Floor 3 Additional
-    'vintage-gas-station': '/assets/images/diecast_car_stand_1792823666503.jpg',
-    'carbon-apex-dock': '/assets/images/car_showcase_1792822133725.jpg',
-    'touge-hairpin-stand': '/assets/images/tiered_track_rack_1792823874061.jpg',
-    'dust-free-pod': '/assets/images/car_showcase_1792822133725.jpg',
-    // Floor 2 Additional
-    'family-heirloom-trio': '/assets/images/custom_couple_figurine_1792823872735.jpg',
-    'cyber-mecha-companion': '/assets/images/buddha_halo_lamp_1792822134221.jpg',
-    'mini-pet-portrait': '/assets/images/custom_couple_figurine_1792823872735.jpg',
-    'origami-bronze-crane': '/assets/images/shiva_trishul_aura_1792823667127.jpg',
-    // Floor 1 Additional
-    'travertine-column-luminaire': '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
-    'smoked-amber-filament': '/assets/images/moon_tree_light_1792822133142.jpg',
-    'onyx-sphere-lamp': '/assets/images/moon_tree_light_1792822133142.jpg',
-    'brass-cantilever-sconce': '/assets/images/crescent_moon_bonsai_1792823851166.jpg'
-  };
-
-  // Coordinates from the reference image for any remaining items
-  const shelfCrops: Record<string, { left: string; top: string; width: string; height: string }> = {
-    'grid-cube': { width: '2909%', height: '1800%', left: '-414.5%', top: '-148%' },
-    'basketball-shooter': { width: '2909%', height: '1800%', left: '-745.5%', top: '-148%' },
-    'candy-dispenser': { width: '2909%', height: '1800%', left: '-1127.3%', top: '-148%' },
-    'mount-everest-light': { width: '2909%', height: '1800%', left: '-1509.1%', top: '-148%' },
-    'aeroplane-diorama': { width: '2909%', height: '1800%', left: '-1918.2%', top: '-148%' },
-    'car-showcase': { width: '2909%', height: '1800%', left: '-2327.3%', top: '-148%' }
-  };
-
-  const directImg = directImages[productId];
-  const crop = shelfCrops[productId];
+  // Dynamically source accurate, matching studio photography from single source of truth
+  const product = PRODUCTS_DATA.find((p) => p.id === productId);
+  const directImg = product?.imageThumbnail;
+  const crop = null;
 
   return (
     <div
@@ -114,27 +47,6 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
               : 'brightness-[1.04] contrast-[1.04] saturate-[1.06]'
           }`}
         />
-      ) : crop && !imgError ? (
-        /* Sliced thumbnail from reference image */
-        <div className="relative w-full h-full overflow-hidden select-none pointer-events-none">
-          <img
-            src={isDark ? '/assets/aistudio/dark_building.jpg' : '/assets/aistudio/light_building.jpg'}
-            alt="Product render"
-            onError={() => setImgError(true)}
-            className={`max-w-none absolute transition-all duration-300 ${
-              isDark
-                ? 'brightness-[1.02] contrast-[1.06]'
-                : 'brightness-[1.08] contrast-[1.03] sepia-[0.16] hue-rotate-[340deg]'
-            }`}
-            style={{
-              left: crop.left,
-              top: crop.top,
-              width: crop.width,
-              height: crop.height,
-              objectFit: 'cover'
-            }}
-          />
-        </div>
       ) : (
         /* Vector Fallback */
         <div

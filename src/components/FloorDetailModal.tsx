@@ -436,14 +436,6 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                       >
                         {activeProduct.name}
                       </h3>
-
-                      <p
-                        className={`text-xs sm:text-sm mt-1 leading-relaxed ${
-                          isDark ? 'text-[#b3a191]' : 'text-[#69584b]'
-                        }`}
-                      >
-                        {activeProduct.description}
-                      </p>
                     </div>
 
                     {/* Quick Specs Grid */}
@@ -702,14 +694,6 @@ export const FloorDetailModal: React.FC<FloorDetailModalProps> = ({
                         >
                           {product.name}
                         </h4>
-
-                        <p
-                          className={`text-xs mt-1 line-clamp-2 leading-relaxed ${
-                            isDark ? 'text-[#a89685]' : 'text-[#69584b]'
-                          }`}
-                        >
-                          {product.description}
-                        </p>
                       </div>
 
                       {/* Price Section */}

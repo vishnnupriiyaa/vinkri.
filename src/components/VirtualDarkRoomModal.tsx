@@ -540,13 +540,6 @@ export const VirtualDarkRoomModal: React.FC<VirtualDarkRoomModalProps> = ({
                   </span>
                 )}
               </div>
-              <p
-                className={`text-xs line-clamp-1 mb-2 ${
-                  isDark ? 'text-[#a99787]' : 'text-[#69584b]'
-                }`}
-              >
-                {currentProduct.description}
-              </p>
               <div className="flex items-center gap-3">
                 <span
                   className={`text-base font-extrabold ${

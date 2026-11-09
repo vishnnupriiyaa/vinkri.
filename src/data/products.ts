@@ -432,7 +432,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C Rechargeable',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/mount_everest_light_1792822132587.jpg',
+    imageThumbnail: '/assets/images/fuji_dawn_diorama_1794227399341.jpg',
     inStock: true,
     badge: 'Atelier Edition'
   },
@@ -451,7 +451,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C / Touch Dimmer',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    imageThumbnail: '/assets/images/aurora_fjord_pod_1794227582311.jpg',
     inStock: true
   },
   // Floor 3 Additional Creations
@@ -471,7 +471,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C 5V',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/diecast_car_stand_1792823666503.jpg',
+    imageThumbnail: '/assets/images/pit_lane_garage_1794227519696.jpg',
     inStock: true
   },
   {
@@ -489,7 +489,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Dual USB-C / Li-ion Battery',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/car_showcase_1792822133725.jpg',
+    imageThumbnail: '/assets/images/rotary_acrylic_pod_1794227377848.jpg',
     inStock: true,
     badge: 'Collector Choice'
   },
@@ -509,7 +509,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C with touch sensor',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/buddha_halo_lamp_1792822134221.jpg',
+    imageThumbnail: '/assets/images/meditative_stone_monk_1794227629390.jpg',
     inStock: true
   },
   {
@@ -528,7 +528,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Touch-sensitive dimmer',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/shiva_trishul_aura_1792823667127.jpg',
+    imageThumbnail: '/assets/images/sacred_ganesha_halo_1794227478650.jpg',
     inStock: true,
     badge: 'Artisan Crafted'
   },
@@ -548,7 +548,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB Cable with in-line switch',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/moon_tree_light_1792822133142.jpg',
+    imageThumbnail: '/assets/images/amber_crystal_orb_1794227302077.jpg',
     inStock: true
   },
   {
@@ -567,7 +567,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C with wireless remote',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/floating_levitron_1792823852255.jpg',
+    imageThumbnail: '/assets/images/infinity_mirror_prism_1794227322430.jpg',
     inStock: true,
     badge: 'Popular'
   },
@@ -587,7 +587,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Pure kinetic mechanical',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/grid_cube_toy_1792822134419.jpg',
+    imageThumbnail: '/assets/images/kinetic_gyro_ring_v2_1794228997253.jpg',
     inStock: true
   },
   {
@@ -605,7 +605,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Magnetic repulsion balance',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/automaton_horse_1792823850330.jpg',
+    imageThumbnail: '/assets/images/mag_lev_top_1794228105286.jpg',
     inStock: true
   },
   {
@@ -623,7 +623,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Tactile desktop companion',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/chrome_serpent_1792823850606.jpg',
+    imageThumbnail: '/assets/images/brass_chameleon_1794228105474.jpg',
     inStock: true
   },
   {
@@ -641,7 +641,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C 5V Silent Drive',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/basketball_shooter_1792823665203.jpg',
+    imageThumbnail: '/assets/images/pendulum_track_1794228105467.jpg',
     inStock: true,
     badge: 'Curator Pick'
   },
@@ -661,7 +661,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C with capacitive touch control',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    imageThumbnail: '/assets/images/kyoto_rain_temple_1794227501868.jpg',
     inStock: true
   },
   {
@@ -679,7 +679,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Low-voltage glow array',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/aeroplane_diorama_1792823666542.jpg',
+    imageThumbnail: '/assets/images/deep_sea_trench_1794228125880.jpg',
     inStock: true
   },
   {
@@ -697,7 +697,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C with dimmer remote',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/mount_everest_light_1792822132587.jpg',
+    imageThumbnail: '/assets/images/cyber_book_nook_1794228106394.jpg',
     inStock: true,
     badge: 'Popular'
   },
@@ -716,28 +716,10 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Warm white ambient LED',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/bonsai_sanctuary_1792823852211.jpg',
+    imageThumbnail: '/assets/images/enchanted_moss_1794228124954.jpg',
     inStock: true
   },
   // Floor 3 Additional creations (Total 9)
-  {
-    id: 'vintage-gas-station',
-    name: 'Route 66 Vintage Gas Station Deck',
-    category: 'DIECAST CAR STANDS',
-    floorNumber: 3,
-    price: 3699,
-    rating: 4.8,
-    reviewsCount: 61,
-    description: 'Scale 1:64 weathered retro gas station showcase with dual glowing fuel pumps, porcelain enamel signs, and floodlight roof canopy.',
-    shortTag: '1:64 Scale Diorama Deck',
-    dimensions: '26cm × 18cm × 14cm',
-    materials: ['Weathered Resin', 'Acrylic Canopy', 'Micro LED Streetlights'],
-    powerSource: 'USB 5V illuminated deck',
-    isTopSeller: false,
-    isOnShelf: false,
-    imageThumbnail: '/assets/images/diecast_car_stand_1792823666503.jpg',
-    inStock: true
-  },
   {
     id: 'carbon-apex-dock',
     name: 'Carbon-Fiber Apex Display Dock',
@@ -753,7 +735,25 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Passive collectors dock',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/car_showcase_1792822133725.jpg',
+    imageThumbnail: '/assets/images/carbon_apex_dock_1794227563551.jpg',
+    inStock: true
+  },
+  {
+    id: 'vintage-gas-station',
+    name: 'Route 66 Vintage Gas Station Deck',
+    category: 'DIECAST CAR STANDS',
+    floorNumber: 3,
+    price: 3699,
+    rating: 4.8,
+    reviewsCount: 61,
+    description: 'Scale 1:64 weathered retro gas station showcase with dual glowing fuel pumps, porcelain enamel signs, and floodlight roof canopy.',
+    shortTag: '1:64 Scale Diorama Deck',
+    dimensions: '26cm × 18cm × 14cm',
+    materials: ['Weathered Resin', 'Acrylic Canopy', 'Micro LED Streetlights'],
+    powerSource: 'USB 5V illuminated deck',
+    isTopSeller: false,
+    isOnShelf: false,
+    imageThumbnail: '/assets/images/vintage_gas_station_1794228126534.jpg',
     inStock: true
   },
   {
@@ -771,7 +771,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Optional spotlight bracket',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/tiered_track_rack_1792823874061.jpg',
+    imageThumbnail: '/assets/images/touge_hairpin_1794228126277.jpg',
     inStock: true,
     badge: 'Best Seller'
   },
@@ -790,10 +790,28 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Rechargeable 4000mAh Battery / USB-C',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/car_showcase_1792822133725.jpg',
+    imageThumbnail: '/assets/images/dust_free_capsule_1794228144453.jpg',
     inStock: true
   },
   // Floor 2 Additional creations (Total 9)
+  {
+    id: 'origami-bronze-crane',
+    name: 'Origami Bronze Crane Guardian',
+    category: 'CUSTOM FIGURINES',
+    floorNumber: 2,
+    price: 4199,
+    rating: 4.9,
+    reviewsCount: 67,
+    description: 'Geometric faceted bronze crane sculpture cast using lost-wax technique with antiqued verdigris patina and polished wing tips.',
+    shortTag: 'Lost-Wax Cast Bronze',
+    dimensions: '18cm × 14cm × 22cm',
+    materials: ['Solid Cast Bronze', 'Natural Verdigris Patina', 'Polished Granite Base'],
+    powerSource: 'Solid metal sculpture',
+    isTopSeller: false,
+    isOnShelf: false,
+    imageThumbnail: '/assets/images/origami_bronze_crane_1794227359511.jpg',
+    inStock: true
+  },
   {
     id: 'family-heirloom-trio',
     name: 'Custom Family Heirloom Trio',
@@ -809,7 +827,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Bespoke sculptural artwork',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/custom_couple_figurine_1792823872735.jpg',
+    imageThumbnail: '/assets/images/family_heirloom_1794228145269.jpg',
     inStock: true,
     badge: 'Custom Order'
   },
@@ -828,7 +846,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Coin-cell battery',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/buddha_halo_lamp_1792822134221.jpg',
+    imageThumbnail: '/assets/images/cyber_mecha_1794228145708.jpg',
     inStock: true
   },
   {
@@ -846,25 +864,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Artisan keepsake',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/custom_couple_figurine_1792823872735.jpg',
-    inStock: true
-  },
-  {
-    id: 'origami-bronze-crane',
-    name: 'Origami Bronze Crane Guardian',
-    category: 'CUSTOM FIGURINES',
-    floorNumber: 2,
-    price: 4199,
-    rating: 4.9,
-    reviewsCount: 67,
-    description: 'Geometric faceted bronze crane sculpture cast using lost-wax technique with antiqued verdigris patina and polished wing tips.',
-    shortTag: 'Lost-Wax Cast Bronze',
-    dimensions: '18cm × 14cm × 22cm',
-    materials: ['Solid Cast Bronze', 'Natural Verdigris Patina', 'Polished Granite Base'],
-    powerSource: 'Solid metal sculpture',
-    isTopSeller: false,
-    isOnShelf: false,
-    imageThumbnail: '/assets/images/shiva_trishul_aura_1792823667127.jpg',
+    imageThumbnail: '/assets/images/mini_pet_1794228145212.jpg',
     inStock: true
   },
   // Floor 1 Additional creations (Total 9)
@@ -883,7 +883,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Dimmable touch switch / USB-C',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
+    imageThumbnail: '/assets/images/travertine_column_lamp_1794227341133.jpg',
     inStock: true
   },
   {
@@ -901,7 +901,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'Standard AC 220V / 110V braided cloth cable',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/moon_tree_light_1792822133142.jpg',
+    imageThumbnail: '/assets/images/amber_filament_1794228167550.jpg',
     inStock: true
   },
   {
@@ -919,7 +919,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: 'USB-C Rechargeable Li-Ion (18hr runtime)',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/moon_tree_light_1792822133142.jpg',
+    imageThumbnail: '/assets/images/onyx_sphere_1794228167673.jpg',
     inStock: true
   },
   {
@@ -937,7 +937,7 @@ export const PRODUCTS_DATA: Product[] = [
     powerSource: '12V Low Voltage Adapter included',
     isTopSeller: false,
     isOnShelf: false,
-    imageThumbnail: '/assets/images/crescent_moon_bonsai_1792823851166.jpg',
+    imageThumbnail: '/assets/images/brass_cantilever_1794228168206.jpg',
     inStock: true
   }
 ];
