@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { RotateCcw, Play, ShoppingBag, Check, Sparkles, Info } from 'lucide-react';
+import { motion } from 'motion/react';
+import { RotateCcw, Play, ShoppingBag, Check } from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
 
@@ -117,6 +117,150 @@ const BUILDING_SLICES: BuildingSlice[] = [
   }
 ];
 
+interface NicheCellProps {
+  prod?: Product;
+  index: number;
+  isDark: boolean;
+  isHovered: boolean;
+  justAddedId: string | null;
+  hasError: boolean;
+  onHover: (idx: number | null) => void;
+  onSelect?: (prod: Product) => void;
+  onQuickAdd: (prod: Product, e: React.MouseEvent) => void;
+  onImageError: (id: string) => void;
+}
+
+const NicheCell: React.FC<NicheCellProps> = ({
+  prod,
+  index,
+  isDark,
+  isHovered,
+  justAddedId,
+  hasError,
+  onHover,
+  onSelect,
+  onQuickAdd,
+  onImageError
+}) => {
+  if (!prod) return <div className="flex-1" />;
+
+  return (
+    <div
+      onMouseEnter={() => onHover(index)}
+      onMouseLeave={() => onHover(null)}
+      onClick={() => onSelect && onSelect(prod)}
+      className="group/niche relative flex-1 h-full mx-1 flex items-center justify-center p-1.5 cursor-pointer"
+    >
+      {/* Unified Studio-Graded Recessed Display Bay */}
+      <div
+        className={`relative w-full h-full rounded-lg overflow-hidden flex items-center justify-center border transition-all duration-300 ${
+          isDark
+            ? 'bg-[#17100b] border-[#3a2719]/80 group-hover/niche:border-[#e5a045]/70 shadow-[inset_0_1px_14px_rgba(0,0,0,0.65)]'
+            : 'bg-[#eee4d6] border-[#d6c5b0] group-hover/niche:border-[#c35626]/70 shadow-[inset_0_1px_10px_rgba(85,60,35,0.12)]'
+        }`}
+      >
+        {!hasError ? (
+          <>
+            {/* Ambient Tonal Extension Backdrop (unifies aspect ratios & studio tones) */}
+            <img
+              src={prod.imageThumbnail}
+              alt=""
+              aria-hidden="true"
+              referrerPolicy="no-referrer"
+              className={`absolute inset-0 w-full h-full object-cover scale-125 blur-md transition-opacity duration-300 pointer-events-none select-none ${
+                isDark
+                  ? 'opacity-40 brightness-[0.52] contrast-[1.08] saturate-[0.88] sepia-[0.12]'
+                  : 'opacity-45 brightness-[0.95] contrast-[1.02] saturate-[0.9] sepia-[0.06]'
+              }`}
+            />
+
+            {/* Crisp Foreground Studio Product Photography with Balanced Color LUT */}
+            <img
+              src={prod.imageThumbnail}
+              alt={prod.name}
+              referrerPolicy="no-referrer"
+              onError={() => onImageError(prod.id)}
+              className={`relative z-10 max-h-[92%] max-w-[90%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-105 ${
+                isDark
+                  ? 'brightness-[0.90] contrast-[1.06] saturate-[0.94] sepia-[0.07]'
+                  : 'brightness-[1.03] contrast-[1.04] saturate-[1.05]'
+              }`}
+            />
+
+            {/* Measured Architectural Vignette & Warm Rim Scrim */}
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 z-20 ${
+                isDark
+                  ? 'bg-[radial-gradient(ellipse_at_center,transparent_48%,rgba(14,8,5,0.58)_100%)]'
+                  : 'bg-[radial-gradient(ellipse_at_center,transparent_58%,rgba(120,92,64,0.16)_100%)]'
+              }`}
+            />
+          </>
+        ) : (
+          <div
+            className={`w-full h-full flex items-center justify-center p-2 text-center ${
+              isDark ? 'bg-[#1a110b] text-[#e5a045]' : 'bg-[#f4ecdf] text-[#c35626]'
+            }`}
+          >
+            <span className="text-[9px] font-mono font-bold uppercase tracking-wider line-clamp-2">
+              {prod.name}
+            </span>
+          </div>
+        )}
+
+        {/* Hover Name, Price & Quick-Add Bar */}
+        <div
+          className={`absolute bottom-1.5 left-1.5 right-1.5 px-2 py-1 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center justify-between gap-1.5 shadow-md z-30 ${
+            isHovered
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-2 pointer-events-none'
+          } ${
+            isDark
+              ? 'bg-[#160e08]/92 text-[#f5efe6] border-[#e5a045]/50'
+              : 'bg-[#faf6f0]/95 text-[#1e140d] border-[#c35626]/40'
+          }`}
+        >
+          <span className="text-[8.5px] font-bold truncate">
+            {prod.name}
+          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span
+              className={`text-[8.5px] font-mono font-black tabular-nums ${
+                isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
+              }`}
+            >
+              ₹{prod.price.toLocaleString('en-IN')}
+            </span>
+
+            <button
+              type="button"
+              onClick={(e) => onQuickAdd(prod, e)}
+              className={`p-1 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
+                justAddedId === prod.id
+                  ? isDark
+                    ? 'bg-[#d2f53a] text-black'
+                    : 'bg-[#2c1e13] text-white'
+                  : isDark
+                  ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black'
+                  : 'bg-[#c35626] hover:bg-[#a84419] text-white'
+              }`}
+              title="Quick Add to Cart"
+              aria-label={`Quick add ${prod.name}`}
+            >
+              {justAddedId === prod.id ? (
+                <Check className="w-2.5 h-2.5 stroke-[3]" />
+              ) : (
+                <ShoppingBag className="w-2.5 h-2.5" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   theme,
   onSelectFloor,
@@ -142,6 +286,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   // Quick-add feedback
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
+  // Track any broken product images
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
   // Synchronize when selectedFloorNumber changes externally
   useEffect(() => {
     if (selectedFloorNumber !== undefined && selectedFloorNumber !== null) {
@@ -150,7 +297,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     }
   }, [selectedFloorNumber]);
 
-  // Handle floor click toggle with immediate responsiveness
   const handleToggleFloor = (floorNum?: number) => {
     if (floorNum !== undefined) {
       if (activeFloor === floorNum && isExpanded) {
@@ -174,7 +320,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     });
   };
 
-  // Replay animation sequence from start
   const handleReplaySequence = () => {
     setIsExpanded(false);
     setTimeout(() => {
@@ -189,28 +334,22 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setTimeout(() => setJustAddedId(null), 1400);
   };
 
-  // Find active slice index
+  const handleImageError = (id: string) => {
+    setFailedImages((prev) => ({ ...prev, [id]: true }));
+  };
+
   const activeIndex = BUILDING_SLICES.findIndex((s) => s.floorNumber === activeFloor);
   const safeActiveIndex = activeIndex >= 0 ? activeIndex : 3;
 
-  // Slices above the active floor (slides UP)
   const upperSlices = BUILDING_SLICES.slice(0, safeActiveIndex);
-
-  // The active floor slice itself (stays in place as the showcase header)
   const heroSlice = BUILDING_SLICES[safeActiveIndex];
-
-  // Slices below the active floor (slides DOWN)
   const lowerSlices = BUILDING_SLICES.slice(safeActiveIndex + 1);
 
-  // All 9 distinct, non-repeating products for the active floor (matching their images & descriptions)
   const allFloorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === activeFloor);
   const nicheProducts = allFloorProducts.slice(0, 9);
 
-  // Row 1 products (replaced the solid brown/blue blocks)
   const row1Products = nicheProducts.slice(0, 3);
-  // Row 2 products
   const row2Products = nicheProducts.slice(3, 6);
-  // Row 3 products
   const row3Products = nicheProducts.slice(6, 9);
 
   return (
@@ -220,52 +359,43 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     >
       {/* ============================================================== */}
       {/* 1. TOP INTERACTIVE CONTROLLER BAR                              */}
-      {/* Clean, Uniform Floor Selector For All 5 Floors                 */}
+      {/* Harmonized Color Grading & Clean Floor Switcher                */}
       {/* ============================================================== */}
       <div
         className={`w-full max-w-[656px] mb-3 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between gap-2 border transition-all duration-300 shadow-sm ${
           isDark
-            ? 'bg-[#150e09] border-[#2c1d12] text-[#f7f2ea]'
-            : 'bg-[#faf6f0] border-[#decbb8] text-[#2c1e13]'
+            ? 'bg-[#150e09] border-[#2e2015] text-[#f7f2ea]'
+            : 'bg-[#f6efe5] border-[#decbb8] text-[#2c1e13]'
         }`}
       >
         {/* Toggle / Reassemble Button */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => handleToggleFloor()}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-black uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 shadow-sm ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 whitespace-nowrap ${
               isExpanded
                 ? isDark
-                  ? 'bg-[#e5a045] hover:bg-[#cca348] text-black font-black ring-2 ring-[#e5a045]/40'
-                  : 'bg-[#008ba8] hover:bg-[#00748d] text-white font-black ring-2 ring-[#008ba8]/40'
+                  ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black font-black'
+                  : 'bg-[#c35626] hover:bg-[#a84419] text-white font-black'
                 : isDark
-                ? 'bg-[#26170d] hover:bg-[#382314] text-[#f5c27d] border border-[#4a2e19]'
-                : 'bg-white hover:bg-neutral-100 text-[#006078] border border-[#decbb8]'
+                ? 'bg-[#25170e] hover:bg-[#352215] text-[#f5c27d] border border-[#4a2f1c]'
+                : 'bg-white hover:bg-[#fbf7f1] text-[#2c1e13] border border-[#d8c4ae]'
             }`}
           >
             <RotateCcw className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
-            <span>{isExpanded ? 'Reassemble Cabinet' : 'Click Floor to Drop Down'}</span>
+            <span>{isExpanded ? 'Reassemble Cabinet' : 'Click Floor to Open'}</span>
           </button>
 
-          {/* Active floor category badge */}
-          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono font-bold">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isExpanded
-                  ? isDark
-                    ? 'bg-[#e5a045] animate-pulse'
-                    : 'bg-[#008ba8] animate-pulse'
-                  : 'bg-emerald-500'
-              }`}
-            />
-            <span className="opacity-90 font-black">
-              {heroSlice.name} • {heroSlice.category}
-            </span>
-          </div>
+          {/* Active floor category label */}
+          <span className={`hidden sm:inline text-[10px] font-mono font-semibold tracking-wide whitespace-nowrap ${
+            isDark ? 'text-[#cbb7a1]' : 'text-[#635040]'
+          }`}>
+            {heroSlice.name} · {heroSlice.category}
+          </span>
         </div>
 
-        {/* Floor Selection Tabs (05 - 01) - 100% Uniform & Consistent */}
+        {/* Floor Selection Tabs (05 - 01) */}
         <div className="flex items-center gap-1 flex-wrap">
           {[5, 4, 3, 2, 1].map((floorNum) => {
             const isActive = activeFloor === floorNum && isExpanded;
@@ -276,19 +406,19 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 key={floorNum}
                 type="button"
                 onClick={() => handleToggleFloor(floorNum)}
-                className={`px-2 py-1 rounded text-[9.5px] font-mono font-black transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
+                className={`px-2 py-1 rounded text-[9.5px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1 active:scale-95 whitespace-nowrap ${
                   isActive
                     ? isDark
-                      ? 'bg-[#e5a045] text-black shadow-md font-black ring-1 ring-[#e5a045]'
-                      : 'bg-[#008ba8] text-white shadow-md font-black ring-1 ring-[#008ba8]'
+                      ? 'bg-[#e5a045] text-black shadow-sm font-black'
+                      : 'bg-[#c35626] text-white shadow-sm font-black'
                     : isDark
-                    ? 'bg-[#20140c] text-[#c2b09e] hover:text-white hover:bg-[#301f13] border border-[#301f13]'
-                    : 'bg-white text-[#69584b] hover:text-[#1e140d] hover:bg-neutral-50 border border-[#decbb8]'
+                    ? 'bg-[#20140c] text-[#c2b09e] hover:text-white hover:bg-[#301f13] border border-[#342316]'
+                    : 'bg-white text-[#69584b] hover:text-[#1e140d] hover:bg-[#faf5ed] border border-[#decbb8]'
                 }`}
-                title={`Floor 0${floorNum}: ${slice?.category || ''} (Click to drop down products)`}
+                title={`Floor 0${floorNum}: ${slice?.category || ''}`}
               >
-                <span>0{floorNum}</span>
-                <span className="hidden md:inline text-[8.5px] font-bold opacity-85 uppercase">
+                <span className="tabular-nums">0{floorNum}</span>
+                <span className="hidden md:inline text-[8.5px] font-semibold opacity-85 uppercase">
                   {floorNum === 5 ? 'TOYS' : floorNum === 4 ? 'DIORAMA' : floorNum === 3 ? 'CARS' : floorNum === 2 ? 'FIGURES' : 'LAMPS'}
                 </span>
               </button>
@@ -299,12 +429,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           <button
             type="button"
             onClick={handleReplaySequence}
-            className={`p-1.5 ml-1 rounded border transition-colors cursor-pointer active:scale-95 ${
+            className={`p-1.5 ml-0.5 rounded border transition-colors cursor-pointer active:scale-95 ${
               isDark
-                ? 'bg-[#20140c] text-[#a89685] hover:text-white border-[#301f13]'
+                ? 'bg-[#20140c] text-[#b4a08d] hover:text-white border-[#342316]'
                 : 'bg-white text-[#69584b] hover:text-[#1e140d] border-[#decbb8]'
             }`}
-            title="Replay Video Drop Down Animation"
+            title="Replay Drop Down Animation"
+            aria-label="Replay drop down animation"
           >
             <Play className="w-3 h-3" />
           </button>
@@ -313,19 +444,17 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
       {/* ============================================================== */}
       {/* 2. THE 656PX ARCHITECTURAL BUILDING VIEWPORT                    */}
-      {/* Clean Drop Down Mechanics For All Floors                       */}
       {/* ============================================================== */}
       <div
         className={`relative w-full max-w-[656px] rounded-2xl overflow-hidden border transition-all duration-300 shadow-2xl ${
           isDark
-            ? 'bg-[#0a0705] border-[#2e2015] shadow-[0_20px_50px_rgba(0,0,0,0.85)]'
-            : 'bg-[#faf6f0] border-[#decbb8] shadow-[0_20px_50px_rgba(195,86,38,0.12)]'
+            ? 'bg-[#0d0805] border-[#332216] shadow-[0_24px_60px_rgba(0,0,0,0.85)]'
+            : 'bg-[#f4ece1] border-[#decbb8] shadow-[0_20px_50px_rgba(110,72,38,0.14)]'
         }`}
       >
         <div className="relative w-full flex flex-col items-center">
           {/* ----------------------------------------------------------- */}
-          {/* SECTION A: UPPER SLICES (ALL FLOORS ABOVE ACTIVE FLOOR)     */}
-          {/* Slides UPWARD and leaves canvas during drop down            */}
+          {/* SECTION A: UPPER SLICES (SLIDE UP ON EXPAND)                */}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
@@ -346,7 +475,11 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 key={slice.id}
                 src={isDark ? slice.darkSrc : slice.lightSrc}
                 alt={slice.name}
-                className="w-full h-auto block select-none"
+                className={`w-full h-auto block select-none ${
+                  isDark
+                    ? 'brightness-[0.96] contrast-[1.04] saturate-[0.96]'
+                    : 'brightness-[1.01] contrast-[1.02]'
+                }`}
                 style={{ aspectRatio: `656 / ${slice.height}` }}
               />
             ))}
@@ -354,108 +487,75 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
           {/* ----------------------------------------------------------- */}
           {/* SECTION B: HERO PRODUCT SHOWCASE (ACTIVE FLOOR)             */}
-          {/* Stays in place as the showcase header during drop down      */}
           {/* ----------------------------------------------------------- */}
           <div
             onClick={() => handleToggleFloor()}
             className="group/shelf relative w-full z-30 select-none cursor-pointer"
             style={{ width: '656px', maxWidth: '100%' }}
-            title={isExpanded ? 'Click to reassemble cabinet' : 'Click to trigger video drop down'}
+            title={isExpanded ? 'Click to reassemble cabinet' : 'Click to open floor showcase'}
           >
             <img
               src={isDark ? heroSlice.darkSrc : heroSlice.lightSrc}
               alt={`${heroSlice.name} Showcase`}
-              className="w-full h-auto block select-none pointer-events-none group-hover/shelf:brightness-105 transition-[filter]"
+              className={`w-full h-auto block select-none pointer-events-none transition-[filter] duration-300 group-hover/shelf:brightness-105 ${
+                isDark
+                  ? 'brightness-[0.96] contrast-[1.04] saturate-[0.96]'
+                  : 'brightness-[1.01] contrast-[1.02]'
+              }`}
               style={{ aspectRatio: `656 / ${heroSlice.height}` }}
             />
 
-            {/* Interactive Hover Prompt on Hero Shelf */}
-            <div className="absolute inset-0 bg-black/0 group-hover/shelf:bg-black/15 transition-colors flex items-center justify-between px-4 pointer-events-none">
+            {/* Balanced Bottom-Edge Scrim & Clean Action Pill */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-80 group-hover/shelf:opacity-100 transition-opacity flex items-end justify-between px-3.5 pb-2 pointer-events-none">
               <span
-                className={`text-[8.5px] sm:text-[9.5px] font-mono font-black uppercase px-2.5 py-1 rounded backdrop-blur-md border shadow-xs transition-opacity ${
-                  isExpanded
-                    ? isDark
-                      ? 'bg-[#22160d]/90 text-[#e5a045] border-[#e5a045]/60'
-                      : 'bg-[#008ba8]/90 text-white border-white/40'
-                    : isDark
-                    ? 'bg-[#150e09]/90 text-[#c2b09e] border-[#382618]'
-                    : 'bg-white/90 text-[#3a2517] border-[#decbb8]'
+                className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded backdrop-blur-md border ${
+                  isDark
+                    ? 'bg-[#160e08]/88 text-[#f2dcc0] border-[#e5a045]/45'
+                    : 'bg-[#2a1c12]/85 text-[#faf6f0] border-white/25'
                 }`}
               >
-                {heroSlice.name} • {heroSlice.category}
+                {heroSlice.name} · {heroSlice.category}
               </span>
 
               <span
-                className={`text-[8px] sm:text-[9px] font-mono font-bold tracking-wider px-2 py-0.5 rounded backdrop-blur-md border transition-all ${
+                className={`text-[8.5px] font-mono font-bold tracking-wider px-2.5 py-0.5 rounded backdrop-blur-md border transition-all ${
                   isExpanded
-                    ? 'bg-emerald-600 text-white border-emerald-400 opacity-90'
+                    ? isDark
+                      ? 'bg-[#1a110a]/90 text-[#e5a045] border-[#e5a045]/55'
+                      : 'bg-[#2c1e13]/90 text-[#faf6f0] border-[#decbb8]/40'
                     : 'opacity-0 group-hover/shelf:opacity-100 ' +
                       (isDark
                         ? 'bg-[#e5a045] text-black border-[#e5a045]'
-                        : 'bg-[#008ba8] text-white border-[#005a6e]')
+                        : 'bg-[#c35626] text-white border-[#a84419]')
                 }`}
               >
-                {isExpanded ? 'CLICK TO REASSEMBLE ↺' : 'CLICK FLOOR TO EXPAND ▾'}
+                {isExpanded ? 'REASSEMBLE ↺' : 'OPEN FLOOR ▾'}
               </span>
             </div>
           </div>
 
-          {/* Quick Floor Switcher Strip when Expanded (Uniform styling for all 5 floors) */}
+          {/* Slim Architectural Fascia Bar when Expanded (replaces duplicate tabs) */}
           {isExpanded && (
             <div
-              className={`w-full py-1.5 px-3 flex items-center justify-between border-b z-25 transition-colors ${
+              className={`w-full py-1.5 px-3.5 flex items-center justify-between border-y z-25 transition-colors ${
                 isDark
-                  ? 'bg-[#120c07] border-[#2c1d12] text-[#f7f2ea]'
-                  : 'bg-[#f5ece1] border-[#decbb8] text-[#2c1e13]'
+                  ? 'bg-[#160e09] border-[#342316] text-[#d6c2ab]'
+                  : 'bg-[#efe6da] border-[#d6c3ad] text-[#4b3a2b]'
               }`}
               style={{ width: '656px', maxWidth: '100%' }}
             >
-              <div className="flex items-center gap-1.5">
-                <span className="text-[8.5px] font-mono font-bold tracking-wider opacity-75">
-                  SELECT LEVEL:
-                </span>
-                <span className="text-[9px] font-mono font-black text-amber-500">
-                  0{activeFloor} {heroSlice.category}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                {[5, 4, 3, 2, 1].map((floorNum) => {
-                  const isCurrent = activeFloor === floorNum;
-                  return (
-                    <button
-                      key={floorNum}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleFloor(floorNum);
-                      }}
-                      className={`px-2 py-0.5 rounded text-[8.5px] font-mono font-black transition-all cursor-pointer flex items-center gap-1 active:scale-95 ${
-                        isCurrent
-                          ? isDark
-                            ? 'bg-[#e5a045] text-black ring-1 ring-[#e5a045] font-black shadow-xs'
-                            : 'bg-[#008ba8] text-white ring-1 ring-[#008ba8] font-black shadow-xs'
-                          : isDark
-                          ? 'bg-[#1e130a] text-[#c2b09e] hover:text-white hover:bg-[#2e1c10] border border-[#301f13]'
-                          : 'bg-white text-[#69584b] hover:text-[#1e140d] hover:bg-neutral-100 border border-[#decbb8]'
-                      }`}
-                    >
-                      <span>0{floorNum}</span>
-                      <span className="text-[7.5px] font-semibold opacity-85 hidden sm:inline">
-                        {floorNum === 5 ? 'TOYS' : floorNum === 4 ? 'DIORAMA' : floorNum === 3 ? 'CARS' : floorNum === 2 ? 'FIGURES' : 'LAMPS'}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              <span className="text-[9px] font-mono font-bold uppercase tracking-wider">
+                {heroSlice.name} · {nicheProducts.length} Studio Pieces
+              </span>
+              <span className="text-[9px] font-mono opacity-80">
+                Hover to preview · Click any piece for full view
+              </span>
             </div>
           )}
 
           {/* ----------------------------------------------------------- */}
           {/* SECTION C: THE 3-ROW SUSPENDED GANTRY                       */}
-          {/* ALL 3 ROWS FILLED WITH UNIQUE, MATCHING PRODUCT IMAGES      */}
-          {/* Row 1: Products 0, 1, 2 (Animate Down with Drop Down)       */}
-          {/* Row 2: Products 3, 4, 5                                     */}
-          {/* Row 3: Products 6, 7, 8                                     */}
+          {/* Unified Color-Graded Timber & Studio Lightbox Alcoves       */}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
@@ -470,151 +570,95 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className="relative w-full overflow-hidden z-20"
             style={{ width: '656px', maxWidth: '100%' }}
           >
-            {/* The Architectural Wooden Cabinet SVG Structure */}
+            {/* Architectural Wooden Cabinet SVG Structure (656 x 328) */}
             <svg
-              viewBox="0 0 656 248"
+              viewBox="0 0 656 328"
               className="w-full h-auto block select-none"
-              style={{ aspectRatio: '656 / 248' }}
+              style={{ aspectRatio: '656 / 328' }}
             >
               <defs>
-                {/* Light Mode Wood Gradients */}
+                {/* Light Mode Travertine & Oak Wood Gradients */}
                 <linearGradient id="lightWoodBeam" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#d3c2af" />
-                  <stop offset="40%" stopColor="#bea892" />
-                  <stop offset="100%" stopColor="#9a836d" />
+                  <stop offset="0%" stopColor="#d9c8b6" />
+                  <stop offset="45%" stopColor="#c1aa92" />
+                  <stop offset="100%" stopColor="#947c65" />
                 </linearGradient>
                 <linearGradient id="lightWoodPost" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#9a836d" />
-                  <stop offset="30%" stopColor="#d3c2af" />
-                  <stop offset="70%" stopColor="#bea892" />
-                  <stop offset="100%" stopColor="#8a735d" />
+                  <stop offset="0%" stopColor="#947c65" />
+                  <stop offset="30%" stopColor="#d9c8b6" />
+                  <stop offset="70%" stopColor="#c1aa92" />
+                  <stop offset="100%" stopColor="#856e57" />
                 </linearGradient>
 
-                {/* Dark Mode Wood Gradients */}
+                {/* Dark Mode Warm Roasted Walnut Gradients */}
                 <linearGradient id="darkWoodBeam" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#3a2517" />
-                  <stop offset="40%" stopColor="#26160d" />
+                  <stop offset="0%" stopColor="#462d1c" />
+                  <stop offset="45%" stopColor="#2c1b10" />
                   <stop offset="100%" stopColor="#160c06" />
                 </linearGradient>
                 <linearGradient id="darkWoodPost" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#160c06" />
-                  <stop offset="30%" stopColor="#3a2517" />
-                  <stop offset="70%" stopColor="#26160d" />
+                  <stop offset="30%" stopColor="#462d1c" />
+                  <stop offset="70%" stopColor="#2c1b10" />
                   <stop offset="100%" stopColor="#140a05" />
                 </linearGradient>
 
-                {/* Niche Ambient Glow */}
-                <radialGradient id="nicheAmbientGlow" cx="50%" cy="30%" r="60%">
-                  <stop offset="0%" stopColor="#fff8eb" stopOpacity={isDark ? '0.12' : '0.65'} />
-                  <stop offset="100%" stopColor="#fff8eb" stopOpacity="0" />
+                {/* Recessed Alcove Warm Cove Wash */}
+                <radialGradient id="nicheCoveDark" cx="50%" cy="22%" r="72%">
+                  <stop offset="0%" stopColor="#3c2616" stopOpacity="0.85" />
+                  <stop offset="65%" stopColor="#1a110b" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#100a06" stopOpacity="1" />
+                </radialGradient>
+                <radialGradient id="nicheCoveLight" cx="50%" cy="22%" r="72%">
+                  <stop offset="0%" stopColor="#fcf7ef" stopOpacity="1" />
+                  <stop offset="70%" stopColor="#efe5d7" stopOpacity="1" />
+                  <stop offset="100%" stopColor="#e2d4c2" stopOpacity="1" />
                 </radialGradient>
               </defs>
 
-              {/* ------------------------------------------------------- */}
-              {/* ROW 1: 3 COMPARTMENTS                                   */}
-              {/* ------------------------------------------------------- */}
-              {/* Top Connecting Wooden Beam */}
-              <rect
-                x="0"
-                y="0"
-                width="656"
-                height="8"
-                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
-              />
+              {/* Top Beam */}
+              <rect x="0" y="0" width="656" height="8" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
 
-              {/* Row 1 Background Cells */}
-              <rect x="14" y="8" width="202" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
-              <rect x="226" y="8" width="204" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
-              <rect x="440" y="8" width="202" height="66" fill={isDark ? '#140d08' : '#ffffff'} />
+              {/* ROW 1 (y: 8..104, h: 96) */}
+              <rect x="14" y="8" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="226" y="8" width="204" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="440" y="8" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="0" y="8" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="642" y="8" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="216" y="8" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="430" y="8" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
 
-              {/* Ambient Glow in Row 1 */}
-              <rect x="14" y="8" width="202" height="66" fill="url(#nicheAmbientGlow)" />
-              <rect x="226" y="8" width="204" height="66" fill="url(#nicheAmbientGlow)" />
-              <rect x="440" y="8" width="202" height="66" fill="url(#nicheAmbientGlow)" />
+              {/* Middle Beam 1 */}
+              <rect x="0" y="104" width="656" height="8" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
 
-              {/* Outer Left & Right Wooden Frame Pillars */}
-              <rect x="0" y="8" width="14" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="642" y="8" width="14" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              {/* ROW 2 (y: 112..208, h: 96) */}
+              <rect x="14" y="112" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="226" y="112" width="204" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="440" y="112" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="0" y="112" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="642" y="112" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="216" y="112" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="430" y="112" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
 
-              {/* Interior Vertical Wooden Dividers */}
-              <rect x="216" y="8" width="10" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="430" y="8" width="10" height="66" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              {/* Middle Beam 2 */}
+              <rect x="0" y="208" width="656" height="8" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
 
-              {/* ------------------------------------------------------- */}
-              {/* ROW 2: 3 COMPARTMENTS                                   */}
-              {/* ------------------------------------------------------- */}
-              {/* Middle Horizontal Beam 1 */}
-              <rect
-                x="0"
-                y="74"
-                width="656"
-                height="8"
-                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
-              />
+              {/* ROW 3 (y: 216..312, h: 96) */}
+              <rect x="14" y="216" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="226" y="216" width="204" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="440" y="216" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
+              <rect x="0" y="216" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="642" y="216" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="216" y="216" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              <rect x="430" y="216" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
 
-              {/* Row 2 Background Cells */}
-              <rect x="14" y="82" width="202" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
-              <rect x="226" y="82" width="204" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
-              <rect x="440" y="82" width="202" height="70" fill={isDark ? '#140d08' : '#ffffff'} />
-
-              {/* Ambient Glow in Row 2 */}
-              <rect x="14" y="82" width="202" height="70" fill="url(#nicheAmbientGlow)" />
-              <rect x="226" y="82" width="204" height="70" fill="url(#nicheAmbientGlow)" />
-              <rect x="440" y="82" width="202" height="70" fill="url(#nicheAmbientGlow)" />
-
-              {/* Outer Pillars & Inner Dividers */}
-              <rect x="0" y="82" width="14" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="642" y="82" width="14" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="216" y="82" width="10" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="430" y="82" width="10" height="70" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-
-              {/* ------------------------------------------------------- */}
-              {/* ROW 3: 3 COMPARTMENTS                                   */}
-              {/* ------------------------------------------------------- */}
-              {/* Middle Horizontal Beam 2 */}
-              <rect
-                x="0"
-                y="152"
-                width="656"
-                height="8"
-                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
-              />
-
-              {/* Row 3 Background Cells */}
-              <rect x="14" y="160" width="202" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
-              <rect x="226" y="160" width="204" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
-              <rect x="440" y="160" width="202" height="72" fill={isDark ? '#140d08' : '#ffffff'} />
-
-              {/* Ambient Glow in Row 3 */}
-              <rect x="14" y="160" width="202" height="72" fill="url(#nicheAmbientGlow)" />
-              <rect x="226" y="160" width="204" height="72" fill="url(#nicheAmbientGlow)" />
-              <rect x="440" y="160" width="202" height="72" fill="url(#nicheAmbientGlow)" />
-
-              {/* Outer Pillars & Inner Dividers */}
-              <rect x="0" y="160" width="14" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="642" y="160" width="14" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="216" y="160" width="10" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="430" y="160" width="10" height="72" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-
-              {/* Bottom Foundation Wooden Beam */}
-              <rect
-                x="0"
-                y="232"
-                width="656"
-                height="16"
-                fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'}
-              />
+              {/* Bottom Foundation Beam */}
+              <rect x="0" y="312" width="656" height="16" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
             </svg>
 
-            {/* ========================================================= */}
-            {/* PRODUCT COMPARTMENTS IN ALL 3 ROWS (9 UNIQUE PRODUCTS)    */}
-            {/* All Products Display Authentic Matching Images & Details  */}
-            {/* ========================================================= */}
+            {/* Product Compartments in All 3 Rows */}
             <div className="absolute inset-0 z-25 pointer-events-none">
-              {/* ------------------------------------------------------- */}
-              {/* ROW 1: PRODUCTS 0, 1, 2 (ENTRANCE DROP DOWN ANIMATION)  */}
-              {/* Replaced the solid brown/blue blocks                    */}
-              {/* ------------------------------------------------------- */}
+              {/* ROW 1: Products 0, 1, 2 (Drop Down Entrance) */}
               <motion.div
                 initial={false}
                 animate={{
@@ -628,235 +672,87 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 }}
                 className="absolute flex items-center justify-between pointer-events-auto"
                 style={{
-                  top: '3.23%', // 8px / 248px
-                  height: '26.61%', // 66px / 248px
-                  left: '2.13%', // 14px / 656px
-                  right: '2.13%' // 14px / 656px
+                  top: '2.44%', // 8 / 328
+                  height: '29.27%', // 96 / 328
+                  left: '2.13%', // 14 / 656
+                  right: '2.13%'
                 }}
               >
-                {[0, 1, 2].map((i) => {
-                  const prod = row1Products[i];
-                  if (!prod) return <div key={i} className="flex-1" />;
-                  const isHovered = hoveredProductIndex === i;
-
-                  return (
-                    <div
-                      key={prod.id}
-                      onMouseEnter={() => setHoveredProductIndex(i)}
-                      onMouseLeave={() => setHoveredProductIndex(null)}
-                      onClick={() => onSelectProduct && onSelectProduct(prod)}
-                      className="group/niche relative flex-1 h-full mx-1 flex flex-col items-center justify-center p-1.5 cursor-pointer overflow-hidden transition-all duration-300 rounded-xl"
-                    >
-                      {/* Product Image resting inside the compartment */}
-                      <img
-                        src={prod.imageThumbnail}
-                        alt={prod.name}
-                        className="max-h-[88%] max-w-[88%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
-                      />
-
-                      {/* Floating Product Info Pill & Matching Description on Hover */}
-                      <div
-                        className={`absolute bottom-0.5 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-md ${
-                          isHovered
-                            ? 'opacity-100 translate-y-0 z-30'
-                            : 'opacity-0 translate-y-2 pointer-events-none'
-                        } ${
-                          isDark
-                            ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
-                            : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
-                        }`}
-                      >
-                        <span className="text-[8.5px] font-bold truncate max-w-[90px]">
-                          {prod.name}
-                        </span>
-                        <span
-                          className={`text-[8.5px] font-mono font-black ${
-                            isDark ? 'text-[#e5a045]' : 'text-[#008ba8]'
-                          }`}
-                        >
-                          ₹{prod.price}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => handleQuickAdd(prod, e)}
-                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
-                            justAddedId === prod.id
-                              ? 'bg-emerald-500 text-white'
-                              : isDark
-                              ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
-                              : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
-                          }`}
-                          title="Quick Add to Cart"
-                        >
-                          {justAddedId === prod.id ? (
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                          ) : (
-                            <ShoppingBag className="w-2.5 h-2.5" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                {[0, 1, 2].map((i) => (
+                  <NicheCell
+                    key={row1Products[i]?.id || `r1-${i}`}
+                    prod={row1Products[i]}
+                    index={i}
+                    isDark={isDark}
+                    isHovered={hoveredProductIndex === i}
+                    justAddedId={justAddedId}
+                    hasError={!!(row1Products[i] && failedImages[row1Products[i].id])}
+                    onHover={setHoveredProductIndex}
+                    onSelect={onSelectProduct}
+                    onQuickAdd={handleQuickAdd}
+                    onImageError={handleImageError}
+                  />
+                ))}
               </motion.div>
 
-              {/* ------------------------------------------------------- */}
-              {/* ROW 2: PRODUCTS 3, 4, 5                                 */}
-              {/* ------------------------------------------------------- */}
+              {/* ROW 2: Products 3, 4, 5 */}
               <div
                 className="absolute flex items-center justify-between pointer-events-auto"
                 style={{
-                  top: '33.06%', // 82px / 248px
-                  height: '28.22%', // 70px / 248px
-                  left: '2.13%', // 14px / 656px
-                  right: '2.13%' // 14px / 656px
+                  top: '34.15%', // 112 / 328
+                  height: '29.27%', // 96 / 328
+                  left: '2.13%',
+                  right: '2.13%'
                 }}
               >
                 {[0, 1, 2].map((idx) => {
                   const i = idx + 3;
                   const prod = row2Products[idx];
-                  if (!prod) return <div key={i} className="flex-1" />;
-                  const isHovered = hoveredProductIndex === i;
-
                   return (
-                    <div
-                      key={prod.id}
-                      onMouseEnter={() => setHoveredProductIndex(i)}
-                      onMouseLeave={() => setHoveredProductIndex(null)}
-                      onClick={() => onSelectProduct && onSelectProduct(prod)}
-                      className="group/niche relative flex-1 h-full mx-1 flex flex-col items-center justify-center p-1.5 cursor-pointer overflow-hidden transition-all duration-300"
-                    >
-                      {/* Product Image resting inside the niche */}
-                      <img
-                        src={prod.imageThumbnail}
-                        alt={prod.name}
-                        className="max-h-[85%] max-w-[88%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
-                      />
-
-                      {/* Floating Product Name & Price Badge on Hover */}
-                      <div
-                        className={`absolute bottom-1 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-sm ${
-                          isHovered
-                            ? 'opacity-100 translate-y-0 z-30'
-                            : 'opacity-0 translate-y-2 pointer-events-none'
-                        } ${
-                          isDark
-                            ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
-                            : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
-                        }`}
-                      >
-                        <span className="text-[8.5px] font-bold truncate max-w-[90px]">
-                          {prod.name}
-                        </span>
-                        <span
-                          className={`text-[8.5px] font-mono font-black ${
-                            isDark ? 'text-[#e5a045]' : 'text-[#008ba8]'
-                          }`}
-                        >
-                          ₹{prod.price}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => handleQuickAdd(prod, e)}
-                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
-                            justAddedId === prod.id
-                              ? 'bg-emerald-500 text-white'
-                              : isDark
-                              ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
-                              : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
-                          }`}
-                          title="Quick Add to Cart"
-                        >
-                          {justAddedId === prod.id ? (
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                          ) : (
-                            <ShoppingBag className="w-2.5 h-2.5" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
+                    <NicheCell
+                      key={prod?.id || `r2-${i}`}
+                      prod={prod}
+                      index={i}
+                      isDark={isDark}
+                      isHovered={hoveredProductIndex === i}
+                      justAddedId={justAddedId}
+                      hasError={!!(prod && failedImages[prod.id])}
+                      onHover={setHoveredProductIndex}
+                      onSelect={onSelectProduct}
+                      onQuickAdd={handleQuickAdd}
+                      onImageError={handleImageError}
+                    />
                   );
                 })}
               </div>
 
-              {/* ------------------------------------------------------- */}
-              {/* ROW 3: PRODUCTS 6, 7, 8                                 */}
-              {/* ------------------------------------------------------- */}
+              {/* ROW 3: Products 6, 7, 8 */}
               <div
                 className="absolute flex items-center justify-between pointer-events-auto"
                 style={{
-                  top: '64.51%', // 160px / 248px
-                  height: '29.03%', // 72px / 248px
-                  left: '2.13%', // 14px / 656px
-                  right: '2.13%' // 14px / 656px
+                  top: '65.85%', // 216 / 328
+                  height: '29.27%', // 96 / 328
+                  left: '2.13%',
+                  right: '2.13%'
                 }}
               >
                 {[0, 1, 2].map((idx) => {
                   const i = idx + 6;
                   const prod = row3Products[idx];
-                  if (!prod) return <div key={i} className="flex-1" />;
-                  const isHovered = hoveredProductIndex === i;
-
                   return (
-                    <div
-                      key={prod.id}
-                      onMouseEnter={() => setHoveredProductIndex(i)}
-                      onMouseLeave={() => setHoveredProductIndex(null)}
-                      onClick={() => onSelectProduct && onSelectProduct(prod)}
-                      className="group/niche relative flex-1 h-full mx-1 flex flex-col items-center justify-center p-1.5 cursor-pointer overflow-hidden transition-all duration-300"
-                    >
-                      {/* Product Image resting inside the niche */}
-                      <img
-                        src={prod.imageThumbnail}
-                        alt={prod.name}
-                        className="max-h-[85%] max-w-[88%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-110 drop-shadow-md"
-                      />
-
-                      {/* Floating Product Name & Price Badge on Hover */}
-                      <div
-                        className={`absolute bottom-1 px-2 py-0.5 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center gap-1.5 shadow-sm ${
-                          isHovered
-                            ? 'opacity-100 translate-y-0 z-30'
-                            : 'opacity-0 translate-y-2 pointer-events-none'
-                        } ${
-                          isDark
-                            ? 'bg-[#1e130a]/95 text-[#f5efe6] border-[#e5a045]/60'
-                            : 'bg-white/95 text-[#1e140d] border-[#decbb8]'
-                        }`}
-                      >
-                        <span className="text-[8.5px] font-bold truncate max-w-[90px]">
-                          {prod.name}
-                        </span>
-                        <span
-                          className={`text-[8.5px] font-mono font-black ${
-                            isDark ? 'text-[#e5a045]' : 'text-[#008ba8]'
-                          }`}
-                        >
-                          ₹{prod.price}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => handleQuickAdd(prod, e)}
-                          className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
-                            justAddedId === prod.id
-                              ? 'bg-emerald-500 text-white'
-                              : isDark
-                              ? 'bg-[#e5a045] hover:bg-[#cca348] text-black'
-                              : 'bg-[#008ba8] hover:bg-[#00748d] text-white'
-                          }`}
-                          title="Quick Add to Cart"
-                        >
-                          {justAddedId === prod.id ? (
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                          ) : (
-                            <ShoppingBag className="w-2.5 h-2.5" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
+                    <NicheCell
+                      key={prod?.id || `r3-${i}`}
+                      prod={prod}
+                      index={i}
+                      isDark={isDark}
+                      isHovered={hoveredProductIndex === i}
+                      justAddedId={justAddedId}
+                      hasError={!!(prod && failedImages[prod.id])}
+                      onHover={setHoveredProductIndex}
+                      onSelect={onSelectProduct}
+                      onQuickAdd={handleQuickAdd}
+                      onImageError={handleImageError}
+                    />
                   );
                 })}
               </div>
@@ -864,8 +760,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           </motion.div>
 
           {/* ----------------------------------------------------------- */}
-          {/* SECTION D: LOWER SLICES (ALL FLOORS BELOW ACTIVE FLOOR)     */}
-          {/* Slides DOWNWARD and leaves canvas during drop down          */}
+          {/* SECTION D: LOWER SLICES (SLIDE DOWN ON EXPAND)              */}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
@@ -886,24 +781,27 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 key={slice.id}
                 src={isDark ? slice.darkSrc : slice.lightSrc}
                 alt={slice.name}
-                className="w-full h-auto block select-none"
+                className={`w-full h-auto block select-none ${
+                  isDark
+                    ? 'brightness-[0.96] contrast-[1.04] saturate-[0.96]'
+                    : 'brightness-[1.01] contrast-[1.02]'
+                }`}
                 style={{ aspectRatio: `656 / ${slice.height}` }}
               />
             ))}
           </motion.div>
 
           {/* =========================================================== */}
-          {/* 3. INTACT-STATE INTERACTIVE FLOOR OVERLAY & UNIFORM TABS    */}
-          {/* Clean, Uniform Floor Indicators (05 - 01)                   */}
+          {/* 3. INTACT-STATE INTERACTIVE FLOOR OVERLAY                   */}
           {/* =========================================================== */}
           {!isExpanded && (
             <div className="absolute inset-0 z-40 pointer-events-auto">
-              {/* Subtle top banner prompt */}
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-3 py-1 rounded-full backdrop-blur-md border text-[8.5px] font-mono font-bold uppercase tracking-widest shadow-md opacity-90 animate-pulse bg-black/60 text-amber-200 border-amber-500/40">
-                ✦ CLICK ANY FLOOR TO DROP DOWN & SHOW PRODUCTS ✦
+              {/* Top prompt */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-3 py-1 rounded-full backdrop-blur-md border text-[8.5px] font-mono font-bold uppercase tracking-widest shadow-md bg-black/65 text-[#f3cfa0] border-[#e5a045]/40 whitespace-nowrap">
+                Click Any Floor to Open Showcase
               </div>
 
-              {/* Exact Floor Hit Areas with Uniform Colored Tabs */}
+              {/* Exact Floor Hit Areas */}
               {[
                 { floor: 5, top: '5.73%', height: '15.36%', slice: BUILDING_SLICES[1] },
                 { floor: 4, top: '21.09%', height: '15.89%', slice: BUILDING_SLICES[2] },
@@ -935,13 +833,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       className={`absolute inset-x-2 inset-y-1 rounded-xl pointer-events-none transition-all duration-200 border ${
                         isHovered
                           ? isDark
-                            ? 'bg-[#e5a045]/20 border-[#e5a045] shadow-[0_0_25px_rgba(229,160,69,0.35)]'
-                            : 'bg-[#008ba8]/20 border-[#008ba8] shadow-[0_0_25px_rgba(0,139,168,0.35)]'
+                            ? 'bg-[#e5a045]/18 border-[#e5a045] shadow-[0_0_24px_rgba(229,160,69,0.3)]'
+                            : 'bg-[#c35626]/16 border-[#c35626] shadow-[0_0_24px_rgba(195,86,38,0.28)]'
                           : 'border-transparent bg-black/0 hover:bg-black/5'
                       }`}
                     />
 
-                    {/* Left: Uniform Colored Floor Tab */}
+                    {/* Left: Floor Category Badge */}
                     <div
                       className={`relative z-10 px-2.5 py-1.5 rounded-md backdrop-blur-md transition-all duration-200 border flex flex-col shadow-sm ${
                         isHovered ? 'scale-105 shadow-md ring-1 ring-white/30' : 'opacity-90'
@@ -952,12 +850,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         color: '#ffffff'
                       }}
                     >
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        <span className="text-[8.5px] font-mono font-black tracking-wider text-white/90">
-                          0{floor} · FLOOR
-                        </span>
-                      </div>
+                      <span className="text-[8.5px] font-mono font-black tracking-wider text-white/90">
+                        0{floor} · FLOOR
+                      </span>
                       <span className="text-[9.5px] font-black tracking-tight leading-none mt-0.5">
                         {slice.category}
                       </span>
@@ -966,17 +861,17 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       </span>
                     </div>
 
-                    {/* Right: Vertical Floor Indicator Badge + Action Button */}
+                    {/* Right: Floor Indicator + Action Prompt */}
                     <div className="relative z-10 flex items-center gap-2">
                       {isHovered && (
                         <div
-                          className={`px-2.5 py-1 rounded-md backdrop-blur-md transition-all duration-200 text-[8.5px] font-mono font-black tracking-wider border shadow-md animate-bounce ${
+                          className={`px-2.5 py-1 rounded-md backdrop-blur-md transition-all duration-200 text-[8.5px] font-mono font-black tracking-wider border shadow-md ${
                             isDark
                               ? 'bg-[#e5a045] text-black border-[#e5a045]'
-                              : 'bg-[#008ba8] text-white border-[#00596c]'
+                              : 'bg-[#c35626] text-white border-[#a84419]'
                           }`}
                         >
-                          DROP DOWN ▾
+                          OPEN FLOOR ▾
                         </div>
                       )}
 
