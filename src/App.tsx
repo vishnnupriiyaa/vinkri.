@@ -184,7 +184,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col transition-colors duration-500 font-sans selection:bg-[#d2f53a] selection:text-black overflow-x-hidden w-full max-w-full ${
-        isDark ? 'bg-[#0a0705] text-[#f7f2ea]' : 'bg-[#faf6f0] text-[#282019]'
+        isDark ? 'bg-[#120c08] text-[#f7f2ea]' : 'bg-[#ece9e3] text-[#282019]'
       }`}
     >
       {/* 1. Header / Navigation Bar */}

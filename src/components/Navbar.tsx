@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header
       className={`w-full transition-colors duration-300 border-b ${
-        isDark ? 'bg-[#0a0705] border-[#1d1610] text-[#f7f2ea]' : 'bg-[#faf6f0] border-[#e6dccf] text-[#282019]'
+        isDark ? 'bg-[#120c08] border-[#261b12] text-[#f7f2ea]' : 'bg-[#ece9e3] border-[#d8d2c7] text-[#282019]'
       }`}
     >
       <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between gap-4">

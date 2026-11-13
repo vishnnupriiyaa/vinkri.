@@ -117,9 +117,17 @@ const BUILDING_SLICES: BuildingSlice[] = [
   }
 ];
 
+// Exact horizontal bay geometry matching the photographed building pillars (656px canvas)
+const BAY_POSITIONS = [
+  { left: '10.67%', width: '23.32%' }, // Bay 1: x=70..223
+  { left: '36.74%', width: '26.52%' }, // Bay 2: x=241..415
+  { left: '66.01%', width: '23.48%' }  // Bay 3: x=433..587
+];
+
 interface NicheCellProps {
   prod?: Product;
   index: number;
+  bayIndex: number;
   isDark: boolean;
   isHovered: boolean;
   justAddedId: string | null;
@@ -133,6 +141,7 @@ interface NicheCellProps {
 const NicheCell: React.FC<NicheCellProps> = ({
   prod,
   index,
+  bayIndex,
   isDark,
   isHovered,
   justAddedId,
@@ -142,65 +151,74 @@ const NicheCell: React.FC<NicheCellProps> = ({
   onQuickAdd,
   onImageError
 }) => {
-  if (!prod) return <div className="flex-1" />;
+  const pos = BAY_POSITIONS[bayIndex];
+  if (!prod) {
+    return (
+      <div
+        className="absolute top-0 bottom-0"
+        style={{ left: pos.left, width: pos.width }}
+      />
+    );
+  }
 
   return (
     <div
       onMouseEnter={() => onHover(index)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect && onSelect(prod)}
-      className="group/niche relative flex-1 h-full mx-1 flex items-center justify-center p-1.5 cursor-pointer"
+      className="group/niche absolute top-0 bottom-0 flex items-center justify-center p-1.5 cursor-pointer"
+      style={{ left: pos.left, width: pos.width }}
     >
-      {/* Unified Studio-Graded Recessed Display Bay */}
+      {/* Display Case Card matching the Warm Champagne/Oak Showroom Bay */}
       <div
-        className={`relative w-full h-full rounded-lg overflow-hidden flex items-center justify-center border transition-all duration-300 ${
+        className={`relative w-full h-full rounded-[6px] overflow-hidden flex items-center justify-center border transition-all duration-300 ${
           isDark
-            ? 'bg-[#17100b] border-[#3a2719]/80 group-hover/niche:border-[#e5a045]/70 shadow-[inset_0_1px_14px_rgba(0,0,0,0.65)]'
-            : 'bg-[#eee4d6] border-[#d6c5b0] group-hover/niche:border-[#c35626]/70 shadow-[inset_0_1px_10px_rgba(85,60,35,0.12)]'
+            ? 'bg-[#caa06b]/25 border-[#6f4e2d]/55 group-hover/niche:border-[#e5a045] shadow-[0_3px_10px_rgba(20,11,5,0.35)]'
+            : 'bg-[#e8d5bb]/35 border-[#a88a68]/50 group-hover/niche:border-[#c35626] shadow-[0_2px_8px_rgba(85,60,35,0.14)]'
         }`}
       >
         {!hasError ? (
           <>
-            {/* Ambient Tonal Extension Backdrop (unifies aspect ratios & studio tones) */}
+            {/* Ambient Tonal Extension Backdrop */}
             <img
               src={prod.imageThumbnail}
               alt=""
               aria-hidden="true"
               referrerPolicy="no-referrer"
-              className={`absolute inset-0 w-full h-full object-cover scale-125 blur-md transition-opacity duration-300 pointer-events-none select-none ${
+              className={`absolute inset-0 w-full h-full object-cover scale-125 blur-md pointer-events-none select-none ${
                 isDark
-                  ? 'opacity-40 brightness-[0.52] contrast-[1.08] saturate-[0.88] sepia-[0.12]'
-                  : 'opacity-45 brightness-[0.95] contrast-[1.02] saturate-[0.9] sepia-[0.06]'
+                  ? 'opacity-45 brightness-[0.86] contrast-[1.04] saturate-[0.94] sepia-[0.14]'
+                  : 'opacity-45 brightness-[0.98] contrast-[1.02] saturate-[0.94] sepia-[0.08]'
               }`}
             />
 
-            {/* Crisp Foreground Studio Product Photography with Balanced Color LUT */}
+            {/* Foreground Product Photography */}
             <img
               src={prod.imageThumbnail}
               alt={prod.name}
               referrerPolicy="no-referrer"
               onError={() => onImageError(prod.id)}
-              className={`relative z-10 max-h-[92%] max-w-[90%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-105 ${
+              className={`relative z-10 max-h-[90%] max-w-[90%] object-contain select-none transition-transform duration-300 group-hover/niche:scale-105 ${
                 isDark
-                  ? 'brightness-[0.90] contrast-[1.06] saturate-[0.94] sepia-[0.07]'
-                  : 'brightness-[1.03] contrast-[1.04] saturate-[1.05]'
+                  ? 'brightness-[0.95] contrast-[1.04] saturate-[0.98] sepia-[0.06]'
+                  : 'brightness-[1.01] contrast-[1.03] saturate-[1.03]'
               }`}
             />
 
-            {/* Measured Architectural Vignette & Warm Rim Scrim */}
+            {/* Subtle Warm Architectural Rim Vignette */}
             <div
               aria-hidden="true"
               className={`pointer-events-none absolute inset-0 z-20 ${
                 isDark
-                  ? 'bg-[radial-gradient(ellipse_at_center,transparent_48%,rgba(14,8,5,0.58)_100%)]'
-                  : 'bg-[radial-gradient(ellipse_at_center,transparent_58%,rgba(120,92,64,0.16)_100%)]'
+                  ? 'bg-[radial-gradient(ellipse_at_center,transparent_54%,rgba(54,36,20,0.32)_100%)]'
+                  : 'bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(140,108,74,0.16)_100%)]'
               }`}
             />
           </>
         ) : (
           <div
             className={`w-full h-full flex items-center justify-center p-2 text-center ${
-              isDark ? 'bg-[#1a110b] text-[#e5a045]' : 'bg-[#f4ecdf] text-[#c35626]'
+              isDark ? 'bg-[#362415] text-[#f2dcc0]' : 'bg-[#ede0cc] text-[#4b3826]'
             }`}
           >
             <span className="text-[9px] font-mono font-bold uppercase tracking-wider line-clamp-2">
@@ -211,32 +229,32 @@ const NicheCell: React.FC<NicheCellProps> = ({
 
         {/* Hover Name, Price & Quick-Add Bar */}
         <div
-          className={`absolute bottom-1.5 left-1.5 right-1.5 px-2 py-1 rounded-md backdrop-blur-md transition-all duration-200 border flex items-center justify-between gap-1.5 shadow-md z-30 ${
+          className={`absolute bottom-1 left-1 right-1 px-1.5 py-1 rounded backdrop-blur-md transition-all duration-200 border flex items-center justify-between gap-1 shadow-md z-30 ${
             isHovered
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-2 pointer-events-none'
           } ${
             isDark
-              ? 'bg-[#160e08]/92 text-[#f5efe6] border-[#e5a045]/50'
-              : 'bg-[#faf6f0]/95 text-[#1e140d] border-[#c35626]/40'
+              ? 'bg-[#1c130b]/92 text-[#f7efe6] border-[#e5a045]/55'
+              : 'bg-[#faf6f0]/95 text-[#1e140d] border-[#c35626]/45'
           }`}
         >
-          <span className="text-[8.5px] font-bold truncate">
+          <span className="text-[8px] font-bold truncate">
             {prod.name}
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             <span
-              className={`text-[8.5px] font-mono font-black tabular-nums ${
+              className={`text-[8px] font-mono font-black tabular-nums ${
                 isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
               }`}
             >
-              ₹{prod.price.toLocaleString('en-IN')}
+              ₹{prod.price}
             </span>
 
             <button
               type="button"
               onClick={(e) => onQuickAdd(prod, e)}
-              className={`p-1 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
+              className={`p-0.5 rounded text-[7px] font-bold uppercase transition-colors cursor-pointer ${
                 justAddedId === prod.id
                   ? isDark
                     ? 'bg-[#d2f53a] text-black'
@@ -359,16 +377,14 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     >
       {/* ============================================================== */}
       {/* 1. TOP INTERACTIVE CONTROLLER BAR                              */}
-      {/* Harmonized Color Grading & Clean Floor Switcher                */}
       {/* ============================================================== */}
       <div
         className={`w-full max-w-[656px] mb-3 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between gap-2 border transition-all duration-300 shadow-sm ${
           isDark
-            ? 'bg-[#150e09] border-[#2e2015] text-[#f7f2ea]'
-            : 'bg-[#f6efe5] border-[#decbb8] text-[#2c1e13]'
+            ? 'bg-[#1a120b] border-[#312317] text-[#f7f2ea]'
+            : 'bg-[#e7e5e0] border-[#d3cfc7] text-[#2c1e13]'
         }`}
       >
-        {/* Toggle / Reassemble Button */}
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -379,17 +395,16 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black font-black'
                   : 'bg-[#c35626] hover:bg-[#a84419] text-white font-black'
                 : isDark
-                ? 'bg-[#25170e] hover:bg-[#352215] text-[#f5c27d] border border-[#4a2f1c]'
-                : 'bg-white hover:bg-[#fbf7f1] text-[#2c1e13] border border-[#d8c4ae]'
+                ? 'bg-[#291c12] hover:bg-[#3a2819] text-[#f5c27d] border border-[#4d3522]'
+                : 'bg-[#f6f4f0] hover:bg-white text-[#2c1e13] border border-[#c9c3b8]'
             }`}
           >
             <RotateCcw className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
             <span>{isExpanded ? 'Reassemble Cabinet' : 'Click Floor to Open'}</span>
           </button>
 
-          {/* Active floor category label */}
           <span className={`hidden sm:inline text-[10px] font-mono font-semibold tracking-wide whitespace-nowrap ${
-            isDark ? 'text-[#cbb7a1]' : 'text-[#635040]'
+            isDark ? 'text-[#cbb7a1]' : 'text-[#5b4d3f]'
           }`}>
             {heroSlice.name} · {heroSlice.category}
           </span>
@@ -412,8 +427,8 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       ? 'bg-[#e5a045] text-black shadow-sm font-black'
                       : 'bg-[#c35626] text-white shadow-sm font-black'
                     : isDark
-                    ? 'bg-[#20140c] text-[#c2b09e] hover:text-white hover:bg-[#301f13] border border-[#342316]'
-                    : 'bg-white text-[#69584b] hover:text-[#1e140d] hover:bg-[#faf5ed] border border-[#decbb8]'
+                    ? 'bg-[#24180f] text-[#c7b5a2] hover:text-white hover:bg-[#342317] border border-[#3a2719]'
+                    : 'bg-[#f6f4f0] text-[#5e5042] hover:text-[#1e140d] hover:bg-white border border-[#cfcac0]'
                 }`}
                 title={`Floor 0${floorNum}: ${slice?.category || ''}`}
               >
@@ -425,14 +440,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             );
           })}
 
-          {/* Sequence Replay */}
           <button
             type="button"
             onClick={handleReplaySequence}
             className={`p-1.5 ml-0.5 rounded border transition-colors cursor-pointer active:scale-95 ${
               isDark
-                ? 'bg-[#20140c] text-[#b4a08d] hover:text-white border-[#342316]'
-                : 'bg-white text-[#69584b] hover:text-[#1e140d] border-[#decbb8]'
+                ? 'bg-[#24180f] text-[#b4a08d] hover:text-white border-[#3a2719]'
+                : 'bg-[#f6f4f0] text-[#5e5042] hover:text-[#1e140d] border-[#cfcac0]'
             }`}
             title="Replay Drop Down Animation"
             aria-label="Replay drop down animation"
@@ -444,12 +458,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
       {/* ============================================================== */}
       {/* 2. THE 656PX ARCHITECTURAL BUILDING VIEWPORT                    */}
+      {/* Matches Exact Exterior Sky/Wall Shade (#160F09 / #E8E7E4)      */}
       {/* ============================================================== */}
       <div
-        className={`relative w-full max-w-[656px] rounded-2xl overflow-hidden border transition-all duration-300 shadow-2xl ${
+        className={`relative w-full max-w-[656px] rounded-2xl overflow-hidden border transition-all duration-300 ${
           isDark
-            ? 'bg-[#0d0805] border-[#332216] shadow-[0_24px_60px_rgba(0,0,0,0.85)]'
-            : 'bg-[#f4ece1] border-[#decbb8] shadow-[0_20px_50px_rgba(110,72,38,0.14)]'
+            ? 'bg-[#160F09] border-[#2b1e14] shadow-[0_24px_60px_rgba(0,0,0,0.75)]'
+            : 'bg-[#e8e7e4] border-[#d3cfc7] shadow-[0_18px_45px_rgba(70,58,44,0.12)]'
         }`}
       >
         <div className="relative w-full flex flex-col items-center">
@@ -475,11 +490,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 key={slice.id}
                 src={isDark ? slice.darkSrc : slice.lightSrc}
                 alt={slice.name}
-                className={`w-full h-auto block select-none ${
-                  isDark
-                    ? 'brightness-[0.96] contrast-[1.04] saturate-[0.96]'
-                    : 'brightness-[1.01] contrast-[1.02]'
-                }`}
+                className="w-full h-auto block select-none"
                 style={{ aspectRatio: `656 / ${slice.height}` }}
               />
             ))}
@@ -497,28 +508,24 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             <img
               src={isDark ? heroSlice.darkSrc : heroSlice.lightSrc}
               alt={`${heroSlice.name} Showcase`}
-              className={`w-full h-auto block select-none pointer-events-none transition-[filter] duration-300 group-hover/shelf:brightness-105 ${
-                isDark
-                  ? 'brightness-[0.96] contrast-[1.04] saturate-[0.96]'
-                  : 'brightness-[1.01] contrast-[1.02]'
-              }`}
+              className="w-full h-auto block select-none pointer-events-none transition-[filter] duration-300 group-hover/shelf:brightness-105"
               style={{ aspectRatio: `656 / ${heroSlice.height}` }}
             />
 
             {/* Balanced Bottom-Edge Scrim & Clean Action Pill */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-80 group-hover/shelf:opacity-100 transition-opacity flex items-end justify-between px-3.5 pb-2 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-80 group-hover/shelf:opacity-100 transition-opacity flex items-end justify-between px-12 pb-2 pointer-events-none">
               <span
-                className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded backdrop-blur-md border ${
+                className={`text-[8.5px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded backdrop-blur-md border ${
                   isDark
-                    ? 'bg-[#160e08]/88 text-[#f2dcc0] border-[#e5a045]/45'
-                    : 'bg-[#2a1c12]/85 text-[#faf6f0] border-white/25'
+                    ? 'bg-[#17100a]/88 text-[#f2dcc0] border-[#e5a045]/45'
+                    : 'bg-[#2c1e13]/85 text-[#faf6f0] border-white/25'
                 }`}
               >
                 {heroSlice.name} · {heroSlice.category}
               </span>
 
               <span
-                className={`text-[8.5px] font-mono font-bold tracking-wider px-2.5 py-0.5 rounded backdrop-blur-md border transition-all ${
+                className={`text-[8.5px] font-mono font-bold tracking-wider px-2 py-0.5 rounded backdrop-blur-md border transition-all ${
                   isExpanded
                     ? isDark
                       ? 'bg-[#1a110a]/90 text-[#e5a045] border-[#e5a045]/55'
@@ -534,28 +541,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </div>
           </div>
 
-          {/* Slim Architectural Fascia Bar when Expanded (replaces duplicate tabs) */}
-          {isExpanded && (
-            <div
-              className={`w-full py-1.5 px-3.5 flex items-center justify-between border-y z-25 transition-colors ${
-                isDark
-                  ? 'bg-[#160e09] border-[#342316] text-[#d6c2ab]'
-                  : 'bg-[#efe6da] border-[#d6c3ad] text-[#4b3a2b]'
-              }`}
-              style={{ width: '656px', maxWidth: '100%' }}
-            >
-              <span className="text-[9px] font-mono font-bold uppercase tracking-wider">
-                {heroSlice.name} · {nicheProducts.length} Studio Pieces
-              </span>
-              <span className="text-[9px] font-mono opacity-80">
-                Hover to preview · Click any piece for full view
-              </span>
-            </div>
-          )}
-
           {/* ----------------------------------------------------------- */}
-          {/* SECTION C: THE 3-ROW SUSPENDED GANTRY                       */}
-          {/* Unified Color-Graded Timber & Studio Lightbox Alcoves       */}
+          {/* SECTION C: THE 3-ROW ARCHITECTURAL BUILDING EXTENSION       */}
+          {/* Exact Column Alignment, Exterior Sky & Warm Illuminated Bays*/}
           {/* ----------------------------------------------------------- */}
           <motion.div
             initial={false}
@@ -570,93 +558,132 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             className="relative w-full overflow-hidden z-20"
             style={{ width: '656px', maxWidth: '100%' }}
           >
-            {/* Architectural Wooden Cabinet SVG Structure (656 x 328) */}
+            {/* Exact Building Architectural SVG (656 x 336) */}
             <svg
-              viewBox="0 0 656 328"
+              viewBox="0 0 656 336"
               className="w-full h-auto block select-none"
-              style={{ aspectRatio: '656 / 328' }}
+              style={{ aspectRatio: '656 / 336' }}
             >
               <defs>
-                {/* Light Mode Travertine & Oak Wood Gradients */}
-                <linearGradient id="lightWoodBeam" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#d9c8b6" />
-                  <stop offset="45%" stopColor="#c1aa92" />
-                  <stop offset="100%" stopColor="#947c65" />
+                {/* Light Mode: Sampled from light_floor3.jpg */}
+                <linearGradient id="lightLedgeTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#DDD2C2" />
+                  <stop offset="50%" stopColor="#C9B9A7" />
+                  <stop offset="100%" stopColor="#A68F76" />
                 </linearGradient>
-                <linearGradient id="lightWoodPost" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#947c65" />
-                  <stop offset="30%" stopColor="#d9c8b6" />
-                  <stop offset="70%" stopColor="#c1aa92" />
-                  <stop offset="100%" stopColor="#856e57" />
+                <linearGradient id="lightOuterPost" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#B2A391" />
+                  <stop offset="35%" stopColor="#CFC2B1" />
+                  <stop offset="75%" stopColor="#BFB09E" />
+                  <stop offset="100%" stopColor="#9A836B" />
                 </linearGradient>
-
-                {/* Dark Mode Warm Roasted Walnut Gradients */}
-                <linearGradient id="darkWoodBeam" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#462d1c" />
-                  <stop offset="45%" stopColor="#2c1b10" />
-                  <stop offset="100%" stopColor="#160c06" />
+                <linearGradient id="lightInnerPost" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#96795B" />
+                  <stop offset="40%" stopColor="#B89B79" />
+                  <stop offset="100%" stopColor="#8A6E50" />
                 </linearGradient>
-                <linearGradient id="darkWoodPost" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#160c06" />
-                  <stop offset="30%" stopColor="#462d1c" />
-                  <stop offset="70%" stopColor="#2c1b10" />
-                  <stop offset="100%" stopColor="#140a05" />
+                <linearGradient id="lightShowroomBay" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#C8A984" />
+                  <stop offset="18%" stopColor="#E7D2B6" />
+                  <stop offset="68%" stopColor="#F0E1C8" />
+                  <stop offset="100%" stopColor="#DFC6A4" />
                 </linearGradient>
 
-                {/* Recessed Alcove Warm Cove Wash */}
-                <radialGradient id="nicheCoveDark" cx="50%" cy="22%" r="72%">
-                  <stop offset="0%" stopColor="#3c2616" stopOpacity="0.85" />
-                  <stop offset="65%" stopColor="#1a110b" stopOpacity="0.95" />
-                  <stop offset="100%" stopColor="#100a06" stopOpacity="1" />
-                </radialGradient>
-                <radialGradient id="nicheCoveLight" cx="50%" cy="22%" r="72%">
-                  <stop offset="0%" stopColor="#fcf7ef" stopOpacity="1" />
-                  <stop offset="70%" stopColor="#efe5d7" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#e2d4c2" stopOpacity="1" />
-                </radialGradient>
+                {/* Dark Mode: Sampled from dark_floor3.jpg */}
+                <linearGradient id="darkLedgeTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#453224" />
+                  <stop offset="38%" stopColor="#9B7954" />
+                  <stop offset="58%" stopColor="#2E2016" />
+                  <stop offset="100%" stopColor="#1B120C" />
+                </linearGradient>
+                <linearGradient id="darkOuterPost" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#261B13" />
+                  <stop offset="35%" stopColor="#453224" />
+                  <stop offset="70%" stopColor="#3B2A1D" />
+                  <stop offset="100%" stopColor="#2A1D13" />
+                </linearGradient>
+                <linearGradient id="darkInnerPost" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#2D2016" />
+                  <stop offset="40%" stopColor="#3B2B1E" />
+                  <stop offset="100%" stopColor="#261A12" />
+                </linearGradient>
+                <linearGradient id="darkShowroomBay" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#9B7549" />
+                  <stop offset="16%" stopColor="#D8B687" />
+                  <stop offset="68%" stopColor="#E7C99E" />
+                  <stop offset="100%" stopColor="#C9A26F" />
+                </linearGradient>
               </defs>
 
-              {/* Top Beam */}
-              <rect x="0" y="0" width="656" height="8" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
+              {/* Exterior Sky / Wall Side Margins (x=0..44 and x=613..656) matching exact building edges */}
+              <rect x="0" y="0" width="44" height="336" fill={isDark ? '#17100A' : '#E7E6E3'} />
+              <rect x="613" y="0" width="43" height="336" fill={isDark ? '#17100A' : '#E3E2DF'} />
 
-              {/* ROW 1 (y: 8..104, h: 96) */}
-              <rect x="14" y="8" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="226" y="8" width="204" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="440" y="8" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="0" y="8" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="642" y="8" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="216" y="8" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="430" y="8" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              {/* Building Architectural Shadow Frame beneath the Hero Shelf */}
+              <rect x="44" y="0" width="569" height="10" fill={isDark ? 'url(#darkLedgeTop)' : 'url(#lightLedgeTop)'} />
 
-              {/* Middle Beam 1 */}
-              <rect x="0" y="104" width="656" height="8" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
+              {/* ================= ROW 1 (y: 10..106, h: 96) ================= */}
+              {/* 3 Illuminated Showroom Bays */}
+              <rect x="70" y="10" width="153" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="241" y="10" width="174" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="433" y="10" width="154" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              {/* Recessed Inner Jamb Shadows */}
+              <rect x="70" y="10" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="217" y="10" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+              <rect x="241" y="10" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="409" y="10" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+              <rect x="433" y="10" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="581" y="10" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
 
-              {/* ROW 2 (y: 112..208, h: 96) */}
-              <rect x="14" y="112" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="226" y="112" width="204" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="440" y="112" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="0" y="112" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="642" y="112" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="216" y="112" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="430" y="112" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              {/* Building Vertical Pillars for Row 1 */}
+              <rect x="44" y="10" width="26" height="96" fill={isDark ? 'url(#darkOuterPost)' : 'url(#lightOuterPost)'} />
+              <rect x="223" y="10" width="18" height="96" fill={isDark ? 'url(#darkInnerPost)' : 'url(#lightInnerPost)'} />
+              <rect x="415" y="10" width="18" height="96" fill={isDark ? 'url(#darkInnerPost)' : 'url(#lightInnerPost)'} />
+              <rect x="587" y="10" width="26" height="96" fill={isDark ? 'url(#darkOuterPost)' : 'url(#lightOuterPost)'} />
 
-              {/* Middle Beam 2 */}
-              <rect x="0" y="208" width="656" height="8" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
+              {/* Middle Horizontal Ledge 1 (spans only the building width x=41..616) */}
+              <rect x="41" y="106" width="575" height="10" fill={isDark ? 'url(#darkLedgeTop)' : 'url(#lightLedgeTop)'} />
 
-              {/* ROW 3 (y: 216..312, h: 96) */}
-              <rect x="14" y="216" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="226" y="216" width="204" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="440" y="216" width="202" height="96" fill={isDark ? 'url(#nicheCoveDark)' : 'url(#nicheCoveLight)'} />
-              <rect x="0" y="216" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="642" y="216" width="14" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="216" y="216" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
-              <rect x="430" y="216" width="10" height="96" fill={isDark ? 'url(#darkWoodPost)' : 'url(#lightWoodPost)'} />
+              {/* ================= ROW 2 (y: 116..212, h: 96) ================= */}
+              <rect x="70" y="116" width="153" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="241" y="116" width="174" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="433" y="116" width="154" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="70" y="116" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="217" y="116" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+              <rect x="241" y="116" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="409" y="116" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+              <rect x="433" y="116" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="581" y="116" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
 
-              {/* Bottom Foundation Beam */}
-              <rect x="0" y="312" width="656" height="16" fill={isDark ? 'url(#darkWoodBeam)' : 'url(#lightWoodBeam)'} />
+              <rect x="44" y="116" width="26" height="96" fill={isDark ? 'url(#darkOuterPost)' : 'url(#lightOuterPost)'} />
+              <rect x="223" y="116" width="18" height="96" fill={isDark ? 'url(#darkInnerPost)' : 'url(#lightInnerPost)'} />
+              <rect x="415" y="116" width="18" height="96" fill={isDark ? 'url(#darkInnerPost)' : 'url(#lightInnerPost)'} />
+              <rect x="587" y="116" width="26" height="96" fill={isDark ? 'url(#darkOuterPost)' : 'url(#lightOuterPost)'} />
+
+              {/* Middle Horizontal Ledge 2 */}
+              <rect x="41" y="212" width="575" height="10" fill={isDark ? 'url(#darkLedgeTop)' : 'url(#lightLedgeTop)'} />
+
+              {/* ================= ROW 3 (y: 222..318, h: 96) ================= */}
+              <rect x="70" y="222" width="153" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="241" y="222" width="174" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="433" y="222" width="154" height="96" fill={isDark ? 'url(#darkShowroomBay)' : 'url(#lightShowroomBay)'} />
+              <rect x="70" y="222" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="217" y="222" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+              <rect x="241" y="222" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="409" y="222" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+              <rect x="433" y="222" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.32)' : 'rgba(130,100,65,0.2)'} />
+              <rect x="581" y="222" width="6" height="96" fill={isDark ? 'rgba(65,42,20,0.28)' : 'rgba(130,100,65,0.18)'} />
+
+              <rect x="44" y="222" width="26" height="96" fill={isDark ? 'url(#darkOuterPost)' : 'url(#lightOuterPost)'} />
+              <rect x="223" y="222" width="18" height="96" fill={isDark ? 'url(#darkInnerPost)' : 'url(#lightInnerPost)'} />
+              <rect x="415" y="222" width="18" height="96" fill={isDark ? 'url(#darkInnerPost)' : 'url(#lightInnerPost)'} />
+              <rect x="587" y="222" width="26" height="96" fill={isDark ? 'url(#darkOuterPost)' : 'url(#lightOuterPost)'} />
+
+              {/* Bottom Foundation Plinth */}
+              <rect x="38" y="318" width="581" height="18" fill={isDark ? 'url(#darkLedgeTop)' : 'url(#lightLedgeTop)'} />
             </svg>
 
-            {/* Product Compartments in All 3 Rows */}
+            {/* Product Compartments Aligned Precisely Inside the 3 Illuminated Building Bays */}
             <div className="absolute inset-0 z-25 pointer-events-none">
               {/* ROW 1: Products 0, 1, 2 (Drop Down Entrance) */}
               <motion.div
@@ -670,12 +697,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   ease: [0.25, 1, 0.5, 1],
                   delay: 0.12
                 }}
-                className="absolute flex items-center justify-between pointer-events-auto"
+                className="absolute left-0 right-0 pointer-events-auto"
                 style={{
-                  top: '2.44%', // 8 / 328
-                  height: '29.27%', // 96 / 328
-                  left: '2.13%', // 14 / 656
-                  right: '2.13%'
+                  top: '2.98%', // 10 / 336
+                  height: '28.57%' // 96 / 336
                 }}
               >
                 {[0, 1, 2].map((i) => (
@@ -683,6 +708,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     key={row1Products[i]?.id || `r1-${i}`}
                     prod={row1Products[i]}
                     index={i}
+                    bayIndex={i}
                     isDark={isDark}
                     isHovered={hoveredProductIndex === i}
                     justAddedId={justAddedId}
@@ -697,12 +723,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
               {/* ROW 2: Products 3, 4, 5 */}
               <div
-                className="absolute flex items-center justify-between pointer-events-auto"
+                className="absolute left-0 right-0 pointer-events-auto"
                 style={{
-                  top: '34.15%', // 112 / 328
-                  height: '29.27%', // 96 / 328
-                  left: '2.13%',
-                  right: '2.13%'
+                  top: '34.52%', // 116 / 336
+                  height: '28.57%' // 96 / 336
                 }}
               >
                 {[0, 1, 2].map((idx) => {
@@ -713,6 +737,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       key={prod?.id || `r2-${i}`}
                       prod={prod}
                       index={i}
+                      bayIndex={idx}
                       isDark={isDark}
                       isHovered={hoveredProductIndex === i}
                       justAddedId={justAddedId}
@@ -728,12 +753,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
               {/* ROW 3: Products 6, 7, 8 */}
               <div
-                className="absolute flex items-center justify-between pointer-events-auto"
+                className="absolute left-0 right-0 pointer-events-auto"
                 style={{
-                  top: '65.85%', // 216 / 328
-                  height: '29.27%', // 96 / 328
-                  left: '2.13%',
-                  right: '2.13%'
+                  top: '66.07%', // 222 / 336
+                  height: '28.57%' // 96 / 336
                 }}
               >
                 {[0, 1, 2].map((idx) => {
@@ -744,6 +767,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       key={prod?.id || `r3-${i}`}
                       prod={prod}
                       index={i}
+                      bayIndex={idx}
                       isDark={isDark}
                       isHovered={hoveredProductIndex === i}
                       justAddedId={justAddedId}
@@ -781,11 +805,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 key={slice.id}
                 src={isDark ? slice.darkSrc : slice.lightSrc}
                 alt={slice.name}
-                className={`w-full h-auto block select-none ${
-                  isDark
-                    ? 'brightness-[0.96] contrast-[1.04] saturate-[0.96]'
-                    : 'brightness-[1.01] contrast-[1.02]'
-                }`}
+                className="w-full h-auto block select-none"
                 style={{ aspectRatio: `656 / ${slice.height}` }}
               />
             ))}
@@ -796,12 +816,10 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           {/* =========================================================== */}
           {!isExpanded && (
             <div className="absolute inset-0 z-40 pointer-events-auto">
-              {/* Top prompt */}
               <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-3 py-1 rounded-full backdrop-blur-md border text-[8.5px] font-mono font-bold uppercase tracking-widest shadow-md bg-black/65 text-[#f3cfa0] border-[#e5a045]/40 whitespace-nowrap">
                 Click Any Floor to Open Showcase
               </div>
 
-              {/* Exact Floor Hit Areas */}
               {[
                 { floor: 5, top: '5.73%', height: '15.36%', slice: BUILDING_SLICES[1] },
                 { floor: 4, top: '21.09%', height: '15.89%', slice: BUILDING_SLICES[2] },
@@ -828,9 +846,8 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                     style={{ top, height }}
                     title={`Click to open ${slice.name}: ${slice.category}`}
                   >
-                    {/* Hover highlight bounding box */}
                     <div
-                      className={`absolute inset-x-2 inset-y-1 rounded-xl pointer-events-none transition-all duration-200 border ${
+                      className={`absolute inset-x-10 inset-y-1 rounded-xl pointer-events-none transition-all duration-200 border ${
                         isHovered
                           ? isDark
                             ? 'bg-[#e5a045]/18 border-[#e5a045] shadow-[0_0_24px_rgba(229,160,69,0.3)]'

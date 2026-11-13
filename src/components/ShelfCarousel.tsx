@@ -34,7 +34,7 @@ export const ShelfCarousel: React.FC<ShelfCarouselProps> = ({
   return (
     <div
       className={`w-full py-1.5 px-4 sm:px-6 lg:px-8 border-b transition-colors duration-300 relative select-none ${
-        isDark ? 'bg-[#0f0c09] border-[#221b14]' : 'bg-[#f5ede2] border-[#e2d5c3]'
+        isDark ? 'bg-[#160f0a] border-[#261b12]' : 'bg-[#e5e1da] border-[#d4cec3]'
       }`}
     >
       <div className="max-w-[1720px] mx-auto flex items-center justify-between gap-3 overflow-hidden">
