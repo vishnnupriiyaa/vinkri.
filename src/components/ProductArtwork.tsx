@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PRODUCTS_DATA } from '../data/products';
 
 interface ProductArtworkProps {
@@ -18,30 +18,42 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
   aspectRatio = 'square',
   theme = 'rustic-dark',
   objectFit = 'cover',
-  loading = 'lazy'
+  loading = 'eager'
 }) => {
   const isDark = theme === 'rustic-dark';
   const [retryCount, setRetryCount] = useState(0);
   const [imgError, setImgError] = useState(false);
+  const retryTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (retryTimerRef.current) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
     setRetryCount(0);
     setImgError(false);
+
+    return () => {
+      if (retryTimerRef.current) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
   }, [productId]);
 
   // Dynamically source accurate, matching studio photography from single source of truth
   const product = PRODUCTS_DATA.find((p) => p.id === productId);
   const baseImg = product?.imageThumbnail;
   const directImg = baseImg
-    ? retryCount > 0
-      ? `${baseImg}${baseImg.includes('?') ? '&' : '?'}r=${retryCount}`
-      : baseImg
+    ? `${baseImg}${baseImg.includes('?') ? '&' : '?'}v=2${retryCount > 0 ? `&r=${retryCount}` : ''}`
     : undefined;
 
   const handleImgError = () => {
-    if (retryCount < 3) {
-      const delay = retryCount === 0 ? 400 : retryCount === 1 ? 1200 : 2400;
-      window.setTimeout(() => {
+    if (retryCount < 4) {
+      const delays = [300, 800, 1600, 3000];
+      const delay = delays[retryCount] ?? 2000;
+      if (retryTimerRef.current) window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = window.setTimeout(() => {
         setRetryCount((c) => c + 1);
       }, delay);
     } else {
@@ -59,11 +71,11 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
       {directImg && !imgError ? (
         <>
           <img
+            key={directImg}
             src={directImg}
             alt={product?.name || productId}
             loading={loading}
             decoding="async"
-            referrerPolicy="no-referrer"
             onError={handleImgError}
             className={`w-full h-full ${
               objectFit === 'contain' ? 'object-contain' : 'object-cover'

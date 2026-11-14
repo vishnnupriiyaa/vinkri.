@@ -223,10 +223,22 @@ const NicheCell: React.FC<NicheCellProps> = ({
 }) => {
   const [retryCount, setRetryCount] = useState(0);
   const [hasError, setHasError] = useState(false);
+  const retryTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (retryTimerRef.current) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
     setRetryCount(0);
     setHasError(false);
+
+    return () => {
+      if (retryTimerRef.current) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
   }, [prod?.id]);
 
   if (!prod) {
@@ -239,15 +251,14 @@ const NicheCell: React.FC<NicheCellProps> = ({
   }
 
   const baseSrc = prod.imageThumbnail;
-  const imgSrc =
-    retryCount > 0
-      ? `${baseSrc}${baseSrc.includes('?') ? '&' : '?'}r=${retryCount}`
-      : baseSrc;
+  const imgSrc = `${baseSrc}${baseSrc.includes('?') ? '&' : '?'}v=2${retryCount > 0 ? `&r=${retryCount}` : ''}`;
 
   const handleImgError = () => {
-    if (retryCount < 3) {
-      const delay = retryCount === 0 ? 400 : retryCount === 1 ? 1200 : 2400;
-      window.setTimeout(() => {
+    if (retryCount < 4) {
+      const delays = [300, 800, 1600, 3000];
+      const delay = delays[retryCount] ?? 2000;
+      if (retryTimerRef.current) window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = window.setTimeout(() => {
         setRetryCount((c) => c + 1);
       }, delay);
     } else {
@@ -281,11 +292,11 @@ const NicheCell: React.FC<NicheCellProps> = ({
         {!hasError ? (
           <div className="relative w-full flex-1 min-h-0 flex items-center justify-center overflow-hidden">
             <img
+              key={imgSrc}
               src={imgSrc}
               alt={prod.name}
               loading="eager"
               decoding="async"
-              referrerPolicy="no-referrer"
               onError={handleImgError}
               className={`w-full h-full object-cover select-none ${
                 isDark
