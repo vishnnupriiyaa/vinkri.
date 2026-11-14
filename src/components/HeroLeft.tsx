@@ -146,6 +146,7 @@ export const HeroLeft: React.FC<HeroLeftProps> = ({
                   aspectRatio="square"
                   theme={theme}
                   showGlow={false}
+                  loading="eager"
                   className="w-full h-full"
                 />
 

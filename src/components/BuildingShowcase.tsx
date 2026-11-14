@@ -7,6 +7,7 @@ import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
 interface BuildingShowcaseProps {
   theme: ThemeMode;
   onSelectFloor?: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
+  onCollapseFloor?: () => void;
   selectedFloorNumber?: number | null;
   onSelectProduct?: (product: Product) => void;
   onQuickAdd?: (product: Product) => void;
@@ -204,27 +205,30 @@ interface NicheCellProps {
   isDark: boolean;
   isHovered: boolean;
   justAddedId: string | null;
-  hasError: boolean;
   onHover: (idx: number | null) => void;
   onSelect?: (prod: Product) => void;
   onQuickAdd: (prod: Product, e: React.MouseEvent) => void;
-  onImageError: (id: string) => void;
 }
 
 const NicheCell: React.FC<NicheCellProps> = ({
   prod,
   index,
-  bayIndex,
   bayPos,
   isDark,
   isHovered,
   justAddedId,
-  hasError,
   onHover,
   onSelect,
-  onQuickAdd,
-  onImageError
+  onQuickAdd
 }) => {
+  const [retryCount, setRetryCount] = useState(0);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setRetryCount(0);
+    setHasError(false);
+  }, [prod?.id]);
+
   if (!prod) {
     return (
       <div
@@ -233,6 +237,23 @@ const NicheCell: React.FC<NicheCellProps> = ({
       />
     );
   }
+
+  const baseSrc = prod.imageThumbnail;
+  const imgSrc =
+    retryCount > 0
+      ? `${baseSrc}${baseSrc.includes('?') ? '&' : '?'}r=${retryCount}`
+      : baseSrc;
+
+  const handleImgError = () => {
+    if (retryCount < 3) {
+      const delay = retryCount === 0 ? 400 : retryCount === 1 ? 1200 : 2400;
+      window.setTimeout(() => {
+        setRetryCount((c) => c + 1);
+      }, delay);
+    } else {
+      setHasError(true);
+    }
+  };
 
   // Keep square vitrines centered on the real photographic shelf sill so frosted side windows & oak panels stay 100% visible
   const vitrineBottomOffset = 'pb-[1.5%]';
@@ -260,10 +281,12 @@ const NicheCell: React.FC<NicheCellProps> = ({
         {!hasError ? (
           <div className="relative w-full flex-1 min-h-0 flex items-center justify-center overflow-hidden">
             <img
-              src={prod.imageThumbnail}
+              src={imgSrc}
               alt={prod.name}
+              loading="eager"
+              decoding="async"
               referrerPolicy="no-referrer"
-              onError={() => onImageError(prod.id)}
+              onError={handleImgError}
               className={`w-full h-full object-cover select-none ${
                 isDark
                   ? 'brightness-[0.96] contrast-[1.03] saturate-[0.98] sepia-[0.06]'
@@ -346,6 +369,7 @@ const NicheCell: React.FC<NicheCellProps> = ({
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   theme,
   onSelectFloor,
+  onCollapseFloor,
   selectedFloorNumber,
   onSelectProduct,
   onQuickAdd
@@ -368,9 +392,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   // Quick-add feedback
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
-  // Track any broken product images
-  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
-
   // Synchronize when selectedFloorNumber changes externally
   useEffect(() => {
     if (selectedFloorNumber !== undefined && selectedFloorNumber !== null) {
@@ -383,6 +404,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     if (floorNum !== undefined) {
       if (activeFloor === floorNum && isExpanded) {
         setIsExpanded(false);
+        if (onCollapseFloor) onCollapseFloor();
         return;
       }
       setActiveFloor(floorNum);
@@ -392,14 +414,14 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       return;
     }
 
-    setIsExpanded((prev) => {
-      const next = !prev;
-      if (next) {
-        const floorInfo = FLOORS_DATA.find((f) => f.numeric === activeFloor);
-        if (floorInfo && onSelectFloor) onSelectFloor(floorInfo);
-      }
-      return next;
-    });
+    const next = !isExpanded;
+    setIsExpanded(next);
+    if (next) {
+      const floorInfo = FLOORS_DATA.find((f) => f.numeric === activeFloor);
+      if (floorInfo && onSelectFloor) onSelectFloor(floorInfo);
+    } else if (onCollapseFloor) {
+      onCollapseFloor();
+    }
   };
 
   const handleReplaySequence = () => {
@@ -414,10 +436,6 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     if (onQuickAdd) onQuickAdd(product);
     setJustAddedId(product.id);
     setTimeout(() => setJustAddedId(null), 1400);
-  };
-
-  const handleImageError = (id: string) => {
-    setFailedImages((prev) => ({ ...prev, [id]: true }));
   };
 
   const activeIndex = BUILDING_SLICES.findIndex((s) => s.floorNumber === activeFloor);
@@ -668,11 +686,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                           isDark={isDark}
                           isHovered={hoveredProductIndex === i}
                           justAddedId={justAddedId}
-                          hasError={!!(prod && failedImages[prod.id])}
                           onHover={setHoveredProductIndex}
                           onSelect={onSelectProduct}
                           onQuickAdd={handleQuickAdd}
-                          onImageError={handleImageError}
                         />
                       );
                     })}

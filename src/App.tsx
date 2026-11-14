@@ -256,6 +256,7 @@ export default function App() {
               <BuildingShowcase
                 theme={theme}
                 onSelectFloor={handleOpenFloor}
+                onCollapseFloor={() => setFloorFilter(null)}
                 selectedFloorNumber={floorFilter}
                 onSelectProduct={(p) => setSelectedProduct(p)}
                 onQuickAdd={(p) => handleAddToCart(p, 1)}
@@ -374,12 +375,6 @@ export default function App() {
         type={infoModalType}
         onClose={() => setInfoModalType(null)}
         theme={theme}
-      />
-
-      {/* Cinematic Logo Entrance Landing Overlay */}
-      <LogoEntranceIntro
-        isOpen={isEntranceOpen}
-        onEnterStore={() => setIsEntranceOpen(false)}
       />
 
       {/* Toast Notification */}

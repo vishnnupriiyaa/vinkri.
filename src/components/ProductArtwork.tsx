@@ -9,6 +9,7 @@ interface ProductArtworkProps {
   theme?: 'rustic-dark' | 'warm-beige';
   isShelf?: boolean;
   objectFit?: 'cover' | 'contain';
+  loading?: 'eager' | 'lazy';
 }
 
 export const ProductArtwork: React.FC<ProductArtworkProps> = ({
@@ -16,18 +17,37 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
   className = '',
   aspectRatio = 'square',
   theme = 'rustic-dark',
-  objectFit = 'cover'
+  objectFit = 'cover',
+  loading = 'lazy'
 }) => {
   const isDark = theme === 'rustic-dark';
+  const [retryCount, setRetryCount] = useState(0);
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
+    setRetryCount(0);
     setImgError(false);
   }, [productId]);
 
   // Dynamically source accurate, matching studio photography from single source of truth
   const product = PRODUCTS_DATA.find((p) => p.id === productId);
-  const directImg = product?.imageThumbnail;
+  const baseImg = product?.imageThumbnail;
+  const directImg = baseImg
+    ? retryCount > 0
+      ? `${baseImg}${baseImg.includes('?') ? '&' : '?'}r=${retryCount}`
+      : baseImg
+    : undefined;
+
+  const handleImgError = () => {
+    if (retryCount < 3) {
+      const delay = retryCount === 0 ? 400 : retryCount === 1 ? 1200 : 2400;
+      window.setTimeout(() => {
+        setRetryCount((c) => c + 1);
+      }, delay);
+    } else {
+      setImgError(true);
+    }
+  };
 
   return (
     <div
@@ -41,8 +61,10 @@ export const ProductArtwork: React.FC<ProductArtworkProps> = ({
           <img
             src={directImg}
             alt={product?.name || productId}
+            loading={loading}
+            decoding="async"
             referrerPolicy="no-referrer"
-            onError={() => setImgError(true)}
+            onError={handleImgError}
             className={`w-full h-full ${
               objectFit === 'contain' ? 'object-contain' : 'object-cover'
             } transition-all duration-300 ${
