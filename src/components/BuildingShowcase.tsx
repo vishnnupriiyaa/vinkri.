@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { RotateCcw, Play, ShoppingBag, Check } from 'lucide-react';
+import {
+  RotateCcw,
+  Play,
+  ShoppingBag,
+  Check,
+  ArrowRight,
+  ArrowUpRight,
+  Layers
+} from 'lucide-react';
 import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
 
@@ -25,22 +33,29 @@ interface BuildingSlice {
   name: string;
   category: string;
   tagline: string;
-  tabColor: string;
-  tabBorder: string;
-  height: number; // in pixels on 656px width
+  wingBgDark: string;
+  wingBgLight: string;
+  wingHighlightDark: string;
+  wingHighlightLight: string;
+  height: number; // px on 656px crop
   lightSrc: string;
   darkSrc: string;
 }
 
-// 7 exact slices forming the 656 x 768px architectural building cabinet
+// Architectural brushed stone/metal subtle surface grain data-URI (no external request)
+const ARCH_GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+
+// 7 photographic facade slices forming the 5-story central building bays
 const BUILDING_SLICES: BuildingSlice[] = [
   {
     id: 'roof',
     name: 'ROOF PARAPET',
     category: '',
     tagline: '',
-    tabColor: '#334155',
-    tabBorder: '#475569',
+    wingBgDark: '#1c1510',
+    wingBgLight: '#cfc7ba',
+    wingHighlightDark: '#261d16',
+    wingHighlightLight: '#dcd5c9',
     height: 44,
     lightSrc: '/assets/aistudio/crops/light_roof.jpg',
     darkSrc: '/assets/aistudio/crops/dark_roof.jpg'
@@ -51,8 +66,10 @@ const BUILDING_SLICES: BuildingSlice[] = [
     name: 'LEVEL 05',
     category: 'DESK TOYS',
     tagline: 'Play. Fidget. Display.',
-    tabColor: '#1e40af',
-    tabBorder: '#3b82f6',
+    wingBgDark: '#11335e',
+    wingBgLight: '#1c4678',
+    wingHighlightDark: '#17437a',
+    wingHighlightLight: '#245792',
     height: 118,
     lightSrc: '/assets/aistudio/crops/light_floor5.jpg',
     darkSrc: '/assets/aistudio/crops/dark_floor5.jpg'
@@ -63,8 +80,10 @@ const BUILDING_SLICES: BuildingSlice[] = [
     name: 'LEVEL 04',
     category: 'CUSTOM DIORAMAS',
     tagline: 'Mini worlds. Big stories.',
-    tabColor: '#047857',
-    tabBorder: '#10b981',
+    wingBgDark: '#124a43',
+    wingBgLight: '#1a5c53',
+    wingHighlightDark: '#175e55',
+    wingHighlightLight: '#217166',
     height: 122,
     lightSrc: '/assets/aistudio/crops/light_floor4.jpg',
     darkSrc: '/assets/aistudio/crops/dark_floor4.jpg'
@@ -75,8 +94,10 @@ const BUILDING_SLICES: BuildingSlice[] = [
     name: 'LEVEL 03',
     category: 'DIECAST CAR STANDS',
     tagline: 'Display. Organize. Collect.',
-    tabColor: '#b45309',
-    tabBorder: '#f59e0b',
+    wingBgDark: '#663e19',
+    wingBgLight: '#804f23',
+    wingHighlightDark: '#7e4d1f',
+    wingHighlightLight: '#975e2b',
     height: 104,
     lightSrc: '/assets/aistudio/crops/light_floor3.jpg',
     darkSrc: '/assets/aistudio/crops/dark_floor3.jpg'
@@ -87,8 +108,10 @@ const BUILDING_SLICES: BuildingSlice[] = [
     name: 'LEVEL 02',
     category: 'CUSTOM FIGURINES',
     tagline: 'People. Moments. Memories.',
-    tabColor: '#881337',
-    tabBorder: '#f43f5e',
+    wingBgDark: '#521e2f',
+    wingBgLight: '#69293e',
+    wingHighlightDark: '#66263c',
+    wingHighlightLight: '#7f324c',
     height: 114,
     lightSrc: '/assets/aistudio/crops/light_floor2.jpg',
     darkSrc: '/assets/aistudio/crops/dark_floor2.jpg'
@@ -99,8 +122,10 @@ const BUILDING_SLICES: BuildingSlice[] = [
     name: 'LEVEL 01',
     category: 'DECOR LAMPS',
     tagline: 'Light up your space.',
-    tabColor: '#92400e',
-    tabBorder: '#d97706',
+    wingBgDark: '#6f451d',
+    wingBgLight: '#885727',
+    wingHighlightDark: '#875525',
+    wingHighlightLight: '#a16830',
     height: 77,
     lightSrc: '/assets/aistudio/crops/light_floor1.jpg?v=2',
     darkSrc: '/assets/aistudio/crops/dark_floor1.jpg?v=2'
@@ -110,91 +135,51 @@ const BUILDING_SLICES: BuildingSlice[] = [
     name: 'GROUND ATELIER',
     category: '',
     tagline: '',
-    tabColor: '#1c1917',
-    tabBorder: '#44403c',
+    wingBgDark: '#17110c',
+    wingBgLight: '#dfd8cc',
+    wingHighlightDark: '#1f1710',
+    wingHighlightLight: '#eae4da',
     height: 189,
     lightSrc: '/assets/aistudio/crops/light_ground.jpg?v=2',
     darkSrc: '/assets/aistudio/crops/dark_ground.jpg?v=2'
   }
 ];
 
-// Bottom trim (as % of 656px width) so active hero floor ends right on its horizontal cornice beam when expanded
 const HERO_BOTTOM_TRIM_PCT: Record<number, number> = {
-  5: 0.35, // trims 2px floor4 ceiling glow below dark beam
-  4: 2.06, // trims 13.5px floor3 top fascia so floor4 ends cleanly on its cornice
-  3: 0.62, // trims 4px floor2 glow below beam
-  2: 0.78, // trims 5px lower trim below beam
-  1: 0     // floor1 ends in glowing window; uses photographic cornice cap above Row 1
+  5: 0.35,
+  4: 2.06,
+  3: 0.62,
+  2: 0.78,
+  1: 0
 };
 
 interface ArchThemeMetrics {
-  leftSkyEnd: number;
-  rightSkyStart: number;
-  skyLeftColor: string;
-  skyRightColor: string;
-  bays: Array<{ x: number; width: number; leftPct: string; widthPct: string }>;
-  outerPosts: Array<{
-    x: number;
-    width: number;
-    limestoneX?: number;
-    limestoneW?: number;
-    oakX: number;
-    oakW: number;
-  }>;
-  innerPosts: Array<{ x: number; width: number }>;
-  beamX: number;
-  beamW: number;
-  oakBeamX: number;
-  oakBeamW: number;
+  cropWidthPx: number;
+  innerWidthPct: string;
+  innerMarginLeftPct: string;
+  bays: Array<{ leftPct: string; widthPct: string }>;
 }
 
-// Sub-pixel measurements from cropped dark_floor*.jpg & light_floor*.jpg (656px canvas)
 const DARK_ARCH: ArchThemeMetrics = {
-  leftSkyEnd: 44,
-  rightSkyStart: 614,
-  skyLeftColor: '#17100A',
-  skyRightColor: '#17100A',
+  cropWidthPx: 570,
+  innerWidthPct: '115.0877%',
+  innerMarginLeftPct: '-7.7193%',
   bays: [
-    { x: 70, width: 152, leftPct: '10.67%', widthPct: '23.17%' },
-    { x: 240, width: 176, leftPct: '36.59%', widthPct: '26.83%' },
-    { x: 434, width: 154, leftPct: '66.16%', widthPct: '23.48%' }
-  ],
-  outerPosts: [
-    { x: 44, width: 26, oakX: 44, oakW: 26 },
-    { x: 588, width: 26, oakX: 588, oakW: 26 }
-  ],
-  innerPosts: [
-    { x: 222, width: 18 },
-    { x: 416, width: 18 }
-  ],
-  beamX: 43,
-  beamW: 572,
-  oakBeamX: 43,
-  oakBeamW: 572
+    { leftPct: '10.67%', widthPct: '23.17%' },
+    { leftPct: '36.59%', widthPct: '26.83%' },
+    { leftPct: '66.16%', widthPct: '23.48%' }
+  ]
 };
 
 const LIGHT_ARCH: ArchThemeMetrics = {
-  leftSkyEnd: 53,
-  rightSkyStart: 603,
-  skyLeftColor: '#E7E7E5',
-  skyRightColor: '#E1E0DD',
+  cropWidthPx: 550,
+  innerWidthPct: '119.2727%',
+  innerMarginLeftPct: '-9.6364%',
   bays: [
-    { x: 70, width: 153, leftPct: '10.67%', widthPct: '23.32%' },
-    { x: 233, width: 190, leftPct: '35.52%', widthPct: '28.96%' },
-    { x: 433, width: 152, leftPct: '66.01%', widthPct: '23.17%' }
-  ],
-  outerPosts: [
-    { x: 53, width: 17, limestoneX: 53, limestoneW: 9, oakX: 62, oakW: 8 },
-    { x: 585, width: 18, limestoneX: 594, limestoneW: 9, oakX: 585, oakW: 9 }
-  ],
-  innerPosts: [
-    { x: 223, width: 10 },
-    { x: 423, width: 10 }
-  ],
-  beamX: 52,
-  beamW: 552,
-  oakBeamX: 62,
-  oakBeamW: 532
+    { leftPct: '10.67%', widthPct: '23.32%' },
+    { leftPct: '35.52%', widthPct: '28.96%' },
+    { leftPct: '66.01%', widthPct: '23.17%' }
+  ]
 };
 
 interface NicheCellProps {
@@ -266,116 +251,269 @@ const NicheCell: React.FC<NicheCellProps> = ({
     }
   };
 
-  // Keep square vitrines centered on the real photographic shelf sill so frosted side windows & oak panels stay 100% visible
-  const vitrineBottomOffset = 'pb-[1.5%]';
-
   return (
     <div
+      role="button"
+      tabIndex={0}
       onMouseEnter={() => onHover(index)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect && onSelect(prod)}
-      className={`group/niche absolute top-0 bottom-0 flex items-end justify-center ${vitrineBottomOffset} cursor-pointer transition-all duration-200 ${
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (onSelect) onSelect(prod);
+        }
+      }}
+      aria-label={`Inspect ${prod.name}, ₹${prod.price}`}
+      className={`group/niche absolute top-0 bottom-0 flex items-end justify-center pb-[1.5%] cursor-pointer transition-all duration-200 focus:outline-none ${
         isDark
           ? 'hover:ring-1 hover:ring-inset hover:ring-[#e5a045]/75'
           : 'hover:ring-1 hover:ring-inset hover:ring-[#c35626]/70'
       }`}
       style={{ left: bayPos.leftPct, width: bayPos.widthPct }}
     >
-      {/* Square Museum Vitrine Sitting Flush on Shelf Sill (leaves real photographic walls, oak panels & windows visible) */}
+      {/* Unified Full-Bay Museum Display Vitrine */}
       <div
-        className={`relative aspect-square h-[84%] flex flex-col items-center justify-end overflow-hidden rounded-[2px] border transition-transform duration-300 group-hover/niche:scale-[1.04] ${
+        className={`relative w-[92%] h-[86%] flex flex-col justify-between overflow-hidden rounded-[2px] border transition-transform duration-200 group-hover/niche:scale-[1.02] ${
           isDark
-            ? 'border-[#6f5233]/65 bg-[#20160d]/30 shadow-[0_2px_7px_rgba(16,9,4,0.38)]'
-            : 'border-[#8f7455]/55 bg-[#f7efe0]/30 shadow-[0_2px_6px_rgba(80,58,34,0.18)]'
+            ? 'border-[#7c5c3a]/85 bg-gradient-to-b from-[#1e150e] via-[#140e09] to-[#0c0805] shadow-[0_3px_10px_rgba(0,0,0,0.52)]'
+            : 'border-[#8f7455]/75 bg-gradient-to-b from-[#efe7da] via-[#e4d8c5] to-[#d6c6ae] shadow-[0_2px_8px_rgba(70,50,28,0.22)]'
         }`}
       >
-        {!hasError ? (
-          <div className="relative w-full flex-1 min-h-0 flex items-center justify-center overflow-hidden">
-            <img
-              key={imgSrc}
-              src={imgSrc}
-              alt={prod.name}
-              loading="eager"
-              decoding="async"
-              onError={handleImgError}
-              className={`w-full h-full object-cover select-none ${
-                isDark
-                  ? 'brightness-[0.96] contrast-[1.03] saturate-[0.98] sepia-[0.06]'
-                  : 'brightness-[1.01] contrast-[1.02] saturate-[1.02]'
-              }`}
-            />
-          </div>
-        ) : (
+        <div className="relative flex-1 min-h-0 flex items-stretch">
+          {/* Left Square Specimen Frame (full unclipped 1:1 product artwork) */}
           <div
-            className={`w-full flex-1 flex items-center justify-center p-1.5 text-center ${
-              isDark ? 'bg-[#362415] text-[#f2dcc0]' : 'bg-[#ede0cc] text-[#4b3826]'
+            className={`relative aspect-square h-full shrink-0 overflow-hidden border-r ${
+              isDark
+                ? 'bg-[#120c07] border-[#4d3824]/80'
+                : 'bg-[#e7decb] border-[#b7a387]/70'
             }`}
           >
-            <span className="text-[8.5px] font-mono font-bold uppercase tracking-wider line-clamp-2">
-              {prod.name}
-            </span>
-          </div>
-        )}
+            {!hasError ? (
+              <img
+                key={imgSrc}
+                src={imgSrc}
+                alt={prod.name}
+                loading="eager"
+                decoding="async"
+                onError={handleImgError}
+                className={`w-full h-full object-cover select-none transition-transform duration-300 group-hover/niche:scale-[1.05] ${
+                  isDark
+                    ? 'brightness-[0.96] contrast-[1.04] saturate-[0.98] sepia-[0.04]'
+                    : 'brightness-[1.01] contrast-[1.02] saturate-[1.02]'
+                }`}
+              />
+            ) : (
+              <div
+                className={`w-full h-full flex items-center justify-center p-1 text-center ${
+                  isDark ? 'bg-[#362415] text-[#f2dcc0]' : 'bg-[#ede0cc] text-[#4b3826]'
+                }`}
+              >
+                <span className="text-[7.5px] font-mono font-bold uppercase tracking-wider line-clamp-2">
+                  {prod.name}
+                </span>
+              </div>
+            )}
 
-        {/* Slim Architectural Display Base Plinth */}
+            {/* Inner Shadowbox Vignette to harmonize dark & light photo backgrounds */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                boxShadow: isDark
+                  ? 'inset 0 0 12px rgba(8,5,2,0.52)'
+                  : 'inset 0 0 8px rgba(52,36,18,0.22)'
+              }}
+            />
+          </div>
+
+          {/* Right Museum Gallery Placard (Visible on >= sm viewports) */}
+          <div className="hidden sm:flex flex-1 min-w-0 flex-col justify-between px-1.5 md:px-2 py-1 relative overflow-hidden">
+            {/* Subtle Overhead Gallery Spot Cone */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: isDark
+                  ? 'radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255,224,170,0.12) 0%, transparent 75%)'
+                  : 'radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255,255,255,0.45) 0%, transparent 75%)'
+              }}
+            />
+
+            <div className="relative z-10 min-w-0">
+              <span
+                className={`block text-[6.5px] font-mono font-bold tracking-[0.14em] uppercase leading-none ${
+                  isDark ? 'text-[#c99b63]' : 'text-[#8c4724]'
+                }`}
+              >
+                ED. 0{index + 1}
+              </span>
+              <span
+                className={`block text-[8.5px] md:text-[9.5px] font-bold leading-[1.15] mt-0.5 line-clamp-2 ${
+                  isDark ? 'text-[#f7efe6]' : 'text-[#221810]'
+                }`}
+              >
+                {prod.name}
+              </span>
+            </div>
+
+            <div className="relative z-10 flex items-center justify-between gap-1 pt-0.5">
+              <span
+                className={`text-[8.5px] md:text-[9.5px] font-mono font-black tabular-nums leading-none ${
+                  isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
+                }`}
+              >
+                ₹{prod.price}
+              </span>
+
+              <button
+                type="button"
+                onClick={(e) => onQuickAdd(prod, e)}
+                className={`p-1 rounded-[2px] transition-colors cursor-pointer shrink-0 ${
+                  justAddedId === prod.id
+                    ? isDark
+                      ? 'bg-[#d2f53a] text-black'
+                      : 'bg-[#2c1e13] text-white'
+                    : isDark
+                    ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black'
+                    : 'bg-[#c35626] hover:bg-[#a84419] text-white'
+                }`}
+                title="Quick Add to Trolley"
+                aria-label={`Quick add ${prod.name}`}
+              >
+                {justAddedId === prod.id ? (
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                ) : (
+                  <ShoppingBag className="w-2.5 h-2.5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Continuous Museum Glass Specular Reflection */}
         <div
           aria-hidden="true"
-          className={`w-full h-[2.5px] shrink-0 ${
-            isDark ? 'bg-[#3d2c1c]' : 'bg-[#7d6447]'
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: isDark
+              ? 'linear-gradient(122deg, rgba(255,245,228,0.08) 0%, transparent 42%, rgba(255,255,255,0.03) 65%, transparent 86%)'
+              : 'linear-gradient(122deg, rgba(255,255,255,0.28) 0%, transparent 42%, rgba(255,255,255,0.08) 65%, transparent 86%)'
+          }}
+        />
+
+        {/* Continuous Slim Bronze Plinth Sill */}
+        <div
+          aria-hidden="true"
+          className={`w-full h-[3px] shrink-0 ${
+            isDark
+              ? 'bg-gradient-to-r from-[#3a291a] via-[#5e442b] to-[#3a291a]'
+              : 'bg-gradient-to-r from-[#876e50] via-[#a78d6c] to-[#876e50]'
           }`}
         />
       </div>
 
-      {/* Hover Name, Price & Quick-Add Bar */}
+      {/* Compact Mobile Hover/Tap Overlay (< sm viewports where placard is hidden) */}
       <div
-        className={`absolute bottom-1 left-1 right-1 px-1.5 py-1 rounded-[3px] backdrop-blur-md transition-all duration-200 border flex items-center justify-between gap-1 shadow-md z-30 ${
+        className={`sm:hidden absolute bottom-1 left-1 right-1 px-1.5 py-0.5 rounded-[2px] backdrop-blur-md transition-all duration-200 border flex items-center justify-between gap-1 shadow-md z-30 ${
           isHovered
             ? 'opacity-100 translate-y-0'
-            : 'opacity-0 translate-y-2 pointer-events-none'
+            : 'opacity-0 translate-y-1 pointer-events-none'
         } ${
           isDark
             ? 'bg-[#1c130b]/92 text-[#f7efe6] border-[#e5a045]/55'
             : 'bg-[#faf6f0]/95 text-[#1e140d] border-[#c35626]/45'
         }`}
       >
-        <span className="text-[8px] font-bold truncate">
-          {prod.name}
+        <span className="text-[7.5px] font-bold truncate">{prod.name}</span>
+        <span
+          className={`text-[7.5px] font-mono font-black tabular-nums shrink-0 ${
+            isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
+          }`}
+        >
+          ₹{prod.price}
         </span>
-        <div className="flex items-center gap-1 shrink-0">
-          <span
-            className={`text-[8px] font-mono font-black tabular-nums ${
-              isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
-            }`}
-          >
-            ₹{prod.price}
-          </span>
-
-          <button
-            type="button"
-            onClick={(e) => onQuickAdd(prod, e)}
-            className={`p-0.5 rounded-[2px] text-[7px] font-bold uppercase transition-colors cursor-pointer ${
-              justAddedId === prod.id
-                ? isDark
-                  ? 'bg-[#d2f53a] text-black'
-                  : 'bg-[#2c1e13] text-white'
-                : isDark
-                ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black'
-                : 'bg-[#c35626] hover:bg-[#a84419] text-white'
-            }`}
-            title="Quick Add to Cart"
-            aria-label={`Quick add ${prod.name}`}
-          >
-            {justAddedId === prod.id ? (
-              <Check className="w-2.5 h-2.5 stroke-[3]" />
-            ) : (
-              <ShoppingBag className="w-2.5 h-2.5" />
-            )}
-          </button>
-        </div>
       </div>
     </div>
   );
 };
+
+// Clips outer sky margins cleanly from 656px crop slices flush against architectural piers
+const CenterCropSlice: React.FC<{
+  src: string;
+  alt: string;
+  height: number;
+  arch: ArchThemeMetrics;
+  trimPct?: number;
+  className?: string;
+  children?: React.ReactNode;
+}> = ({ src, alt, height, arch, trimPct = 0, className = '', children }) => (
+  <div
+    className={`relative w-full overflow-hidden ${className}`}
+    style={{
+      aspectRatio: `${arch.cropWidthPx} / ${height}`,
+      marginBottom: trimPct > 0 ? `-${trimPct}%` : undefined
+    }}
+  >
+    <div
+      className="relative h-full"
+      style={{
+        width: arch.innerWidthPct,
+        marginLeft: arch.innerMarginLeftPct
+      }}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full block object-fill select-none pointer-events-none"
+      />
+      {children}
+    </div>
+  </div>
+);
+
+// Real Photographic Botanical Shrub Planters Seated on Stone Planter Curb
+const PhotoPlanterCluster: React.FC<{ isDark: boolean; count?: number }> = ({
+  isDark,
+  count = 2
+}) => (
+  <div
+    aria-hidden="true"
+    className="absolute bottom-0 inset-x-0 flex items-end justify-around px-1 pointer-events-none z-20"
+  >
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={i} className="relative flex flex-col items-center">
+        {/* Soft Warm Architectural Planter Uplight Halo */}
+        <div
+          className={`w-10 sm:w-12 h-4 -mb-3 rounded-full blur-[5px] ${
+            isDark ? 'bg-[#f4bc72]/35' : 'bg-[#d9c19c]/30'
+          }`}
+        />
+        <img
+          src={
+            isDark
+              ? '/assets/aistudio/arch/dark_shrubs.png'
+              : '/assets/aistudio/arch/light_shrubs.png'
+          }
+          alt=""
+          className="relative w-10 h-6 sm:w-14 sm:h-8 object-cover object-top select-none pointer-events-none drop-shadow-[0_3px_5px_rgba(0,0,0,0.65)]"
+          style={{
+            WebkitMaskImage:
+              'linear-gradient(180deg, rgba(0,0,0,1) 55%, rgba(0,0,0,0.75) 100%)',
+            maskImage:
+              'linear-gradient(180deg, rgba(0,0,0,1) 55%, rgba(0,0,0,0.75) 100%)'
+          }}
+        />
+        {/* Brushed Granite Planter Curb Trough */}
+        <div
+          className={`w-9 sm:w-12 h-[4px] border-t shadow-sm ${
+            isDark ? 'bg-[#1a130d] border-[#423224]' : 'bg-[#a99e8e] border-[#cfc5b5]'
+          }`}
+        />
+      </div>
+    ))}
+  </div>
+);
 
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   theme,
@@ -388,22 +526,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   const isDark = theme === 'rustic-dark';
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Active floor number (1 to 5, default: 3 matching reference video hero)
   const [activeFloor, setActiveFloor] = useState<number>(3);
-
-  // Whether drop down is expanded (false = intact 5-story cabinet, true = drop down state)
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-  // Hovered floor number when cabinet is intact
   const [hoveredFloor, setHoveredFloor] = useState<number | null>(null);
-
-  // Hovered product niche index (0 to 8)
   const [hoveredProductIndex, setHoveredProductIndex] = useState<number | null>(null);
-
-  // Quick-add feedback
+  const [hoveredHeroBay, setHoveredHeroBay] = useState<number | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
-  // Synchronize when selectedFloorNumber changes externally
   useEffect(() => {
     if (selectedFloorNumber !== undefined && selectedFloorNumber !== null) {
       setActiveFloor(selectedFloorNumber);
@@ -439,7 +568,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setIsExpanded(false);
     setTimeout(() => {
       setIsExpanded(true);
-    }, 900);
+    }, 850);
   };
 
   const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
@@ -457,13 +586,26 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   const lowerSlices = BUILDING_SLICES.slice(safeActiveIndex + 1);
 
   const allFloorProducts = PRODUCTS_DATA.filter((p) => p.floorNumber === activeFloor);
-  const nicheProducts = allFloorProducts.slice(0, 9);
+  const activeFloorInfo = FLOORS_DATA.find((f) => f.numeric === activeFloor);
+  const featuredSlotIds = activeFloorInfo
+    ? (['left', 'center', 'right'] as const)
+        .map((slot) => activeFloorInfo.items.find((item) => item.slot === slot)?.productId)
+        .filter((id): id is string => Boolean(id))
+    : [];
+  const featuredSlotProducts = featuredSlotIds
+    .map((id) => allFloorProducts.find((p) => p.id === id))
+    .filter((p): p is Product => Boolean(p));
+  const featuredIdSet = new Set(featuredSlotProducts.map((p) => p.id));
+  const orderedFloorProducts = [
+    ...featuredSlotProducts,
+    ...allFloorProducts.filter((p) => !featuredIdSet.has(p.id))
+  ];
+  const nicheProducts = orderedFloorProducts.slice(0, 9);
 
   const row1Products = nicheProducts.slice(0, 3);
   const row2Products = nicheProducts.slice(3, 6);
   const row3Products = nicheProducts.slice(6, 9);
 
-  // Photorealistic empty floor crop (656x103) parameters per theme
   const arch = isDark ? DARK_ARCH : LIGHT_ARCH;
   const trimPct = isExpanded ? HERO_BOTTOM_TRIM_PCT[activeFloor] ?? 0 : 0;
   const emptyFloorSrc = isDark
@@ -471,47 +613,436 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     : '/assets/aistudio/crops/light_empty_floor.jpg';
   const rows = [row1Products, row2Products, row3Products];
 
+  // Structural column proportions matching reference architecture
+  const leftWingCls = 'w-[25%] sm:w-[23.5%] shrink-0';
+  const centerWingCls = 'w-[62.5%] sm:w-[64%] shrink-0';
+  const rightWingCls = 'w-[12.5%] sm:w-[12.5%] shrink-0';
+
+  const framePierBg = isDark
+    ? 'bg-gradient-to-b from-[#2b2017] via-[#1c140e] to-[#130e09] border-[#3d2e20]'
+    : 'bg-gradient-to-b from-[#dfd7c9] via-[#ccc2b2] to-[#b8ad9b] border-[#b7ac9c]';
+
+  // Physical Chamfered Horizontal Structural Beam Across Entire 5-Bay Facade Width
+  const renderSlabBeam = (isTop = false) => (
+    <div
+      aria-hidden="true"
+      className="w-full h-[3px] sm:h-[4px] pointer-events-none"
+      style={{
+        background: isDark
+          ? isTop
+            ? 'linear-gradient(180deg, #473626 0%, #241b13 55%, #0e0a07 100%)'
+            : 'linear-gradient(180deg, #3c2d1f 0%, #1d150e 45%, #0b0805 100%)'
+          : isTop
+          ? 'linear-gradient(180deg, #efe9df 0%, #c8beae 55%, #9d9180 100%)'
+          : 'linear-gradient(180deg, #e5ded1 0%, #bfb5a4 55%, #998d7b 100%)',
+        boxShadow: isDark
+          ? '0 2px 5px rgba(0,0,0,0.55)'
+          : '0 2px 4px rgba(60,48,34,0.22)'
+      }}
+    />
+  );
+
+  // Unified 5-Bay Architectural Floor Row with Recessed Physical Depth, Spot Cones, Grain & Milled Frames
+  const renderArchitecturalFloorRow = (slice: BuildingSlice, interactive: boolean) => {
+    const floorNum = slice.floorNumber!;
+    const isHovered = interactive && hoveredFloor === floorNum;
+    const isActiveHero = isExpanded && activeFloor === floorNum;
+
+    return (
+      <div
+        key={slice.id}
+        onMouseEnter={interactive ? () => setHoveredFloor(floorNum) : undefined}
+        onMouseLeave={
+          interactive
+            ? () => setHoveredFloor(null)
+            : () => setHoveredHeroBay(null)
+        }
+        onClick={
+          interactive
+            ? (e) => {
+                e.stopPropagation();
+                handleToggleFloor(floorNum);
+              }
+            : undefined
+        }
+        onKeyDown={
+          interactive
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleToggleFloor(floorNum);
+                }
+              }
+            : undefined
+        }
+        role={interactive ? 'button' : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        aria-label={
+          interactive
+            ? `Open ${slice.name}: ${slice.category}`
+            : undefined
+        }
+        className={`group/floor relative w-full flex flex-col select-none focus:outline-none ${
+          interactive ? 'cursor-pointer' : ''
+        }`}
+      >
+        <div className="w-full flex items-stretch">
+          {/* LEFT ARCHITECTURAL DIRECTORY BAY (Recessed Enamel Steel Panel + Spot Cones + Architectural Texture) */}
+          <div
+            onClick={
+              isActiveHero
+                ? (e) => {
+                    e.stopPropagation();
+                    handleToggleFloor();
+                  }
+                : undefined
+            }
+            role={isActiveHero ? 'button' : undefined}
+            tabIndex={isActiveHero ? 0 : undefined}
+            aria-label={
+              isActiveHero ? `Close ${slice.name}: ${slice.category}` : undefined
+            }
+            onKeyDown={
+              isActiveHero
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleToggleFloor();
+                    }
+                  }
+                : undefined
+            }
+            className={`${leftWingCls} relative flex flex-col justify-center px-2 sm:px-3.5 py-1 border-r-[3px] sm:border-r-[4px] transition-colors duration-200 overflow-hidden ${
+              isDark ? 'border-[#211811]' : 'border-[#b9ae9d]'
+            } ${isActiveHero ? 'cursor-pointer' : ''}`}
+            style={{
+              backgroundColor: isHovered
+                ? isDark
+                  ? slice.wingHighlightDark
+                  : slice.wingHighlightLight
+                : isDark
+                ? slice.wingBgDark
+                : slice.wingBgLight,
+              boxShadow: isDark
+                ? 'inset 0 8px 16px rgba(0,0,0,0.62), inset 5px 0 10px rgba(0,0,0,0.48), inset -5px 0 10px rgba(0,0,0,0.48), inset 0 -4px 8px rgba(0,0,0,0.42)'
+                : 'inset 0 6px 12px rgba(25,18,10,0.45), inset 4px 0 8px rgba(25,18,10,0.32), inset -4px 0 8px rgba(25,18,10,0.32), inset 0 -3px 6px rgba(25,18,10,0.28)'
+            }}
+          >
+            {/* Subtle Architectural Cladding Grain */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
+              style={{ backgroundImage: ARCH_GRAIN_SVG }}
+            />
+            {/* Dual Recessed Ceiling Architectural Downlight Cones + Pinpoint Soffit Fixtures */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(ellipse 46% 36% at 28% 2%, rgba(255,244,218,0.24) 0%, transparent 75%), radial-gradient(ellipse 46% 36% at 74% 2%, rgba(255,244,218,0.20) 0%, transparent 75%)'
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="hidden sm:flex absolute top-[2px] inset-x-4 justify-around pointer-events-none"
+            >
+              <span className="w-2.5 h-[2px] rounded-full bg-[#fff3d6]/85 shadow-[0_0_6px_rgba(255,236,195,0.85)]" />
+              <span className="w-2.5 h-[2px] rounded-full bg-[#fff3d6]/85 shadow-[0_0_6px_rgba(255,236,195,0.85)]" />
+            </div>
+
+            {/* Subtle Diagonal Architectural Glazing Reflection */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'linear-gradient(124deg, rgba(255,255,255,0.07) 0%, transparent 45%, rgba(255,255,255,0.025) 68%, transparent 100%)'
+              }}
+            />
+
+            <span className="relative z-10 text-[6.5px] sm:text-[8.5px] font-mono font-bold tracking-[0.16em] text-white/80 uppercase leading-tight drop-shadow-sm">
+              0{floorNum} · FLOOR
+            </span>
+            <span className="relative z-10 text-[9px] sm:text-[13px] md:text-[14.5px] font-black tracking-tight text-white uppercase leading-[1.08] mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]">
+              {slice.category}
+            </span>
+            <span className="relative z-10 hidden sm:block text-[8px] md:text-[9px] font-medium text-white/82 leading-tight mt-0.5 truncate">
+              {slice.tagline}
+            </span>
+          </div>
+
+          {/* CENTER 3 ARCHITECTURAL DISPLAY BAYS */}
+          <div
+            className={`${centerWingCls} relative overflow-hidden ${
+              isDark ? 'bg-[#17100A]' : 'bg-[#e3ddd2]'
+            }`}
+          >
+            <CenterCropSlice
+              src={isDark ? slice.darkSrc : slice.lightSrc}
+              alt={`${slice.name} ${slice.category}`}
+              height={slice.height}
+              arch={arch}
+              trimPct={isActiveHero ? trimPct : 0}
+              className={
+                interactive
+                  ? 'transition-[filter] duration-200 group-hover/floor:brightness-105'
+                  : ''
+              }
+            >
+              {/* Individual Interactive Product Hotspots Over the 3 Hero Windows When Expanded */}
+              {isActiveHero && (
+                <div className="absolute inset-0 z-20 pointer-events-auto">
+                  {arch.bays.map((bayPos, bIdx) => {
+                    const heroProd = row1Products[bIdx];
+                    if (!heroProd) return null;
+                    const isBayHovered = hoveredHeroBay === bIdx;
+
+                    return (
+                      <div
+                        key={`hero-bay-${floorNum}-${heroProd.id}`}
+                        role="button"
+                        tabIndex={0}
+                        onMouseEnter={() => setHoveredHeroBay(bIdx)}
+                        onMouseLeave={() => setHoveredHeroBay(null)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectProduct) onSelectProduct(heroProd);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (onSelectProduct) onSelectProduct(heroProd);
+                          }
+                        }}
+                        aria-label={`Inspect featured piece ${heroProd.name}, ₹${heroProd.price}`}
+                        className={`absolute top-0 bottom-0 cursor-pointer transition-all duration-200 focus:outline-none ${
+                          isBayHovered
+                            ? isDark
+                              ? 'ring-1 ring-inset ring-[#e5a045]/85 bg-[#e5a045]/[0.05]'
+                              : 'ring-1 ring-inset ring-[#c35626]/80 bg-[#c35626]/[0.04]'
+                            : ''
+                        }`}
+                        style={{ left: bayPos.leftPct, width: bayPos.widthPct }}
+                      >
+                        <div
+                          className={`absolute bottom-1.5 left-1.5 right-1.5 px-2 py-1 rounded-[2px] backdrop-blur-md transition-all duration-200 border flex items-center justify-between gap-1.5 shadow-md ${
+                            isBayHovered
+                              ? 'opacity-100 translate-y-0'
+                              : 'opacity-0 translate-y-1.5 pointer-events-none'
+                          } ${
+                            isDark
+                              ? 'bg-[#1c130b]/92 text-[#f7efe6] border-[#e5a045]/60'
+                              : 'bg-[#faf6f0]/95 text-[#1e140d] border-[#c35626]/55'
+                          }`}
+                        >
+                          <span className="text-[8.5px] font-bold truncate">
+                            {heroProd.name}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className={`text-[8.5px] font-mono font-black tabular-nums ${
+                                isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
+                              }`}
+                            >
+                              ₹{heroProd.price}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => handleQuickAdd(heroProd, e)}
+                              className={`p-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                                justAddedId === heroProd.id
+                                  ? isDark
+                                    ? 'bg-[#d2f53a] text-black'
+                                    : 'bg-[#2c1e13] text-white'
+                                  : isDark
+                                  ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black'
+                                  : 'bg-[#c35626] hover:bg-[#a84419] text-white'
+                              }`}
+                              title="Quick Add to Trolley"
+                              aria-label={`Quick add ${heroProd.name}`}
+                            >
+                              {justAddedId === heroProd.id ? (
+                                <Check className="w-2.5 h-2.5 stroke-[3]" />
+                              ) : (
+                                <ShoppingBag className="w-2.5 h-2.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CenterCropSlice>
+
+            {/* Exterior Glass Curtain-Wall Specular Reflection & Gallery Uplighting Glint */}
+            {!isExpanded && (
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none transition-all duration-200"
+                style={{
+                  background: isHovered
+                    ? isDark
+                      ? 'linear-gradient(118deg, rgba(255,224,170,0.16) 0%, transparent 38%, rgba(255,255,255,0.05) 62%, transparent 82%)'
+                      : 'linear-gradient(118deg, rgba(255,255,255,0.22) 0%, transparent 38%, rgba(255,255,255,0.08) 62%, transparent 82%)'
+                    : isDark
+                    ? 'linear-gradient(118deg, rgba(255,244,226,0.06) 0%, transparent 34%, rgba(255,255,255,0.025) 58%, transparent 78%)'
+                    : 'linear-gradient(118deg, rgba(255,255,255,0.12) 0%, transparent 36%, rgba(255,255,255,0.04) 58%, transparent 78%)',
+                  boxShadow: isHovered
+                    ? isDark
+                      ? 'inset 0 0 0 1px rgba(229,160,69,0.72), inset 0 -1px 0 rgba(255,220,165,0.35)'
+                      : 'inset 0 0 0 1px rgba(195,86,38,0.68), inset 0 -1px 0 rgba(255,255,255,0.5)'
+                    : 'inset 0 -1px 0 rgba(255,242,218,0.14)'
+                }}
+              />
+            )}
+
+            {isHovered && (
+              <div
+                className={`absolute top-1.5 right-2 z-30 pointer-events-none flex items-center gap-1 px-2.5 py-0.5 rounded-[2px] text-[8px] font-mono font-black tracking-wider uppercase shadow-md border ${
+                  isDark
+                    ? 'bg-[#1a110a]/92 text-[#f5c27d] border-[#e5a045]/75'
+                    : 'bg-[#faf6f0]/95 text-[#22170f] border-[#c35626]/70'
+                }`}
+              >
+                <span>Open 0{floorNum}F</span>
+                <ArrowUpRight className="w-2.5 h-2.5" />
+              </div>
+            )}
+
+            {isActiveHero && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleFloor();
+                }}
+                className="absolute top-1.5 right-2 z-30 opacity-0 group-hover/floor:opacity-100 focus:opacity-100 transition-opacity duration-200 px-2.5 py-0.5 rounded-[2px] text-[8px] font-mono font-bold tracking-wider uppercase shadow-md bg-black/82 text-[#f5c27d] border border-[#e5a045]/60 cursor-pointer"
+              >
+                Close Floor ↺
+              </button>
+            )}
+          </div>
+
+          {/* RIGHT ARCHITECTURAL FLOOR NUMBER BAY (Recessed Enamel Bay + Downlight + Frame) */}
+          <div
+            onClick={
+              isActiveHero
+                ? (e) => {
+                    e.stopPropagation();
+                    handleToggleFloor();
+                  }
+                : undefined
+            }
+            role={isActiveHero ? 'button' : undefined}
+            tabIndex={isActiveHero ? 0 : undefined}
+            aria-label={
+              isActiveHero ? `Close ${slice.name}: ${slice.category}` : undefined
+            }
+            onKeyDown={
+              isActiveHero
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleToggleFloor();
+                    }
+                  }
+                : undefined
+            }
+            className={`${rightWingCls} relative flex flex-col items-center justify-center px-1 py-1 border-l-[3px] sm:border-l-[4px] transition-colors duration-200 overflow-hidden ${
+              isDark ? 'border-[#211811]' : 'border-[#b9ae9d]'
+            } ${isActiveHero ? 'cursor-pointer' : ''}`}
+            style={{
+              backgroundColor: isHovered
+                ? isDark
+                  ? slice.wingHighlightDark
+                  : slice.wingHighlightLight
+                : isDark
+                ? slice.wingBgDark
+                : slice.wingBgLight,
+              boxShadow: isDark
+                ? 'inset 0 8px 16px rgba(0,0,0,0.62), inset 5px 0 10px rgba(0,0,0,0.48), inset -5px 0 10px rgba(0,0,0,0.48), inset 0 -4px 8px rgba(0,0,0,0.42)'
+                : 'inset 0 6px 12px rgba(25,18,10,0.45), inset 4px 0 8px rgba(25,18,10,0.32), inset -4px 0 8px rgba(25,18,10,0.32), inset 0 -3px 6px rgba(25,18,10,0.28)'
+            }}
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
+              style={{ backgroundImage: ARCH_GRAIN_SVG }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(ellipse 68% 36% at 50% 2%, rgba(255,244,218,0.24) 0%, transparent 76%)'
+              }}
+            />
+            <span className="hidden sm:block absolute top-[2px] w-2.5 h-[2px] rounded-full bg-[#fff3d6]/85 shadow-[0_0_6px_rgba(255,236,195,0.85)]" />
+
+            <span className="relative z-10 text-[13px] sm:text-[18px] md:text-[21px] font-display font-black tracking-tight text-white leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] tabular-nums">
+              0{floorNum}
+            </span>
+            <span className="relative z-10 text-[6px] sm:text-[7.5px] font-mono font-bold tracking-[0.22em] text-white/75 uppercase mt-0.5">
+              FLOOR
+            </span>
+          </div>
+        </div>
+
+        {/* Continuous Horizontal Chamfered Architectural Slab Divider */}
+        {!isActiveHero && renderSlabBeam(false)}
+      </div>
+    );
+  };
+
   return (
     <div
       ref={containerRef}
       className="relative w-full flex flex-col items-center select-none font-sans"
     >
       {/* ============================================================== */}
-      {/* 1. TOP INTERACTIVE CONTROLLER BAR                              */}
+      {/* 1. COMPACT ARCHITECTURAL FLOOR CONTROL BAR                     */}
       {/* ============================================================== */}
       <div
-        className={`w-full max-w-[656px] mb-3 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between gap-2 border transition-all duration-300 shadow-sm ${
+        className={`w-full max-w-[980px] mb-3 px-3 py-2 rounded-lg flex flex-wrap items-center justify-between gap-2 border transition-colors duration-200 ${
           isDark
-            ? 'bg-[#1a120b] border-[#312317] text-[#f7f2ea]'
-            : 'bg-[#e7e5e0] border-[#d3cfc7] text-[#2c1e13]'
+            ? 'bg-[#19110b]/90 border-[#2f2216] text-[#f7f2ea]'
+            : 'bg-[#e6e2da]/90 border-[#cfcac0] text-[#282019]'
         }`}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <button
             type="button"
             onClick={() => handleToggleFloor()}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer active:scale-95 whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider transition-colors duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
               isExpanded
                 ? isDark
                   ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black font-black'
                   : 'bg-[#c35626] hover:bg-[#a84419] text-white font-black'
                 : isDark
-                ? 'bg-[#291c12] hover:bg-[#3a2819] text-[#f5c27d] border border-[#4d3522]'
+                ? 'bg-[#261a10] hover:bg-[#352416] text-[#f5c27d] border border-[#47311f]'
                 : 'bg-[#f6f4f0] hover:bg-white text-[#2c1e13] border border-[#c9c3b8]'
             }`}
           >
-            <RotateCcw className={`w-3 h-3 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`} />
-            <span>{isExpanded ? 'Reassemble Cabinet' : 'Click Floor to Open'}</span>
+            {isExpanded ? <RotateCcw className="w-3 h-3" /> : <Layers className="w-3 h-3" />}
+            <span>{isExpanded ? 'Full Building View' : 'Inspect Active Floor'}</span>
           </button>
 
-          <span className={`hidden sm:inline text-[10px] font-mono font-semibold tracking-wide whitespace-nowrap ${
-            isDark ? 'text-[#cbb7a1]' : 'text-[#5b4d3f]'
-          }`}>
-            {heroSlice.name} · {heroSlice.category}
+          <span
+            className={`hidden sm:inline text-[10px] font-mono font-semibold tracking-wider truncate ${
+              isDark ? 'text-[#cbb7a1]' : 'text-[#5b4d3f]'
+            }`}
+          >
+            {isExpanded
+              ? `${heroSlice.name} · ${heroSlice.category}`
+              : 'VINKRI FLAGSHIP · CLICK ANY FLOOR TO TOUR ALL 9 PIECES'}
           </span>
         </div>
 
-        {/* Floor Selection Tabs (05 - 01) */}
+        {/* Floor Tabs (05 - 01) */}
         <div className="flex items-center gap-1 flex-wrap">
           {[5, 4, 3, 2, 1].map((floorNum) => {
             const isActive = activeFloor === floorNum && isExpanded;
@@ -522,20 +1053,28 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 key={floorNum}
                 type="button"
                 onClick={() => handleToggleFloor(floorNum)}
-                className={`px-2 py-1 rounded text-[9.5px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1 active:scale-95 whitespace-nowrap ${
+                className={`px-2 py-1 rounded text-[9.5px] font-mono font-bold transition-colors duration-150 cursor-pointer flex items-center gap-1 whitespace-nowrap shrink-0 ${
                   isActive
                     ? isDark
-                      ? 'bg-[#e5a045] text-black shadow-sm font-black'
-                      : 'bg-[#c35626] text-white shadow-sm font-black'
+                      ? 'bg-[#e5a045] text-black font-black'
+                      : 'bg-[#c35626] text-white font-black'
                     : isDark
-                    ? 'bg-[#24180f] text-[#c7b5a2] hover:text-white hover:bg-[#342317] border border-[#3a2719]'
+                    ? 'bg-[#22170e] text-[#c7b5a2] hover:text-white hover:bg-[#312115] border border-[#382618]'
                     : 'bg-[#f6f4f0] text-[#5e5042] hover:text-[#1e140d] hover:bg-white border border-[#cfcac0]'
                 }`}
-                title={`Floor 0${floorNum}: ${slice?.category || ''}`}
+                title={`${slice?.name || ''}: ${slice?.category || ''}`}
               >
                 <span className="tabular-nums">0{floorNum}</span>
                 <span className="hidden md:inline text-[8.5px] font-semibold opacity-85 uppercase">
-                  {floorNum === 5 ? 'TOYS' : floorNum === 4 ? 'DIORAMA' : floorNum === 3 ? 'CARS' : floorNum === 2 ? 'FIGURES' : 'LAMPS'}
+                  {floorNum === 5
+                    ? 'TOYS'
+                    : floorNum === 4
+                    ? 'DIORAMA'
+                    : floorNum === 3
+                    ? 'CARS'
+                    : floorNum === 2
+                    ? 'FIGURES'
+                    : 'LAMPS'}
                 </span>
               </button>
             );
@@ -544,13 +1083,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           <button
             type="button"
             onClick={handleReplaySequence}
-            className={`p-1.5 ml-0.5 rounded border transition-colors cursor-pointer active:scale-95 ${
+            className={`p-1.5 ml-0.5 rounded border transition-colors cursor-pointer shrink-0 ${
               isDark
-                ? 'bg-[#24180f] text-[#b4a08d] hover:text-white border-[#3a2719]'
+                ? 'bg-[#22170e] text-[#b4a08d] hover:text-white border-[#382618]'
                 : 'bg-[#f6f4f0] text-[#5e5042] hover:text-[#1e140d] border-[#cfcac0]'
             }`}
-            title="Replay Drop Down Animation"
-            aria-label="Replay drop down animation"
+            title="Replay Floor Elevation Sequence"
+            aria-label="Replay floor elevation sequence"
           >
             <Play className="w-3 h-3" />
           </button>
@@ -558,306 +1097,678 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       </div>
 
       {/* ============================================================== */}
-      {/* 2. THE 656PX ARCHITECTURAL BUILDING VIEWPORT                    */}
-      {/* Matches Exact Exterior Sky/Wall Shade (#17100A / #E5E4E1)      */}
+      {/* 2. PHOTOREALISTIC 5-BAY VINKRI FLAGSHIP ARCHITECTURAL SCENE    */}
       {/* ============================================================== */}
-      <div
-        className={`relative w-full max-w-[656px] rounded-2xl overflow-hidden border transition-all duration-300 ${
-          isDark
-            ? 'bg-[#17100A] border-[#2b1e14] shadow-[0_24px_60px_rgba(0,0,0,0.75)]'
-            : 'bg-[#e5e4e1] border-[#d3cfc7] shadow-[0_18px_45px_rgba(70,58,44,0.12)]'
-        }`}
-      >
-        <div className="relative w-full flex flex-col items-center">
-          {/* ----------------------------------------------------------- */}
-          {/* SECTION A: UPPER SLICES (SLIDE UP ON EXPAND)                */}
-          {/* ----------------------------------------------------------- */}
-          <motion.div
-            initial={false}
-            animate={{
-              y: isExpanded ? -450 : 0,
-              opacity: isExpanded ? 0 : 1,
-              height: isExpanded ? 0 : 'auto'
-            }}
-            transition={{
-              duration: 0.75,
-              ease: [0.25, 1, 0.5, 1]
-            }}
-            className="w-full overflow-hidden origin-top select-none pointer-events-none"
-            style={{ width: '656px', maxWidth: '100%' }}
-          >
-            {upperSlices.map((slice) => (
-              <img
-                key={slice.id}
-                src={isDark ? slice.darkSrc : slice.lightSrc}
-                alt={slice.name}
-                className="w-full h-auto block select-none"
-                style={{ aspectRatio: `656 / ${slice.height}` }}
-              />
-            ))}
-          </motion.div>
-
-          {/* ----------------------------------------------------------- */}
-          {/* SECTION B: HERO PRODUCT SHOWCASE (ACTIVE FLOOR)             */}
-          {/* ----------------------------------------------------------- */}
+      <div className="relative w-full max-w-[980px] flex flex-col items-center">
+        {/* REAL PHOTOGRAPHIC FLANKING URBAN STREET TREES & STARRY SKY HORIZON */}
+        {!isExpanded && (
           <div
-            onClick={() => handleToggleFloor()}
-            className="group/shelf relative w-full z-30 overflow-hidden select-none cursor-pointer"
-            style={{ width: '656px', maxWidth: '100%' }}
-            title={isExpanded ? 'Click to reassemble cabinet' : 'Click to open floor showcase'}
+            aria-hidden="true"
+            className="hidden md:block absolute -inset-x-10 -top-4 bottom-8 pointer-events-none overflow-hidden -z-10"
           >
+            {/* Left Real Urban Avenue Tree */}
             <img
-              src={isDark ? heroSlice.darkSrc : heroSlice.lightSrc}
-              alt={`${heroSlice.name} Showcase`}
-              className="w-full h-auto block select-none pointer-events-none transition-[filter] duration-300 group-hover/shelf:brightness-105"
+              src={
+                isDark
+                  ? '/assets/aistudio/arch/dark_tree_left.jpg'
+                  : '/assets/aistudio/arch/light_tree_left.jpg'
+              }
+              alt=""
+              className="absolute left-0 bottom-0 h-[92%] w-[16%] object-cover object-right select-none"
               style={{
-                aspectRatio: `656 / ${heroSlice.height}`,
-                marginBottom: trimPct > 0 ? `-${trimPct}%` : undefined
+                WebkitMaskImage:
+                  'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%), linear-gradient(180deg, transparent 0%, black 22%, black 90%, transparent 100%)',
+                WebkitMaskComposite: 'source-in',
+                maskImage:
+                  'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%)'
               }}
             />
+            {/* Right Real Urban Avenue Tree */}
+            <img
+              src={
+                isDark
+                  ? '/assets/aistudio/arch/dark_tree_right.jpg'
+                  : '/assets/aistudio/arch/light_tree_right.jpg'
+              }
+              alt=""
+              className="absolute right-0 bottom-0 h-[92%] w-[16%] object-cover object-left select-none"
+              style={{
+                WebkitMaskImage:
+                  'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)',
+                maskImage:
+                  'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)'
+              }}
+            />
+          </div>
+        )}
 
-            {/* Unobtrusive Top-Corner Prompt (no bottom scrim darkening the floor seam) */}
-            <div className="absolute inset-x-12 top-2 flex items-center justify-end pointer-events-none opacity-0 group-hover/shelf:opacity-100 transition-opacity duration-200">
-              <span
-                className={`text-[8.5px] font-mono font-bold tracking-wider px-2 py-0.5 rounded backdrop-blur-md border ${
-                  isExpanded
-                    ? isDark
-                      ? 'bg-[#1a110a]/92 text-[#e5a045] border-[#e5a045]/55'
-                      : 'bg-[#2c1e13]/92 text-[#faf6f0] border-[#decbb8]/40'
-                    : isDark
-                    ? 'bg-[#e5a045] text-black border-[#e5a045]'
-                    : 'bg-[#c35626] text-white border-[#a84419]'
-                }`}
-              >
-                {isExpanded ? 'REASSEMBLE ↺' : 'OPEN FLOOR ▾'}
-              </span>
-            </div>
+        {/* Building Massing Row: [Left Corner Pier] + [Main 5-Bay Front Facade] + [3D Perspective Right Wing] */}
+        <div className="relative w-full flex items-stretch justify-center px-0 sm:px-3">
+          {/* Textured Heavy Dark Steel/Masonry Far-Left Corner Pilaster */}
+          <div
+            aria-hidden="true"
+            className={`hidden sm:block relative w-2.5 md:w-3.5 shrink-0 border-y border-l overflow-hidden ${
+              isDark
+                ? 'bg-gradient-to-r from-[#0e0a07] via-[#261c14] to-[#1a130d] border-[#36281c]'
+                : 'bg-gradient-to-r from-[#bdb3a3] via-[#d8d0c3] to-[#c7beb0] border-[#afa493]'
+            }`}
+          >
+            <div
+              className="absolute inset-0 opacity-15 mix-blend-overlay"
+              style={{ backgroundImage: ARCH_GRAIN_SVG }}
+            />
           </div>
 
-          {/* ----------------------------------------------------------- */}
-          {/* SECTION C: 3-ROW PHOTOREALISTIC ARCHITECTURAL EXTENSION     */}
-          {/* Uses Real Building Floor Photography for Exact Wall Texture */}
-          {/* ----------------------------------------------------------- */}
-          <motion.div
-            initial={false}
-            animate={{
-              height: isExpanded ? 'auto' : 0,
-              opacity: isExpanded ? 1 : 0
-            }}
-            transition={{
-              duration: 0.65,
-              ease: [0.25, 1, 0.5, 1]
-            }}
-            className="relative w-full overflow-hidden z-20"
-            style={{ width: '656px', maxWidth: '100%' }}
+          {/* MAIN 5-BAY BUILDING FACADE CORE */}
+          <div
+            className={`relative flex-1 min-w-0 border-y shadow-2xl ${
+              isDark
+                ? 'bg-[#17100A] border-[#2e2318] shadow-[0_28px_72px_rgba(0,0,0,0.88)]'
+                : 'bg-[#dfd8cc] border-[#b7ac9c] shadow-[0_22px_52px_rgba(65,54,42,0.18)]'
+            }`}
           >
-            {/* Floor 01 ends in an open window bay; prepend a matching photographed horizontal cornice beam */}
-            {activeFloor === 1 && (
-              <div className="relative w-full overflow-hidden" style={{ aspectRatio: '656 / 11' }}>
-                <img
-                  src={emptyFloorSrc}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-full h-auto block select-none pointer-events-none object-cover object-bottom"
-                  style={{ aspectRatio: '656 / 103', marginTop: '-14.02%' }}
-                />
+            {/* ------------------------------------------------------- */}
+            {/* SECTION A: ROOFTOP VINKRI CROWN + UPPER FLOORS          */}
+            {/* ------------------------------------------------------- */}
+            <motion.div
+              initial={false}
+              animate={{
+                y: isExpanded ? -440 : 0,
+                opacity: isExpanded ? 0 : 1,
+                height: isExpanded ? 0 : 'auto'
+              }}
+              transition={{
+                duration: 0.72,
+                ease: [0.25, 1, 0.5, 1]
+              }}
+              className={`w-full overflow-hidden origin-top select-none ${
+                isExpanded ? 'pointer-events-none' : 'pointer-events-auto'
+              }`}
+            >
+              {/* ROOFTOP PENTHOUSE MARQUEE WITH ARCHITECTURAL CORNICE & LIGHTING */}
+              <div className="w-full flex items-end pointer-events-none">
+                {/* Left Penthouse Parapet Cap */}
+                <div className={`${leftWingCls} flex flex-col justify-end`}>
+                  <div
+                    className={`relative h-6 sm:h-8 border-t border-r-[3px] sm:border-r-[4px] flex flex-col justify-between px-2 py-1 overflow-hidden ${framePierBg}`}
+                  >
+                    <div
+                      className="absolute inset-0 opacity-15 mix-blend-overlay"
+                      style={{ backgroundImage: ARCH_GRAIN_SVG }}
+                    />
+                    <div
+                      className={`relative z-10 w-full h-[2px] ${
+                        isDark
+                          ? 'bg-[#f4be72]/60 shadow-[0_0_10px_rgba(244,190,114,0.55)]'
+                          : 'bg-[#ffffff]/75'
+                      }`}
+                    />
+                    <div
+                      className={`relative z-10 w-full h-[3px] ${
+                        isDark ? 'bg-[#0e0a07]' : 'bg-[#b5aa98]'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Center VINKRI Backlit Penthouse Signage */}
+                <div className={`${centerWingCls} flex flex-col justify-end`}>
+                  <div
+                    className={`relative mx-1 sm:mx-2 h-9 sm:h-11 md:h-12 rounded-t-[2px] border-t border-x flex items-center justify-center overflow-hidden ${
+                      isDark
+                        ? 'bg-gradient-to-b from-[#1d1c1e] via-[#131316] to-[#0c0a08] border-[#423f42]'
+                        : 'bg-gradient-to-b from-[#33271e] via-[#271d16] to-[#1b130e] border-[#615244]'
+                    }`}
+                    style={{
+                      boxShadow: isDark
+                        ? 'inset 0 6px 14px rgba(0,0,0,0.6), 0 -6px 24px rgba(255,255,255,0.06)'
+                        : 'inset 0 5px 12px rgba(0,0,0,0.4)'
+                    }}
+                  >
+                    <div
+                      className="absolute inset-0 opacity-15 mix-blend-overlay"
+                      style={{ backgroundImage: ARCH_GRAIN_SVG }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className={`absolute inset-x-0 top-0 h-[3px] ${
+                        isDark
+                          ? 'bg-gradient-to-r from-[#3a3430] via-[#6e6964] to-[#3a3430]'
+                          : 'bg-[#7d6c5a]'
+                      }`}
+                    />
+                    {/* Soft Backlit Halo behind VINKRI letters */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-x-[22%] inset-y-2 rounded-full blur-md bg-white/10"
+                    />
+                    <span className="relative z-10 font-display font-bold text-white text-[15px] sm:text-[21px] md:text-[25px] tracking-[0.44em] pl-[0.44em] drop-shadow-[0_0_12px_rgba(255,255,255,0.55)]">
+                      VINKRI
+                    </span>
+                  </div>
+                  {renderSlabBeam(true)}
+                </div>
+
+                {/* Right Penthouse Parapet Cap */}
+                <div className={`${rightWingCls} flex flex-col justify-end`}>
+                  <div
+                    className={`relative h-6 sm:h-8 border-t border-l-[3px] sm:border-l-[4px] flex flex-col justify-between px-1.5 py-1 overflow-hidden ${framePierBg}`}
+                  >
+                    <div
+                      className="absolute inset-0 opacity-15 mix-blend-overlay"
+                      style={{ backgroundImage: ARCH_GRAIN_SVG }}
+                    />
+                    <div
+                      className={`relative z-10 w-full h-[2px] ${
+                        isDark
+                          ? 'bg-[#f4be72]/60 shadow-[0_0_10px_rgba(244,190,114,0.55)]'
+                          : 'bg-[#ffffff]/75'
+                      }`}
+                    />
+                    <div
+                      className={`relative z-10 w-full h-[3px] ${
+                        isDark ? 'bg-[#0e0a07]' : 'bg-[#b5aa98]'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Upper Stories Above Active Floor */}
+              {upperSlices.map((slice) => {
+                if (slice.id === 'roof') {
+                  return renderSlabBeam(true);
+                }
+                return renderArchitecturalFloorRow(slice, !isExpanded);
+              })}
+            </motion.div>
+
+            {/* Expanded Header Cap When Upper Stories Collapse */}
+            {isExpanded && (
+              <div
+                className={`w-full px-3 sm:px-4 py-2 border-b flex items-center justify-between gap-2 ${
+                  isDark
+                    ? 'bg-[#1b130d] border-[#38291b] text-[#f5e7d6]'
+                    : 'bg-[#d9d1c4] border-[#b7ac9c] text-[#261d15]'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-[1px] shrink-0"
+                    style={{
+                      backgroundColor: isDark ? heroSlice.wingBgDark : heroSlice.wingBgLight
+                    }}
+                  />
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase truncate">
+                    {heroSlice.name} · {heroSlice.category}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleFloor()}
+                  className={`flex items-center gap-1 text-[9.5px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    isDark
+                      ? 'bg-[#2a1d13] hover:bg-[#3a281a] border-[#523b27] text-[#f4cfa0]'
+                      : 'bg-[#f6f3ed] hover:bg-white border-[#b5aa99] text-[#281f17]'
+                  }`}
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Full Building</span>
+                </button>
               </div>
             )}
 
-            {/* 3 Stacked Photorealistic Building Showcase Rows (656 x 103 each) */}
-            {rows.map((rowProds, rIdx) => {
-              const rowContent = (
-                <div
-                  key={`photo-row-${rIdx}`}
-                  className="relative w-full overflow-hidden"
-                  style={{ aspectRatio: '656 / 103' }}
-                >
-                  <img
-                    src={emptyFloorSrc}
-                    alt=""
-                    aria-hidden="true"
-                    className="w-full h-full block select-none pointer-events-none"
-                  />
+            {/* ------------------------------------------------------- */}
+            {/* SECTION B: SELECTED HERO FLOOR                          */}
+            {/* ------------------------------------------------------- */}
+            <div className="relative z-30 w-full">
+              {renderArchitecturalFloorRow(heroSlice, !isExpanded)}
+            </div>
 
-                  {/* Product Vitrines Aligned inside the Real Illuminated Building Bays (y=8..92 -> top 7.77%, h 81.55%) */}
-                  <div
-                    className="absolute left-0 right-0 pointer-events-auto"
-                    style={{ top: '7.77%', height: '81.55%' }}
-                  >
-                    {[0, 1, 2].map((bIdx) => {
-                      const i = rIdx * 3 + bIdx;
-                      const prod = rowProds[bIdx];
-                      return (
-                        <NicheCell
-                          key={prod?.id || `r${rIdx + 1}-${bIdx}`}
-                          prod={prod}
-                          index={i}
-                          bayIndex={bIdx}
-                          bayPos={arch.bays[bIdx]}
-                          isDark={isDark}
-                          isHovered={hoveredProductIndex === i}
-                          justAddedId={justAddedId}
-                          onHover={setHoveredProductIndex}
-                          onSelect={onSelectProduct}
-                          onQuickAdd={handleQuickAdd}
+            {/* ------------------------------------------------------- */}
+            {/* SECTION C: 3-ROW EXPANDED ARCHITECTURAL GALLERY (9)     */}
+            {/* ------------------------------------------------------- */}
+            <motion.div
+              initial={false}
+              animate={{
+                height: isExpanded ? 'auto' : 0,
+                opacity: isExpanded ? 1 : 0
+              }}
+              transition={{
+                duration: 0.65,
+                ease: [0.25, 1, 0.5, 1]
+              }}
+              className="relative w-full overflow-hidden z-20"
+            >
+              {rows.map((rowProds, rIdx) => {
+                const rowElement = (
+                  <div key={`expanded-row-${rIdx}`} className="w-full flex flex-col">
+                    <div className="w-full flex items-stretch">
+                      {/* Left Recessed Architectural Extension Wing */}
+                      <div
+                        className={`${leftWingCls} relative flex flex-col justify-center px-2 sm:px-3.5 border-r-[3px] sm:border-r-[4px] overflow-hidden ${
+                          isDark ? 'border-[#211811]' : 'border-[#b9ae9d]'
+                        }`}
+                        style={{
+                          backgroundColor: isDark
+                            ? heroSlice.wingBgDark
+                            : heroSlice.wingBgLight,
+                          boxShadow: isDark
+                            ? 'inset 0 8px 16px rgba(0,0,0,0.62), inset 5px 0 10px rgba(0,0,0,0.48), inset -5px 0 10px rgba(0,0,0,0.48)'
+                            : 'inset 0 6px 12px rgba(25,18,10,0.45), inset 4px 0 8px rgba(25,18,10,0.32)'
+                        }}
+                      >
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
+                          style={{ backgroundImage: ARCH_GRAIN_SVG }}
                         />
-                      );
-                    })}
-                  </div>
-                </div>
-              );
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background:
+                              'radial-gradient(ellipse 65% 38% at 50% 2%, rgba(255,244,218,0.18) 0%, transparent 75%)'
+                          }}
+                        />
+                        <span className="relative z-10 text-[6.5px] sm:text-[8px] font-mono font-bold tracking-[0.16em] text-white/75 uppercase">
+                          TIER 0{rIdx + 1} · GALLERY
+                        </span>
+                        <span className="relative z-10 text-[8.5px] sm:text-[11px] font-black tracking-tight text-white/95 uppercase leading-tight mt-0.5">
+                          EDITIONS 0{rIdx * 3 + 1}–0{rIdx * 3 + 3}
+                        </span>
+                        <span className="relative z-10 hidden sm:block text-[7.5px] font-mono text-white/70 mt-0.5 truncate">
+                          {rowProds.map((p) => p.name.split(' ')[0]).join(' · ')}
+                        </span>
+                      </div>
 
-              if (rIdx === 0) {
-                return (
-                  <motion.div
-                    key="photo-row-wrap-0"
-                    initial={false}
-                    animate={{
-                      y: isExpanded ? 0 : -45,
-                      opacity: isExpanded ? 1 : 0
-                    }}
-                    transition={{
-                      duration: 0.55,
-                      ease: [0.25, 1, 0.5, 1],
-                      delay: 0.1
-                    }}
-                  >
-                    {rowContent}
-                  </motion.div>
-                );
-              }
-
-              return rowContent;
-            })}
-          </motion.div>
-
-          {/* ----------------------------------------------------------- */}
-          {/* SECTION D: LOWER SLICES (SLIDE DOWN ON EXPAND)              */}
-          {/* ----------------------------------------------------------- */}
-          <motion.div
-            initial={false}
-            animate={{
-              y: isExpanded ? 450 : 0,
-              opacity: isExpanded ? 0 : 1,
-              height: isExpanded ? 0 : 'auto'
-            }}
-            transition={{
-              duration: 0.75,
-              ease: [0.25, 1, 0.5, 1]
-            }}
-            className="w-full overflow-hidden origin-top select-none pointer-events-none"
-            style={{ width: '656px', maxWidth: '100%' }}
-          >
-            {lowerSlices.map((slice) => (
-              <img
-                key={slice.id}
-                src={isDark ? slice.darkSrc : slice.lightSrc}
-                alt={slice.name}
-                className="w-full h-auto block select-none"
-                style={{ aspectRatio: `656 / ${slice.height}` }}
-              />
-            ))}
-          </motion.div>
-
-          {/* =========================================================== */}
-          {/* 3. INTACT-STATE INTERACTIVE FLOOR OVERLAY                   */}
-          {/* =========================================================== */}
-          {!isExpanded && (
-            <div className="absolute inset-0 z-40 pointer-events-auto">
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-3 py-1 rounded-md backdrop-blur-md border text-[8.5px] font-mono font-bold uppercase tracking-widest shadow-md bg-black/65 text-[#f3cfa0] border-[#e5a045]/40 whitespace-nowrap">
-                Click Any Floor to Open Showcase
-              </div>
-
-              {[
-                { floor: 5, top: '5.73%', height: '15.36%', slice: BUILDING_SLICES[1] },
-                { floor: 4, top: '21.09%', height: '15.89%', slice: BUILDING_SLICES[2] },
-                { floor: 3, top: '36.98%', height: '13.54%', slice: BUILDING_SLICES[3] },
-                { floor: 2, top: '50.52%', height: '14.84%', slice: BUILDING_SLICES[4] },
-                { floor: 1, top: '65.36%', height: '10.03%', slice: BUILDING_SLICES[5] }
-              ].map(({ floor, top, height, slice }) => {
-                const isHovered = hoveredFloor === floor;
-
-                return (
-                  <div
-                    key={floor}
-                    onMouseEnter={() => setHoveredFloor(floor)}
-                    onMouseLeave={() => setHoveredFloor(null)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleFloor(floor);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      handleToggleFloor(floor);
-                    }}
-                    className="absolute left-0 right-0 cursor-pointer group/fl-zone transition-all duration-200 flex items-center justify-between px-3 select-none"
-                    style={{ top, height }}
-                    title={`Click to open ${slice.name}: ${slice.category}`}
-                  >
-                    <div
-                      className={`absolute inset-x-10 ${
-                        floor === 1 ? 'inset-y-0.5' : 'inset-y-1'
-                      } rounded-xl pointer-events-none transition-all duration-200 border ${
-                        isHovered
-                          ? isDark
-                            ? 'bg-[#e5a045]/18 border-[#e5a045] shadow-[0_0_24px_rgba(229,160,69,0.3)]'
-                            : 'bg-[#c35626]/16 border-[#c35626] shadow-[0_0_24px_rgba(195,86,38,0.28)]'
-                          : 'border-transparent bg-black/0 hover:bg-black/5'
-                      }`}
-                    />
-
-                    {/* Left: Floor Category Badge */}
-                    <div
-                      className={`relative z-10 px-2.5 ${
-                        floor === 1 ? 'py-1' : 'py-1.5'
-                      } rounded-md backdrop-blur-md transition-all duration-200 border flex flex-col shadow-sm ${
-                        isHovered ? 'scale-105 shadow-md ring-1 ring-white/30' : 'opacity-90'
-                      }`}
-                      style={{
-                        backgroundColor: `${slice.tabColor}dd`,
-                        borderColor: slice.tabBorder,
-                        color: '#ffffff'
-                      }}
-                    >
-                      <span className="text-[8.5px] font-mono font-black tracking-wider text-white/90 leading-tight">
-                        0{floor} · FLOOR
-                      </span>
-                      <span className="text-[9.5px] font-black tracking-tight leading-none mt-0.5">
-                        {slice.category}
-                      </span>
-                      <span
-                        className={`text-[7.5px] font-medium opacity-85 leading-tight mt-0.5 ${
-                          floor === 1 ? 'hidden sm:block' : ''
+                      {/* Center 3 Photographed Window Bays Hosting 9 Product Vitrines */}
+                      <div
+                        className={`${centerWingCls} relative overflow-hidden ${
+                          isDark ? 'bg-[#17100A]' : 'bg-[#e3ddd2]'
                         }`}
                       >
-                        {slice.tagline}
-                      </span>
-                    </div>
+                        {rIdx === 0 && activeFloor === 1 && (
+                          <div
+                            className="relative w-full overflow-hidden"
+                            style={{ aspectRatio: `${arch.cropWidthPx} / 11` }}
+                          >
+                            <div
+                              className="relative h-full"
+                              style={{
+                                width: arch.innerWidthPct,
+                                marginLeft: arch.innerMarginLeftPct
+                              }}
+                            >
+                              <img
+                                src={emptyFloorSrc}
+                                alt=""
+                                aria-hidden="true"
+                                className="w-full h-auto block select-none pointer-events-none object-cover object-bottom"
+                                style={{ aspectRatio: '656 / 103', marginTop: '-14.02%' }}
+                              />
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Right: Floor Indicator + Action Prompt */}
-                    <div className="relative z-10 flex items-center gap-2">
-                      {isHovered && (
+                        <CenterCropSlice
+                          src={emptyFloorSrc}
+                          alt=""
+                          height={103}
+                          arch={arch}
+                        >
+                          <div
+                            className="absolute left-0 right-0 pointer-events-auto"
+                            style={{ top: '7.77%', height: '81.55%' }}
+                          >
+                            {[0, 1, 2].map((bIdx) => {
+                              const i = rIdx * 3 + bIdx;
+                              const prod = rowProds[bIdx];
+                              return (
+                                <NicheCell
+                                  key={prod?.id || `r${rIdx + 1}-${bIdx}`}
+                                  prod={prod}
+                                  index={i}
+                                  bayIndex={bIdx}
+                                  bayPos={arch.bays[bIdx]}
+                                  isDark={isDark}
+                                  isHovered={hoveredProductIndex === i}
+                                  justAddedId={justAddedId}
+                                  onHover={setHoveredProductIndex}
+                                  onSelect={onSelectProduct}
+                                  onQuickAdd={handleQuickAdd}
+                                />
+                              );
+                            })}
+                          </div>
+                        </CenterCropSlice>
+                      </div>
+
+                      {/* Right Architectural Row Counter Bay */}
+                      <div
+                        className={`${rightWingCls} relative flex flex-col items-center justify-center border-l-[3px] sm:border-l-[4px] overflow-hidden ${
+                          isDark ? 'border-[#211811]' : 'border-[#b9ae9d]'
+                        }`}
+                        style={{
+                          backgroundColor: isDark
+                            ? heroSlice.wingBgDark
+                            : heroSlice.wingBgLight,
+                          boxShadow: isDark
+                            ? 'inset 0 8px 16px rgba(0,0,0,0.62), inset 5px 0 10px rgba(0,0,0,0.48), inset -5px 0 10px rgba(0,0,0,0.48)'
+                            : 'inset 0 6px 12px rgba(25,18,10,0.45)'
+                        }}
+                      >
                         <div
-                          className={`px-2.5 py-1 rounded-md backdrop-blur-md transition-all duration-200 text-[8.5px] font-mono font-black tracking-wider border shadow-md ${
-                            isDark
-                              ? 'bg-[#e5a045] text-black border-[#e5a045]'
-                              : 'bg-[#c35626] text-white border-[#a84419]'
+                          aria-hidden="true"
+                          className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
+                          style={{ backgroundImage: ARCH_GRAIN_SVG }}
+                        />
+                        <span className="relative z-10 text-[10px] sm:text-[13px] font-display font-black text-white/90 tabular-nums leading-none">
+                          R0{rIdx + 1}
+                        </span>
+                        <span className="relative z-10 text-[5.5px] sm:text-[7px] font-mono font-bold tracking-[0.18em] text-white/70 uppercase mt-0.5">
+                          0{activeFloor}F
+                        </span>
+                      </div>
+                    </div>
+                    {renderSlabBeam(false)}
+                  </div>
+                );
+
+                if (rIdx === 0) {
+                  return (
+                    <motion.div
+                      key="expanded-row-wrap-0"
+                      initial={false}
+                      animate={{
+                        y: isExpanded ? 0 : -45,
+                        opacity: isExpanded ? 1 : 0
+                      }}
+                      transition={{
+                        duration: 0.55,
+                        ease: [0.25, 1, 0.5, 1],
+                        delay: 0.1
+                      }}
+                    >
+                      {rowElement}
+                    </motion.div>
+                  );
+                }
+
+                return rowElement;
+              })}
+            </motion.div>
+
+            {/* ------------------------------------------------------- */}
+            {/* SECTION D: LOWER FLOORS & REAL GROUND BOUTIQUE LOBBY    */}
+            {/* ------------------------------------------------------- */}
+            <motion.div
+              initial={false}
+              animate={{
+                y: isExpanded ? 440 : 0,
+                opacity: isExpanded ? 0 : 1,
+                height: isExpanded ? 0 : 'auto'
+              }}
+              transition={{
+                duration: 0.72,
+                ease: [0.25, 1, 0.5, 1]
+              }}
+              className={`w-full overflow-hidden origin-top select-none ${
+                isExpanded ? 'pointer-events-none' : 'pointer-events-auto'
+              }`}
+            >
+              {lowerSlices.map((slice) => {
+                if (slice.id !== 'ground') {
+                  return renderArchitecturalFloorRow(slice, !isExpanded);
+                }
+
+                // FULL-WIDTH PHOTOGRAPHIC GROUND LOBBY ROW
+                return (
+                  <div
+                    key={slice.id}
+                    className={`w-full flex items-stretch pointer-events-none ${
+                      isDark ? 'bg-[#17100A]' : 'bg-[#e3ddd2]'
+                    }`}
+                  >
+                    {/* LEFT REAL PHOTOGRAPHIC GROUND BOUTIQUE WINDOWS + BOTANICAL PLANTERS */}
+                    <div
+                      className={`${leftWingCls} relative flex flex-col justify-between border-r-[3px] sm:border-r-[4px] overflow-hidden ${
+                        isDark
+                          ? 'bg-[#130d08] border-[#211811]'
+                          : 'bg-[#dfd7ca] border-[#b9ae9d]'
+                      }`}
+                    >
+                      {/* Top Architectural Signboard Fascia Band matching Center VINKRI Band */}
+                      <div
+                        className={`h-[14%] w-full border-b flex items-center px-2 sm:px-3 ${
+                          isDark
+                            ? 'bg-gradient-to-b from-[#664c32] via-[#533c26] to-[#3f2c1b] border-[#1f160e]'
+                            : 'bg-gradient-to-b from-[#aa8d6b] via-[#967b5b] to-[#7c6347] border-[#6e563c]'
+                        }`}
+                      >
+                        <div className="w-full h-[1px] bg-white/18" />
+                      </div>
+
+                      {/* Real Photographed Warm Storefront Boutique Display Windows (From Matching Ground Storefront!) */}
+                      <div className="flex-1 p-1 sm:p-1.5 pb-2 grid grid-cols-2 gap-1 sm:gap-1.5 relative">
+                        <div
+                          className={`relative rounded-[1px] border overflow-hidden ${
+                            isDark ? 'border-[#2f2217]' : 'border-[#9c8c79]'
                           }`}
                         >
-                          OPEN FLOOR ▾
+                          <img
+                            src={
+                              isDark
+                                ? '/assets/aistudio/arch/dark_ground_bay1.jpg'
+                                : '/assets/aistudio/arch/light_ground_bay1.jpg'
+                            }
+                            alt=""
+                            className="w-full h-full object-cover select-none"
+                          />
+                          <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              background:
+                                'linear-gradient(122deg, rgba(255,255,255,0.12) 0%, transparent 45%)'
+                            }}
+                          />
                         </div>
-                      )}
 
-                      <div className="px-2 py-1 rounded text-[8.5px] font-mono font-black tracking-wider border shadow-sm bg-black/70 text-white/90 border-white/20">
-                        0{floor} FLOOR
+                        <div
+                          className={`relative rounded-[1px] border overflow-hidden ${
+                            isDark ? 'border-[#2f2217]' : 'border-[#9c8c79]'
+                          }`}
+                        >
+                          <img
+                            src={
+                              isDark
+                                ? '/assets/aistudio/arch/dark_ground_bay2.jpg'
+                                : '/assets/aistudio/arch/light_ground_bay2.jpg'
+                            }
+                            alt=""
+                            className="w-full h-full object-cover select-none"
+                          />
+                          <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              background:
+                                'linear-gradient(122deg, rgba(255,255,255,0.12) 0%, transparent 45%)'
+                            }}
+                          />
+                        </div>
                       </div>
+
+                      <PhotoPlanterCluster isDark={isDark} count={2} />
+                    </div>
+
+                    {/* CENTER VINKRI GROUND STOREFRONT & CENTER DOORS (Real Photographed Ground) */}
+                    <div
+                      className={`${centerWingCls} relative overflow-hidden ${
+                        isDark ? 'bg-[#17100A]' : 'bg-[#e3ddd2]'
+                      }`}
+                    >
+                      <CenterCropSlice
+                        src={isDark ? slice.darkSrc : slice.lightSrc}
+                        alt="VINKRI Ground Atelier Storefront"
+                        height={slice.height}
+                        arch={arch}
+                      />
+                    </div>
+
+                    {/* RIGHT GROUND ARCHITECTURAL WALL ("IDEAS INTO EVERYDAY OBJECTS ->") */}
+                    <div
+                      className={`${rightWingCls} relative flex flex-col justify-between border-l-[3px] sm:border-l-[4px] overflow-hidden ${
+                        isDark
+                          ? 'bg-[#18120d] border-[#211811]'
+                          : 'bg-[#cfc6b7] border-[#b9ae9d]'
+                      }`}
+                    >
+                      <div
+                        className={`h-[14%] w-full border-b ${
+                          isDark
+                            ? 'bg-gradient-to-b from-[#664c32] via-[#533c26] to-[#3f2c1b] border-[#1f160e]'
+                            : 'bg-gradient-to-b from-[#aa8d6b] via-[#967b5b] to-[#7c6347] border-[#6e563c]'
+                        }`}
+                      />
+
+                      <div className="relative flex-1 flex flex-col items-start justify-center px-1.5 sm:px-2.5 pb-5 overflow-hidden">
+                        {/* Subtle Wall Grain & Architectural Spotlight Grazing the Engraved Type */}
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 opacity-15 mix-blend-overlay"
+                          style={{ backgroundImage: ARCH_GRAIN_SVG }}
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: isDark
+                              ? 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(255,216,158,0.18) 0%, transparent 75%)'
+                              : 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(255,255,255,0.35) 0%, transparent 75%)'
+                          }}
+                        />
+
+                        <span
+                          className={`relative z-10 text-[5.5px] sm:text-[7.5px] md:text-[8.5px] font-mono font-bold tracking-[0.12em] uppercase leading-[1.3] ${
+                            isDark ? 'text-[#dfd0be]' : 'text-[#2b2017]'
+                          }`}
+                        >
+                          IDEAS
+                          <br />
+                          INTO
+                          <br />
+                          EVERYDAY
+                          <br />
+                          OBJECTS
+                        </span>
+                        <ArrowRight
+                          className={`relative z-10 w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1 ${
+                            isDark ? 'text-[#e5a045]' : 'text-[#c35626]'
+                          }`}
+                        />
+                      </div>
+
+                      <PhotoPlanterCluster isDark={isDark} count={1} />
                     </div>
                   </div>
                 );
               })}
+            </motion.div>
+
+            {/* Expanded Architectural Base Plinth (Flush with Left & Right Building Piers) */}
+            {isExpanded && (
+              <div
+                className={`w-full px-3 sm:px-4 py-2 border-t flex items-center justify-between gap-2 ${
+                  isDark
+                    ? 'bg-[#1a120b] border-[#3a2a1b] text-[#cbb7a1]'
+                    : 'bg-[#dfd8cc] border-[#b7ac9c] text-[#4d3f32]'
+                }`}
+              >
+                <span className="text-[9.5px] font-mono uppercase tracking-wider truncate">
+                  {nicheProducts.length} Editions on {heroSlice.name} · Click any piece to inspect
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleToggleFloor()}
+                  className={`text-[9.5px] font-mono font-bold uppercase tracking-wider underline underline-offset-4 cursor-pointer whitespace-nowrap shrink-0 ${
+                    isDark ? 'text-[#e5a045] hover:text-[#f5c27d]' : 'text-[#c35626] hover:text-[#9c3e14]'
+                  }`}
+                >
+                  Close Floor View
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT 3D PERSPECTIVE ARCHITECTURAL SIDE ELEVATION (Intact) OR SYMMETRIC CORNER PILASTER (Expanded) */}
+          {!isExpanded ? (
+            <div
+              aria-hidden="true"
+              className="hidden sm:block relative w-6 md:w-10 shrink-0 overflow-hidden select-none pointer-events-none"
+            >
+              <img
+                src={
+                  isDark
+                    ? '/assets/aistudio/arch/dark_side_wall.jpg'
+                    : '/assets/aistudio/arch/light_side_wall.jpg'
+                }
+                alt=""
+                className="w-full h-full block object-cover object-left select-none"
+                style={{
+                  WebkitMaskImage:
+                    'linear-gradient(90deg, black 52%, transparent 100%)',
+                  maskImage: 'linear-gradient(90deg, black 52%, transparent 100%)'
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              aria-hidden="true"
+              className={`hidden sm:block relative w-2.5 md:w-3.5 shrink-0 border-y border-r overflow-hidden ${
+                isDark
+                  ? 'bg-gradient-to-l from-[#0e0a07] via-[#261c14] to-[#1a130d] border-[#36281c]'
+                  : 'bg-gradient-to-l from-[#bdb3a3] via-[#d8d0c3] to-[#c7beb0] border-[#afa493]'
+              }`}
+            >
+              <div
+                className="absolute inset-0 opacity-15 mix-blend-overlay"
+                style={{ backgroundImage: ARCH_GRAIN_SVG }}
+              />
             </div>
           )}
         </div>
+
+        {/* ----------------------------------------------------------- */}
+        {/* REAL PHOTOGRAPHIC WET REFLECTIVE SIDEWALK (INTACT VIEW)     */}
+        {/* ----------------------------------------------------------- */}
+        {!isExpanded && (
+          <div aria-hidden="true" className="relative w-full h-11 sm:h-16 overflow-hidden pointer-events-none">
+            <img
+              src={
+                isDark
+                  ? '/assets/aistudio/arch/dark_sidewalk.jpg'
+                  : '/assets/aistudio/arch/light_sidewalk.jpg'
+              }
+              alt=""
+              className="w-full h-full block object-cover object-top select-none"
+              style={{
+                WebkitMaskImage:
+                  'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%)',
+                maskImage:
+                  'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%)'
+              }}
+            />
+            {/* Smooth bottom feather into page background (#120c08 or #ece9e3) */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: isDark
+                  ? 'linear-gradient(180deg, transparent 30%, #120c08 100%)'
+                  : 'linear-gradient(180deg, transparent 35%, #ece9e3 100%)'
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

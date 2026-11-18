@@ -76,8 +76,8 @@ export const FLOORS_DATA: FloorInfo[] = [
     bgLight: 'bg-orange-50 border-orange-200 text-orange-900',
     description: 'Warm sculptured lighting pieces that transform ambient darkness into peaceful sanctuaries.',
     items: [
-      { title: 'Moon Tree Light', description: 'Blossoming bonsai adorned with 48 micro-orbs of radiant golden light', slot: 'left', productId: 'moon-tree-light' },
-      { title: 'Crescent Moon Bonsai', description: 'Curved illuminated crescent moon embracing an ancient miniature pine', slot: 'center', productId: 'crescent-bonsai' },
+      { title: 'Crescent Moon Bonsai', description: 'Curved illuminated crescent moon embracing an ancient miniature pine', slot: 'left', productId: 'crescent-bonsai' },
+      { title: 'Moon Tree Light', description: 'Blossoming bonsai adorned with 48 micro-orbs of radiant golden light', slot: 'center', productId: 'moon-tree-light' },
       { title: 'Floating Levitron Lamp', description: 'Magnetic levitating disc lamp floating in mid-air with touch dimmer', slot: 'right', productId: 'floating-levitron' }
     ]
   }
