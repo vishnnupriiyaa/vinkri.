@@ -1044,17 +1044,17 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       {/* 1. COMPACT ARCHITECTURAL FLOOR CONTROL BAR                     */}
       {/* ============================================================== */}
       <div
-        className={`w-full max-w-[980px] mb-3 px-3 py-2 rounded-lg flex flex-wrap items-center justify-between gap-2 border transition-colors duration-200 ${
+        className={`w-full max-w-[980px] mb-2.5 px-2.5 sm:px-3 py-1.5 rounded-lg flex flex-wrap items-center justify-between gap-2 border transition-colors duration-200 ${
           isDark
             ? 'bg-[#19110b]/90 border-[#2f2216] text-[#f7f2ea]'
             : 'bg-[#e6e2da]/90 border-[#cfcac0] text-[#282019]'
         }`}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
             onClick={() => handleToggleFloor()}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider transition-colors duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9.5px] font-mono font-bold uppercase tracking-wider transition-colors duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
               isExpanded
                 ? isDark
                   ? 'bg-[#e5a045] hover:bg-[#f0b35e] text-black font-black'
@@ -1065,17 +1065,17 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             }`}
           >
             {isExpanded ? <RotateCcw className="w-3 h-3" /> : <Layers className="w-3 h-3" />}
-            <span>{isExpanded ? 'Full Building View' : 'Inspect Active Floor'}</span>
+            <span>{isExpanded ? 'Full Building' : 'Inspect Floor'}</span>
           </button>
 
           <span
-            className={`hidden sm:inline text-[10px] font-mono font-semibold tracking-wider truncate ${
+            className={`hidden xl:inline text-[9.5px] font-mono font-semibold tracking-wider truncate ${
               isDark ? 'text-[#cbb7a1]' : 'text-[#5b4d3f]'
             }`}
           >
             {isExpanded
               ? `${heroSlice.name} · ${heroSlice.category}`
-              : 'VINKRI FLAGSHIP · CLICK ANY FLOOR TO TOUR ALL 9 PIECES'}
+              : 'VINKRI FLAGSHIP · CLICK ANY FLOOR'}
           </span>
         </div>
 
@@ -1138,19 +1138,19 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       {/* ============================================================== */}
       {onSelectBackdrop && (
         <div
-          className={`w-full max-w-[980px] mb-3 px-3 py-1.5 rounded-lg flex flex-wrap items-center justify-between gap-2 border transition-colors duration-200 ${
+          className={`w-full max-w-[980px] mb-3 px-2.5 sm:px-3 py-1.5 rounded-lg flex flex-wrap items-center justify-between gap-1.5 border transition-colors duration-200 ${
             isDark
               ? 'bg-[#17100b]/85 border-[#2c2015] text-[#cbb7a1]'
               : 'bg-[#ebe6dc]/85 border-[#ccc4b7] text-[#4b3e31]'
           }`}
         >
-          <span className="text-[9.5px] font-mono font-bold uppercase tracking-[0.16em] opacity-80 whitespace-nowrap">
-            Backdrop Grain
+          <span className="hidden xl:inline text-[9px] font-mono font-bold uppercase tracking-[0.14em] opacity-80 whitespace-nowrap">
+            Backdrop
           </span>
 
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-60 mr-0.5 whitespace-nowrap">
-              Dark Wood
+          <div className="flex flex-wrap items-center justify-between sm:justify-start gap-1 sm:gap-1.5 w-full xl:w-auto">
+            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-65 whitespace-nowrap">
+              Dark
             </span>
             {BACKDROP_OPTIONS.filter((o) => o.group === 'dark-wood').map((opt) => {
               const isSelected = backdropFinish === opt.id;
@@ -1159,7 +1159,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   key={opt.id}
                   type="button"
                   onClick={() => onSelectBackdrop(opt.id)}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-[3px] text-[9.5px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
+                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-[3px] text-[9px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
                     isSelected
                       ? isDark
                         ? 'bg-[#2a1d13] border-[#e5a045] text-[#f7efe6]'
@@ -1181,13 +1181,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
 
             <span
               aria-hidden="true"
-              className={`h-3.5 w-[1px] mx-1 ${
+              className={`hidden sm:inline-block h-3.5 w-[1px] mx-0.5 ${
                 isDark ? 'bg-[#38291b]' : 'bg-[#c5bcad]'
               }`}
             />
 
-            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-60 mr-0.5 whitespace-nowrap">
-              Light Wood
+            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-65 whitespace-nowrap">
+              Light
             </span>
             {BACKDROP_OPTIONS.filter((o) => o.group === 'light-wood').map((opt) => {
               const isSelected = backdropFinish === opt.id;
@@ -1196,7 +1196,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   key={opt.id}
                   type="button"
                   onClick={() => onSelectBackdrop(opt.id)}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-[3px] text-[9.5px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
+                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-[3px] text-[9px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
                     isSelected
                       ? isDark
                         ? 'bg-[#f5efe6] border-[#e5a045] text-[#1f160e]'
