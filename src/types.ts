@@ -1,5 +1,13 @@
 export type ThemeMode = 'rustic-dark' | 'warm-beige';
 
+export type BackdropFinish =
+  | 'dark-walnut'
+  | 'dark-charred'
+  | 'dark-matte'
+  | 'light-oak'
+  | 'light-honey'
+  | 'light-linen';
+
 export interface Product {
   id: string;
   name: string;

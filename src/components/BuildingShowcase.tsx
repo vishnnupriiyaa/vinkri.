@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence, MotionConfig } from 'motion/react';
 import {
   RotateCcw,
   Play,
@@ -9,11 +9,14 @@ import {
   ArrowUpRight,
   Layers
 } from 'lucide-react';
-import { FloorInfo, Product, ThemeMode } from '../types';
+import { BackdropFinish, FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
+import { BACKDROP_OPTIONS } from '../data/backdrops';
 
 interface BuildingShowcaseProps {
   theme: ThemeMode;
+  backdropFinish?: BackdropFinish;
+  onSelectBackdrop?: (finish: BackdropFinish) => void;
   onSelectFloor?: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
   onCollapseFloor?: () => void;
   selectedFloorNumber?: number | null;
@@ -265,7 +268,7 @@ const NicheCell: React.FC<NicheCellProps> = ({
         }
       }}
       aria-label={`Inspect ${prod.name}, ₹${prod.price}`}
-      className={`group/niche absolute top-0 bottom-0 flex items-end justify-center pb-[1.5%] cursor-pointer transition-all duration-200 focus:outline-none ${
+      className={`group/niche absolute top-0 bottom-0 flex items-end justify-center pb-[1.5%] cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none ${
         isDark
           ? 'hover:ring-1 hover:ring-inset hover:ring-[#e5a045]/75'
           : 'hover:ring-1 hover:ring-inset hover:ring-[#c35626]/70'
@@ -274,7 +277,7 @@ const NicheCell: React.FC<NicheCellProps> = ({
     >
       {/* Unified Full-Bay Museum Display Vitrine */}
       <div
-        className={`relative w-[92%] h-[86%] flex flex-col justify-between overflow-hidden rounded-[2px] border transition-transform duration-200 group-hover/niche:scale-[1.02] ${
+        className={`relative w-[92%] h-[86%] flex flex-col justify-between overflow-hidden rounded-[2px] border transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/niche:scale-[1.02] group-hover/niche:-translate-y-[1px] ${
           isDark
             ? 'border-[#7c5c3a]/85 bg-gradient-to-b from-[#1e150e] via-[#140e09] to-[#0c0805] shadow-[0_3px_10px_rgba(0,0,0,0.52)]'
             : 'border-[#8f7455]/75 bg-gradient-to-b from-[#efe7da] via-[#e4d8c5] to-[#d6c6ae] shadow-[0_2px_8px_rgba(70,50,28,0.22)]'
@@ -517,6 +520,8 @@ const PhotoPlanterCluster: React.FC<{ isDark: boolean; count?: number }> = ({
 
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   theme,
+  backdropFinish = 'dark-walnut',
+  onSelectBackdrop,
   onSelectFloor,
   onCollapseFloor,
   selectedFloorNumber,
@@ -568,7 +573,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     setIsExpanded(false);
     setTimeout(() => {
       setIsExpanded(true);
-    }, 850);
+    }, 640);
   };
 
   const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
@@ -622,24 +627,37 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     ? 'bg-gradient-to-b from-[#2b2017] via-[#1c140e] to-[#130e09] border-[#3d2e20]'
     : 'bg-gradient-to-b from-[#dfd7c9] via-[#ccc2b2] to-[#b8ad9b] border-[#b7ac9c]';
 
-  // Physical Chamfered Horizontal Structural Beam Across Entire 5-Bay Facade Width
+  // Physical Stepped Extruded Architectural Beam Across Entire 5-Bay Facade Width
   const renderSlabBeam = (isTop = false) => (
     <div
       aria-hidden="true"
-      className="w-full h-[3px] sm:h-[4px] pointer-events-none"
+      className="relative w-full h-[4px] sm:h-[5px] pointer-events-none flex flex-col justify-between overflow-hidden"
       style={{
         background: isDark
           ? isTop
-            ? 'linear-gradient(180deg, #473626 0%, #241b13 55%, #0e0a07 100%)'
-            : 'linear-gradient(180deg, #3c2d1f 0%, #1d150e 45%, #0b0805 100%)'
+            ? 'linear-gradient(180deg, #523e2c 0%, #261c14 50%, #0d0906 100%)'
+            : 'linear-gradient(180deg, #433223 0%, #1f1710 48%, #0a0704 100%)'
           : isTop
-          ? 'linear-gradient(180deg, #efe9df 0%, #c8beae 55%, #9d9180 100%)'
-          : 'linear-gradient(180deg, #e5ded1 0%, #bfb5a4 55%, #998d7b 100%)',
+          ? 'linear-gradient(180deg, #f3ede4 0%, #cbc1b1 52%, #9a8e7c 100%)'
+          : 'linear-gradient(180deg, #eae3d7 0%, #c1b7a6 52%, #948875 100%)',
         boxShadow: isDark
-          ? '0 2px 5px rgba(0,0,0,0.55)'
-          : '0 2px 4px rgba(60,48,34,0.22)'
+          ? '0 2px 6px rgba(0,0,0,0.62)'
+          : '0 2px 5px rgba(60,48,34,0.24)'
       }}
-    />
+    >
+      {/* Fine Brushed Metal Catch-Light Coping Rim */}
+      <div
+        className={`w-full h-[1px] ${
+          isDark ? 'bg-[#8d6d4b]/35' : 'bg-white/65'
+        }`}
+      />
+      {/* Recessed Under-Slab Drip Shadow Groove */}
+      <div
+        className={`w-full h-[1px] ${
+          isDark ? 'bg-black/75' : 'bg-[#6e604f]/35'
+        }`}
+      />
+    </div>
   );
 
   // Unified 5-Bay Architectural Floor Row with Recessed Physical Depth, Spot Cones, Grain & Milled Frames
@@ -760,6 +778,16 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   'linear-gradient(124deg, rgba(255,255,255,0.07) 0%, transparent 45%, rgba(255,255,255,0.025) 68%, transparent 100%)'
               }}
             />
+
+            {/* Subtle Recessed Plaque Reveal Hairline + Corner Pin Fasteners */}
+            <div
+              aria-hidden="true"
+              className="hidden sm:block absolute inset-[3px] border border-white/[0.08] pointer-events-none"
+            />
+            <span aria-hidden="true" className="hidden sm:block absolute top-[5px] left-[5px] w-[2px] h-[2px] rounded-full bg-white/30 pointer-events-none" />
+            <span aria-hidden="true" className="hidden sm:block absolute top-[5px] right-[5px] w-[2px] h-[2px] rounded-full bg-white/30 pointer-events-none" />
+            <span aria-hidden="true" className="hidden sm:block absolute bottom-[5px] left-[5px] w-[2px] h-[2px] rounded-full bg-white/25 pointer-events-none" />
+            <span aria-hidden="true" className="hidden sm:block absolute bottom-[5px] right-[5px] w-[2px] h-[2px] rounded-full bg-white/25 pointer-events-none" />
 
             <span className="relative z-10 text-[6.5px] sm:text-[8.5px] font-mono font-bold tracking-[0.16em] text-white/80 uppercase leading-tight drop-shadow-sm">
               0{floorNum} · FLOOR
@@ -981,6 +1009,13 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   'radial-gradient(ellipse 68% 36% at 50% 2%, rgba(255,244,218,0.24) 0%, transparent 76%)'
               }}
             />
+            {/* Subtle Recessed Plaque Reveal Hairline + Corner Pin Fasteners */}
+            <div
+              aria-hidden="true"
+              className="hidden sm:block absolute inset-[3px] border border-white/[0.08] pointer-events-none"
+            />
+            <span aria-hidden="true" className="hidden sm:block absolute top-[5px] left-[5px] w-[2px] h-[2px] rounded-full bg-white/30 pointer-events-none" />
+            <span aria-hidden="true" className="hidden sm:block absolute top-[5px] right-[5px] w-[2px] h-[2px] rounded-full bg-white/30 pointer-events-none" />
             <span className="hidden sm:block absolute top-[2px] w-2.5 h-[2px] rounded-full bg-[#fff3d6]/85 shadow-[0_0_6px_rgba(255,236,195,0.85)]" />
 
             <span className="relative z-10 text-[13px] sm:text-[18px] md:text-[21px] font-display font-black tracking-tight text-white leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] tabular-nums">
@@ -999,6 +1034,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div
       ref={containerRef}
       className="relative w-full flex flex-col items-center select-none font-sans"
@@ -1097,57 +1133,149 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       </div>
 
       {/* ============================================================== */}
+      {/* 1B. DARK WOOD & LIGHT WOOD BACKGROUND FINISH TESTER BAR        */}
+      {/* ============================================================== */}
+      {onSelectBackdrop && (
+        <div
+          className={`w-full max-w-[980px] mb-3 px-3 py-1.5 rounded-lg flex flex-wrap items-center justify-between gap-2 border transition-colors duration-200 ${
+            isDark
+              ? 'bg-[#17100b]/85 border-[#2c2015] text-[#cbb7a1]'
+              : 'bg-[#ebe6dc]/85 border-[#ccc4b7] text-[#4b3e31]'
+          }`}
+        >
+          <span className="text-[9.5px] font-mono font-bold uppercase tracking-[0.16em] opacity-80 whitespace-nowrap">
+            Backdrop Grain
+          </span>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-60 mr-0.5 whitespace-nowrap">
+              Dark Wood
+            </span>
+            {BACKDROP_OPTIONS.filter((o) => o.group === 'dark-wood').map((opt) => {
+              const isSelected = backdropFinish === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => onSelectBackdrop(opt.id)}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-[3px] text-[9.5px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
+                    isSelected
+                      ? isDark
+                        ? 'bg-[#2a1d13] border-[#e5a045] text-[#f7efe6]'
+                        : 'bg-[#241910] border-[#c35626] text-white'
+                      : isDark
+                      ? 'bg-[#1b130d]/70 border-[#322418] text-[#bda894] hover:text-white hover:border-[#533c27]'
+                      : 'bg-[#e3ddd2]/80 border-[#c9c0b2] text-[#4c3e31] hover:border-[#8e7d6a]'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="w-2.5 h-2.5 rounded-[1px] border border-white/20 shrink-0"
+                    style={{ background: opt.swatchStyle }}
+                  />
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+
+            <span
+              aria-hidden="true"
+              className={`h-3.5 w-[1px] mx-1 ${
+                isDark ? 'bg-[#38291b]' : 'bg-[#c5bcad]'
+              }`}
+            />
+
+            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-60 mr-0.5 whitespace-nowrap">
+              Light Wood
+            </span>
+            {BACKDROP_OPTIONS.filter((o) => o.group === 'light-wood').map((opt) => {
+              const isSelected = backdropFinish === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => onSelectBackdrop(opt.id)}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-[3px] text-[9.5px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
+                    isSelected
+                      ? isDark
+                        ? 'bg-[#f5efe6] border-[#e5a045] text-[#1f160e]'
+                        : 'bg-white border-[#c35626] text-[#1f160e] shadow-xs'
+                      : isDark
+                      ? 'bg-[#1b130d]/70 border-[#322418] text-[#bda894] hover:text-white hover:border-[#533c27]'
+                      : 'bg-[#f4f0e8]/90 border-[#ccc2b4] text-[#4c3e31] hover:text-[#1f160e] hover:border-[#94836f]'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="w-2.5 h-2.5 rounded-[1px] border border-black/15 shrink-0"
+                    style={{ background: opt.swatchStyle }}
+                  />
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
       {/* 2. PHOTOREALISTIC 5-BAY VINKRI FLAGSHIP ARCHITECTURAL SCENE    */}
       {/* ============================================================== */}
       <div className="relative w-full max-w-[980px] flex flex-col items-center">
-        {/* REAL PHOTOGRAPHIC FLANKING URBAN STREET TREES & STARRY SKY HORIZON */}
-        {!isExpanded && (
-          <div
-            aria-hidden="true"
-            className="hidden md:block absolute -inset-x-10 -top-4 bottom-8 pointer-events-none overflow-hidden -z-10"
-          >
-            {/* Left Real Urban Avenue Tree */}
-            <img
-              src={
-                isDark
-                  ? '/assets/aistudio/arch/dark_tree_left.jpg'
-                  : '/assets/aistudio/arch/light_tree_left.jpg'
-              }
-              alt=""
-              className="absolute left-0 bottom-0 h-[92%] w-[16%] object-cover object-right select-none"
-              style={{
-                WebkitMaskImage:
-                  'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%), linear-gradient(180deg, transparent 0%, black 22%, black 90%, transparent 100%)',
-                WebkitMaskComposite: 'source-in',
-                maskImage:
-                  'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%)'
-              }}
-            />
-            {/* Right Real Urban Avenue Tree */}
-            <img
-              src={
-                isDark
-                  ? '/assets/aistudio/arch/dark_tree_right.jpg'
-                  : '/assets/aistudio/arch/light_tree_right.jpg'
-              }
-              alt=""
-              className="absolute right-0 bottom-0 h-[92%] w-[16%] object-cover object-left select-none"
-              style={{
-                WebkitMaskImage:
-                  'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)',
-                maskImage:
-                  'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)'
-              }}
-            />
-          </div>
-        )}
+        {/* REAL PHOTOGRAPHIC FLANKING URBAN STREET TREES & HORIZON */}
+        <AnimatePresence>
+          {!isExpanded && (
+            <motion.div
+              key="flanking-trees"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              aria-hidden="true"
+              className="hidden md:block absolute -inset-x-10 -top-4 bottom-8 pointer-events-none overflow-hidden -z-10"
+            >
+              {/* Left Real Urban Avenue Tree */}
+              <img
+                src={
+                  isDark
+                    ? '/assets/aistudio/arch/dark_tree_left.jpg'
+                    : '/assets/aistudio/arch/light_tree_left.jpg'
+                }
+                alt=""
+                className="absolute left-0 bottom-0 h-[92%] w-[16%] object-cover object-right select-none"
+                style={{
+                  WebkitMaskImage:
+                    'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%)',
+                  maskImage:
+                    'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%)'
+                }}
+              />
+              {/* Right Real Urban Avenue Tree */}
+              <img
+                src={
+                  isDark
+                    ? '/assets/aistudio/arch/dark_tree_right.jpg'
+                    : '/assets/aistudio/arch/light_tree_right.jpg'
+                }
+                alt=""
+                className="absolute right-0 bottom-0 h-[92%] w-[16%] object-cover object-left select-none"
+                style={{
+                  WebkitMaskImage:
+                    'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)',
+                  maskImage:
+                    'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)'
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Building Massing Row: [Left Corner Pier] + [Main 5-Bay Front Facade] + [3D Perspective Right Wing] */}
         <div className="relative w-full flex items-stretch justify-center px-0 sm:px-3">
-          {/* Textured Heavy Dark Steel/Masonry Far-Left Corner Pilaster */}
+          {/* Textured Heavy Dark Steel/Masonry Far-Left Corner Pilaster with Stepped Finial Cap & Seam Reveals */}
           <div
             aria-hidden="true"
-            className={`hidden sm:block relative w-2.5 md:w-3.5 shrink-0 border-y border-l overflow-hidden ${
+            className={`hidden sm:flex flex-col justify-between relative w-2.5 md:w-3.5 shrink-0 border-y border-l overflow-hidden ${
               isDark
                 ? 'bg-gradient-to-r from-[#0e0a07] via-[#261c14] to-[#1a130d] border-[#36281c]'
                 : 'bg-gradient-to-r from-[#bdb3a3] via-[#d8d0c3] to-[#c7beb0] border-[#afa493]'
@@ -1156,6 +1284,28 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             <div
               className="absolute inset-0 opacity-15 mix-blend-overlay"
               style={{ backgroundImage: ARCH_GRAIN_SVG }}
+            />
+            {/* Top Finial Coping Cap */}
+            <div
+              className={`relative z-10 w-full h-[5px] border-b ${
+                isDark
+                  ? 'bg-[#3c2d1f] border-black/60'
+                  : 'bg-[#e6dfd4] border-[#9c907e]'
+              }`}
+            />
+            {/* Mid-Elevation Subtle Vertical Light Seam */}
+            <div
+              className={`relative z-10 mx-auto w-[1px] flex-1 my-3 ${
+                isDark ? 'bg-[#6e5237]/25' : 'bg-white/40'
+              }`}
+            />
+            {/* Base Curb Kickplate */}
+            <div
+              className={`relative z-10 w-full h-[6px] border-t ${
+                isDark
+                  ? 'bg-[#2a1f16] border-[#4e3a28]'
+                  : 'bg-[#b3a896] border-[#dcd4c7]'
+              }`}
             />
           </div>
 
@@ -1173,13 +1323,18 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             <motion.div
               initial={false}
               animate={{
-                y: isExpanded ? -440 : 0,
+                y: isExpanded ? -16 : 0,
                 opacity: isExpanded ? 0 : 1,
                 height: isExpanded ? 0 : 'auto'
               }}
               transition={{
-                duration: 0.72,
-                ease: [0.25, 1, 0.5, 1]
+                height: { duration: 0.56, ease: [0.22, 1, 0.36, 1] },
+                opacity: {
+                  duration: isExpanded ? 0.26 : 0.42,
+                  ease: 'easeOut',
+                  delay: isExpanded ? 0 : 0.12
+                },
+                y: { duration: 0.52, ease: [0.22, 1, 0.36, 1] }
               }}
               className={`w-full overflow-hidden origin-top select-none ${
                 isExpanded ? 'pointer-events-none' : 'pointer-events-auto'
@@ -1284,46 +1439,59 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </motion.div>
 
             {/* Expanded Header Cap When Upper Stories Collapse */}
-            {isExpanded && (
-              <div
-                className={`w-full px-3 sm:px-4 py-2 border-b flex items-center justify-between gap-2 ${
-                  isDark
-                    ? 'bg-[#1b130d] border-[#38291b] text-[#f5e7d6]'
-                    : 'bg-[#d9d1c4] border-[#b7ac9c] text-[#261d15]'
-                }`}
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-[1px] shrink-0"
-                    style={{
-                      backgroundColor: isDark ? heroSlice.wingBgDark : heroSlice.wingBgLight
-                    }}
-                  />
-                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase truncate">
-                    {heroSlice.name} · {heroSlice.category}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleToggleFloor()}
-                  className={`flex items-center gap-1 text-[9.5px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  key="expanded-header-cap"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className={`w-full px-3 sm:px-4 py-2 border-b flex items-center justify-between gap-2 ${
                     isDark
-                      ? 'bg-[#2a1d13] hover:bg-[#3a281a] border-[#523b27] text-[#f4cfa0]'
-                      : 'bg-[#f6f3ed] hover:bg-white border-[#b5aa99] text-[#281f17]'
+                      ? 'bg-[#1b130d] border-[#38291b] text-[#f5e7d6]'
+                      : 'bg-[#d9d1c4] border-[#b7ac9c] text-[#261d15]'
                   }`}
                 >
-                  <RotateCcw className="w-2.5 h-2.5" />
-                  <span>Full Building</span>
-                </button>
-              </div>
-            )}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-[1px] shrink-0"
+                      style={{
+                        backgroundColor: isDark ? heroSlice.wingBgDark : heroSlice.wingBgLight
+                      }}
+                    />
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase truncate">
+                      {heroSlice.name} · {heroSlice.category}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFloor()}
+                    className={`flex items-center gap-1 text-[9.5px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                      isDark
+                        ? 'bg-[#2a1d13] hover:bg-[#3a281a] border-[#523b27] text-[#f4cfa0]'
+                        : 'bg-[#f6f3ed] hover:bg-white border-[#b5aa99] text-[#281f17]'
+                    }`}
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>Full Building</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* ------------------------------------------------------- */}
             {/* SECTION B: SELECTED HERO FLOOR                          */}
             {/* ------------------------------------------------------- */}
-            <div className="relative z-30 w-full">
+            <motion.div
+              key={`hero-floor-${activeFloor}`}
+              initial={false}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-30 w-full"
+            >
               {renderArchitecturalFloorRow(heroSlice, !isExpanded)}
-            </div>
+            </motion.div>
 
             {/* ------------------------------------------------------- */}
             {/* SECTION C: 3-ROW EXPANDED ARCHITECTURAL GALLERY (9)     */}
@@ -1335,11 +1503,22 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 opacity: isExpanded ? 1 : 0
               }}
               transition={{
-                duration: 0.65,
-                ease: [0.25, 1, 0.5, 1]
+                height: { duration: 0.62, ease: [0.22, 1, 0.36, 1] },
+                opacity: {
+                  duration: isExpanded ? 0.42 : 0.24,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: isExpanded ? 0.06 : 0
+                }
               }}
               className="relative w-full overflow-hidden z-20"
             >
+              <motion.div
+                key={`floor-tiers-${activeFloor}`}
+                initial={isExpanded ? { opacity: 0.4, y: 6 } : false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full flex flex-col"
+              >
               {rows.map((rowProds, rIdx) => {
                 const rowElement = (
                   <div key={`expanded-row-${rIdx}`} className="w-full flex flex-col">
@@ -1475,28 +1654,25 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   </div>
                 );
 
-                if (rIdx === 0) {
-                  return (
-                    <motion.div
-                      key="expanded-row-wrap-0"
-                      initial={false}
-                      animate={{
-                        y: isExpanded ? 0 : -45,
-                        opacity: isExpanded ? 1 : 0
-                      }}
-                      transition={{
-                        duration: 0.55,
-                        ease: [0.25, 1, 0.5, 1],
-                        delay: 0.1
-                      }}
-                    >
-                      {rowElement}
-                    </motion.div>
-                  );
-                }
-
-                return rowElement;
+                return (
+                  <motion.div
+                    key={`expanded-row-wrap-${rIdx}`}
+                    initial={false}
+                    animate={{
+                      y: isExpanded ? 0 : -(10 + rIdx * 6),
+                      opacity: isExpanded ? 1 : 0
+                    }}
+                    transition={{
+                      duration: 0.46,
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: isExpanded ? 0.06 + rIdx * 0.065 : 0
+                    }}
+                  >
+                    {rowElement}
+                  </motion.div>
+                );
               })}
+              </motion.div>
             </motion.div>
 
             {/* ------------------------------------------------------- */}
@@ -1505,13 +1681,18 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             <motion.div
               initial={false}
               animate={{
-                y: isExpanded ? 440 : 0,
+                y: isExpanded ? 16 : 0,
                 opacity: isExpanded ? 0 : 1,
                 height: isExpanded ? 0 : 'auto'
               }}
               transition={{
-                duration: 0.72,
-                ease: [0.25, 1, 0.5, 1]
+                height: { duration: 0.56, ease: [0.22, 1, 0.36, 1] },
+                opacity: {
+                  duration: isExpanded ? 0.26 : 0.42,
+                  ease: 'easeOut',
+                  delay: isExpanded ? 0 : 0.12
+                },
+                y: { duration: 0.52, ease: [0.22, 1, 0.36, 1] }
               }}
               className={`w-full overflow-hidden origin-top select-none ${
                 isExpanded ? 'pointer-events-none' : 'pointer-events-auto'
@@ -1624,15 +1805,17 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       }`}
                     >
                       <div
-                        className={`h-[14%] w-full border-b ${
+                        className={`relative h-[14%] w-full border-b flex items-center px-1.5 ${
                           isDark
                             ? 'bg-gradient-to-b from-[#664c32] via-[#533c26] to-[#3f2c1b] border-[#1f160e]'
                             : 'bg-gradient-to-b from-[#aa8d6b] via-[#967b5b] to-[#7c6347] border-[#6e563c]'
                         }`}
-                      />
+                      >
+                        <div className="w-full h-[1px] bg-white/18" />
+                      </div>
 
                       <div className="relative flex-1 flex flex-col items-start justify-center px-1.5 sm:px-2.5 pb-5 overflow-hidden">
-                        {/* Subtle Wall Grain & Architectural Spotlight Grazing the Engraved Type */}
+                        {/* Subtle Wall Grain, Inset Plaque Border & Architectural Spotlight Grazing the Engraved Type */}
                         <div
                           aria-hidden="true"
                           className="absolute inset-0 opacity-15 mix-blend-overlay"
@@ -1640,11 +1823,16 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                         />
                         <div
                           aria-hidden="true"
+                          className="hidden sm:block absolute inset-[3px] border border-white/[0.08] pointer-events-none"
+                        />
+                        <span aria-hidden="true" className="hidden sm:block absolute top-[5px] right-[5px] w-[2px] h-[2px] rounded-full bg-white/30 pointer-events-none" />
+                        <div
+                          aria-hidden="true"
                           className="absolute inset-0 pointer-events-none"
                           style={{
                             background: isDark
-                              ? 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(255,216,158,0.18) 0%, transparent 75%)'
-                              : 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(255,255,255,0.35) 0%, transparent 75%)'
+                              ? 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(255,216,158,0.22) 0%, transparent 75%)'
+                              : 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(255,255,255,0.40) 0%, transparent 75%)'
                           }}
                         />
 
@@ -1673,31 +1861,48 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                   </div>
                 );
               })}
+
+              {/* Ground Floor Granite & Brushed Bronze Plinth Skirting Beam */}
+              <div
+                aria-hidden="true"
+                className={`w-full h-[5px] border-t ${
+                  isDark
+                    ? 'bg-gradient-to-b from-[#2f2217] via-[#1c140e] to-[#0d0906] border-[#513b27]/75'
+                    : 'bg-gradient-to-b from-[#d2c8b8] via-[#b7ac9a] to-[#988c79] border-white/60'
+                }`}
+              />
             </motion.div>
 
             {/* Expanded Architectural Base Plinth (Flush with Left & Right Building Piers) */}
-            {isExpanded && (
-              <div
-                className={`w-full px-3 sm:px-4 py-2 border-t flex items-center justify-between gap-2 ${
-                  isDark
-                    ? 'bg-[#1a120b] border-[#3a2a1b] text-[#cbb7a1]'
-                    : 'bg-[#dfd8cc] border-[#b7ac9c] text-[#4d3f32]'
-                }`}
-              >
-                <span className="text-[9.5px] font-mono uppercase tracking-wider truncate">
-                  {nicheProducts.length} Editions on {heroSlice.name} · Click any piece to inspect
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleToggleFloor()}
-                  className={`text-[9.5px] font-mono font-bold uppercase tracking-wider underline underline-offset-4 cursor-pointer whitespace-nowrap shrink-0 ${
-                    isDark ? 'text-[#e5a045] hover:text-[#f5c27d]' : 'text-[#c35626] hover:text-[#9c3e14]'
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  key="expanded-base-plinth"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className={`w-full px-3 sm:px-4 py-2 border-t flex items-center justify-between gap-2 ${
+                    isDark
+                      ? 'bg-[#1a120b] border-[#3a2a1b] text-[#cbb7a1]'
+                      : 'bg-[#dfd8cc] border-[#b7ac9c] text-[#4d3f32]'
                   }`}
                 >
-                  Close Floor View
-                </button>
-              </div>
-            )}
+                  <span className="text-[9.5px] font-mono uppercase tracking-wider truncate">
+                    {nicheProducts.length} Editions on {heroSlice.name} · Click any piece to inspect
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFloor()}
+                    className={`text-[9.5px] font-mono font-bold uppercase tracking-wider underline underline-offset-4 cursor-pointer whitespace-nowrap shrink-0 ${
+                      isDark ? 'text-[#e5a045] hover:text-[#f5c27d]' : 'text-[#c35626] hover:text-[#9c3e14]'
+                    }`}
+                  >
+                    Close Floor View
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* RIGHT 3D PERSPECTIVE ARCHITECTURAL SIDE ELEVATION (Intact) OR SYMMETRIC CORNER PILASTER (Expanded) */}
@@ -1724,7 +1929,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
           ) : (
             <div
               aria-hidden="true"
-              className={`hidden sm:block relative w-2.5 md:w-3.5 shrink-0 border-y border-r overflow-hidden ${
+              className={`hidden sm:flex flex-col justify-between relative w-2.5 md:w-3.5 shrink-0 border-y border-r overflow-hidden ${
                 isDark
                   ? 'bg-gradient-to-l from-[#0e0a07] via-[#261c14] to-[#1a130d] border-[#36281c]'
                   : 'bg-gradient-to-l from-[#bdb3a3] via-[#d8d0c3] to-[#c7beb0] border-[#afa493]'
@@ -1734,42 +1939,67 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 className="absolute inset-0 opacity-15 mix-blend-overlay"
                 style={{ backgroundImage: ARCH_GRAIN_SVG }}
               />
+              <div
+                className={`relative z-10 w-full h-[5px] border-b ${
+                  isDark
+                    ? 'bg-[#3c2d1f] border-black/60'
+                    : 'bg-[#e6dfd4] border-[#9c907e]'
+                }`}
+              />
+              <div
+                className={`relative z-10 mx-auto w-[1px] flex-1 my-3 ${
+                  isDark ? 'bg-[#6e5237]/25' : 'bg-white/40'
+                }`}
+              />
+              <div
+                className={`relative z-10 w-full h-[6px] border-t ${
+                  isDark
+                    ? 'bg-[#2a1f16] border-[#4e3a28]'
+                    : 'bg-[#b3a896] border-[#dcd4c7]'
+                }`}
+              />
             </div>
           )}
         </div>
 
         {/* ----------------------------------------------------------- */}
-        {/* REAL PHOTOGRAPHIC WET REFLECTIVE SIDEWALK (INTACT VIEW)     */}
+        {/* REAL PHOTOGRAPHIC WET REFLECTIVE SIDEWALK (TRUE ALPHA FADE) */}
         {/* ----------------------------------------------------------- */}
-        {!isExpanded && (
-          <div aria-hidden="true" className="relative w-full h-11 sm:h-16 overflow-hidden pointer-events-none">
-            <img
-              src={
-                isDark
-                  ? '/assets/aistudio/arch/dark_sidewalk.jpg'
-                  : '/assets/aistudio/arch/light_sidewalk.jpg'
-              }
-              alt=""
-              className="w-full h-full block object-cover object-top select-none"
-              style={{
-                WebkitMaskImage:
-                  'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%)',
-                maskImage:
-                  'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%)'
-              }}
-            />
-            {/* Smooth bottom feather into page background (#120c08 or #ece9e3) */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: isDark
-                  ? 'linear-gradient(180deg, transparent 30%, #120c08 100%)'
-                  : 'linear-gradient(180deg, transparent 35%, #ece9e3 100%)'
-              }}
-            />
-          </div>
-        )}
+        <AnimatePresence>
+          {!isExpanded && (
+            <motion.div
+              key="wet-sidewalk"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              aria-hidden="true"
+              className="relative w-full overflow-hidden pointer-events-none"
+            >
+              <div className="relative w-full h-11 sm:h-16 overflow-hidden">
+                <img
+                  src={
+                    isDark
+                      ? '/assets/aistudio/arch/dark_sidewalk.jpg'
+                      : '/assets/aistudio/arch/light_sidewalk.jpg'
+                  }
+                  alt=""
+                  className="w-full h-full block object-cover object-top select-none"
+                  style={{
+                    WebkitMaskImage:
+                      'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(180deg, black 0%, black 38%, transparent 100%)',
+                    WebkitMaskComposite: 'source-in',
+                    maskImage:
+                      'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(180deg, black 0%, black 38%, transparent 100%)',
+                    maskComposite: 'intersect'
+                  }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
+    </MotionConfig>
   );
 };

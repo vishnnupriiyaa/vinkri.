@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { ShelfCarousel } from './components/ShelfCarousel';
 import { HeroLeft } from './components/HeroLeft';
@@ -20,12 +20,16 @@ import { LogoEntranceIntro } from './components/LogoEntranceIntro';
 import { InfoModals } from './components/InfoModals';
 import { Footer } from './components/Footer';
 import { PRODUCTS_DATA, FLOORS_DATA } from './data/products';
-import { Product, FloorInfo, CartItem, ThemeMode } from './types';
+import { BACKDROP_OPTIONS } from './data/backdrops';
+import { Product, FloorInfo, CartItem, ThemeMode, BackdropFinish } from './types';
 import { Check } from 'lucide-react';
 
 export default function App() {
   // Theme state: Rustic Brown Dark Mode (default) vs Warm Beige Light Mode
   const [theme, setTheme] = useState<ThemeMode>('rustic-dark');
+  const [backdropFinish, setBackdropFinish] = useState<BackdropFinish>('dark-walnut');
+  const lastDarkBackdropRef = useRef<BackdropFinish>('dark-walnut');
+  const lastLightBackdropRef = useRef<BackdropFinish>('light-oak');
 
   // Navigation state
   const [activeNav, setActiveNav] = useState('HOME');
@@ -85,7 +89,27 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleToggleTheme = () => {
-    setTheme((prev) => (prev === 'rustic-dark' ? 'warm-beige' : 'rustic-dark'));
+    setTheme((prev) => {
+      const next = prev === 'rustic-dark' ? 'warm-beige' : 'rustic-dark';
+      setBackdropFinish(
+        next === 'rustic-dark'
+          ? lastDarkBackdropRef.current
+          : lastLightBackdropRef.current
+      );
+      return next;
+    });
+  };
+
+  const handleSelectBackdrop = (finish: BackdropFinish) => {
+    const option = BACKDROP_OPTIONS.find((opt) => opt.id === finish);
+    if (!option) return;
+    if (option.theme === 'rustic-dark') {
+      lastDarkBackdropRef.current = finish;
+    } else {
+      lastLightBackdropRef.current = finish;
+    }
+    setBackdropFinish(finish);
+    setTheme(option.theme);
   };
 
   const showToast = (message: string) => {
@@ -180,13 +204,37 @@ export default function App() {
   };
 
   const isDark = theme === 'rustic-dark';
+  const activeBackdrop =
+    BACKDROP_OPTIONS.find((opt) => opt.id === backdropFinish) ?? BACKDROP_OPTIONS[0];
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-500 font-sans selection:bg-[#d2f53a] selection:text-black overflow-x-hidden w-full max-w-full ${
-        isDark ? 'bg-[#120c08] text-[#f7f2ea]' : 'bg-[#ece9e3] text-[#282019]'
+      className={`relative min-h-screen flex flex-col transition-colors duration-500 font-sans selection:bg-[#d2f53a] selection:text-black overflow-x-hidden w-full max-w-full ${
+        isDark ? 'text-[#f7f2ea]' : 'text-[#282019]'
       }`}
+      style={{ backgroundColor: activeBackdrop.baseBg }}
     >
+      {/* Fixed Architectural Wood Grain Background Layer + Contrast-Safe Studio Scrim */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+      >
+        {activeBackdrop.imageSrc && (
+          <img
+            key={activeBackdrop.id}
+            src={activeBackdrop.imageSrc}
+            alt=""
+            className={`w-full h-full object-cover select-none transition-opacity duration-500 ${
+              activeBackdrop.imageOpacityClass
+            } ${activeBackdrop.imageScaleClass ?? ''}`}
+          />
+        )}
+        <div
+          className="absolute inset-0 transition-all duration-500"
+          style={{ background: activeBackdrop.scrimStyle }}
+        />
+      </div>
+
       {/* 1. Header / Navigation Bar */}
       <Navbar
         theme={theme}
@@ -205,35 +253,39 @@ export default function App() {
 
       {/* 2. Sub-Header Carousel ("ON THE SHELF") - shown on main building view */}
       {!selectedFloor && (
-        <ShelfCarousel
-          products={shelfProducts}
-          theme={theme}
-          onSelectProduct={(p) => setSelectedProduct(p)}
-          onQuickAdd={(p) => handleAddToCart(p, 1)}
-        />
+        <div className="relative z-10">
+          <ShelfCarousel
+            products={shelfProducts}
+            theme={theme}
+            onSelectProduct={(p) => setSelectedProduct(p)}
+            onQuickAdd={(p) => handleAddToCart(p, 1)}
+          />
+        </div>
       )}
 
       {/* Main Content Area: Full Floor Page UX vs Exterior Building Facade Showcase */}
       {selectedFloor ? (
-        <FloorPageView
-          floor={selectedFloor}
-          onBackToBuilding={() => {
-            setSelectedFloor(null);
-          }}
-          theme={theme}
-          onSelectProduct={(p) => setSelectedProduct(p)}
-          onQuickAdd={(p) => handleAddToCart(p, 1)}
-          onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
-          onSwitchFloor={(newFloor) => {
-            setSelectedFloor(newFloor);
-          }}
-          wishlistIds={wishlistIds}
-          onToggleWishlist={handleToggleWishlist}
-          cartProductIds={cartItems.map((item) => item.product.id)}
-          onRemoveFromCart={handleRemoveCartItem}
-        />
+        <div className="relative z-10 flex-1 flex flex-col">
+          <FloorPageView
+            floor={selectedFloor}
+            onBackToBuilding={() => {
+              setSelectedFloor(null);
+            }}
+            theme={theme}
+            onSelectProduct={(p) => setSelectedProduct(p)}
+            onQuickAdd={(p) => handleAddToCart(p, 1)}
+            onOpenVirtualDarkRoom={(id) => handleOpenDarkRoom(id)}
+            onSwitchFloor={(newFloor) => {
+              setSelectedFloor(newFloor);
+            }}
+            wishlistIds={wishlistIds}
+            onToggleWishlist={handleToggleWishlist}
+            cartProductIds={cartItems.map((item) => item.product.id)}
+            onRemoveFromCart={handleRemoveCartItem}
+          />
+        </div>
       ) : (
-        <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <main className="relative z-10 flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* 3. Hero Section (2-Column Grid Layout matching reference image) */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
             {/* Left Column (5 Cols): Welcome text, headline, CTA, and Top 3 Sellers */}
@@ -255,6 +307,8 @@ export default function App() {
             <div className="lg:col-span-7 flex flex-col justify-center">
               <BuildingShowcase
                 theme={theme}
+                backdropFinish={backdropFinish}
+                onSelectBackdrop={handleSelectBackdrop}
                 onSelectFloor={handleOpenFloor}
                 onCollapseFloor={() => setFloorFilter(null)}
                 selectedFloorNumber={floorFilter}
@@ -286,20 +340,22 @@ export default function App() {
       )}
 
       {/* 5. Footer */}
-      <Footer
-        theme={theme}
-        onSelectFloorNumber={(floorNum) => {
-          const targetFloor = FLOORS_DATA.find((f) => f.numeric === floorNum);
-          if (targetFloor) {
-            handleOpenFloor(targetFloor);
-          } else {
-            setFloorFilter(floorNum);
-            const el = document.getElementById('catalog-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }
-        }}
-        onOpenNavModal={(nav) => setInfoModalType(nav)}
-      />
+      <div className="relative z-10">
+        <Footer
+          theme={theme}
+          onSelectFloorNumber={(floorNum) => {
+            const targetFloor = FLOORS_DATA.find((f) => f.numeric === floorNum);
+            if (targetFloor) {
+              handleOpenFloor(targetFloor);
+            } else {
+              setFloorFilter(floorNum);
+              const el = document.getElementById('catalog-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          onOpenNavModal={(nav) => setInfoModalType(nav)}
+        />
+      </div>
 
       {/* Animated VINKRI Logo Website Entry Portal */}
       <LogoEntranceIntro

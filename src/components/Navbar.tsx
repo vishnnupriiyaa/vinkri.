@@ -36,8 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header
-      className={`w-full transition-colors duration-300 border-b ${
-        isDark ? 'bg-[#120c08] border-[#261b12] text-[#f7f2ea]' : 'bg-[#ece9e3] border-[#d8d2c7] text-[#282019]'
+      className={`relative z-20 w-full transition-colors duration-300 border-b backdrop-blur-md ${
+        isDark ? 'bg-[#120c08]/86 border-[#2a1d13] text-[#f7f2ea]' : 'bg-[#ece9e3]/86 border-[#d3ccc0] text-[#282019]'
       }`}
     >
       <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between gap-4">
