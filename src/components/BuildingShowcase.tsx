@@ -628,8 +628,9 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
     : 'bg-gradient-to-b from-[#dfd7c9] via-[#ccc2b2] to-[#b8ad9b] border-[#b7ac9c]';
 
   // Physical Stepped Extruded Architectural Beam Across Entire 5-Bay Facade Width
-  const renderSlabBeam = (isTop = false) => (
+  const renderSlabBeam = (isTop = false, beamKey?: string) => (
     <div
+      key={beamKey}
       aria-hidden="true"
       className="relative w-full h-[4px] sm:h-[5px] pointer-events-none flex flex-col justify-between overflow-hidden"
       style={{
@@ -1432,7 +1433,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
               {/* Upper Stories Above Active Floor */}
               {upperSlices.map((slice) => {
                 if (slice.id === 'roof') {
-                  return renderSlabBeam(true);
+                  return renderSlabBeam(true, slice.id);
                 }
                 return renderArchitecturalFloorRow(slice, !isExpanded);
               })}
