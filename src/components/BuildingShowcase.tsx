@@ -9,14 +9,11 @@ import {
   ArrowUpRight,
   Layers
 } from 'lucide-react';
-import { BackdropFinish, FloorInfo, Product, ThemeMode } from '../types';
+import { FloorInfo, Product, ThemeMode } from '../types';
 import { FLOORS_DATA, PRODUCTS_DATA } from '../data/products';
-import { BACKDROP_OPTIONS } from '../data/backdrops';
 
 interface BuildingShowcaseProps {
   theme: ThemeMode;
-  backdropFinish?: BackdropFinish;
-  onSelectBackdrop?: (finish: BackdropFinish) => void;
   onSelectFloor?: (floor: FloorInfo, slot?: 'left' | 'center' | 'right', productId?: string) => void;
   onCollapseFloor?: () => void;
   selectedFloorNumber?: number | null;
@@ -520,8 +517,6 @@ const PhotoPlanterCluster: React.FC<{ isDark: boolean; count?: number }> = ({
 
 export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
   theme,
-  backdropFinish = 'dark-walnut',
-  onSelectBackdrop,
   onSelectFloor,
   onCollapseFloor,
   selectedFloorNumber,
@@ -1134,142 +1129,19 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
       </div>
 
       {/* ============================================================== */}
-      {/* 1B. DARK WOOD & LIGHT WOOD BACKGROUND FINISH TESTER BAR        */}
-      {/* ============================================================== */}
-      {onSelectBackdrop && (
-        <div
-          className={`w-full max-w-[980px] mb-3 px-2.5 sm:px-3 py-1.5 rounded-lg flex flex-wrap items-center justify-between gap-1.5 border transition-colors duration-200 ${
-            isDark
-              ? 'bg-[#17100b]/85 border-[#2c2015] text-[#cbb7a1]'
-              : 'bg-[#ebe6dc]/85 border-[#ccc4b7] text-[#4b3e31]'
-          }`}
-        >
-          <span className="hidden xl:inline text-[9px] font-mono font-bold uppercase tracking-[0.14em] opacity-80 whitespace-nowrap">
-            Backdrop
-          </span>
-
-          <div className="flex flex-wrap items-center justify-between sm:justify-start gap-1 sm:gap-1.5 w-full xl:w-auto">
-            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-65 whitespace-nowrap">
-              Dark
-            </span>
-            {BACKDROP_OPTIONS.filter((o) => o.group === 'dark-wood').map((opt) => {
-              const isSelected = backdropFinish === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onSelectBackdrop(opt.id)}
-                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-[3px] text-[9px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
-                    isSelected
-                      ? isDark
-                        ? 'bg-[#2a1d13] border-[#e5a045] text-[#f7efe6]'
-                        : 'bg-[#241910] border-[#c35626] text-white'
-                      : isDark
-                      ? 'bg-[#1b130d]/70 border-[#322418] text-[#bda894] hover:text-white hover:border-[#533c27]'
-                      : 'bg-[#e3ddd2]/80 border-[#c9c0b2] text-[#4c3e31] hover:border-[#8e7d6a]'
-                  }`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="w-2.5 h-2.5 rounded-[1px] border border-white/20 shrink-0"
-                    style={{ background: opt.swatchStyle }}
-                  />
-                  <span>{opt.label}</span>
-                </button>
-              );
-            })}
-
-            <span
-              aria-hidden="true"
-              className={`hidden sm:inline-block h-3.5 w-[1px] mx-0.5 ${
-                isDark ? 'bg-[#38291b]' : 'bg-[#c5bcad]'
-              }`}
-            />
-
-            <span className="text-[8.5px] font-mono uppercase tracking-wider opacity-65 whitespace-nowrap">
-              Light
-            </span>
-            {BACKDROP_OPTIONS.filter((o) => o.group === 'light-wood').map((opt) => {
-              const isSelected = backdropFinish === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onSelectBackdrop(opt.id)}
-                  className={`flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-[3px] text-[9px] font-mono font-semibold transition-all duration-150 cursor-pointer border whitespace-nowrap shrink-0 ${
-                    isSelected
-                      ? isDark
-                        ? 'bg-[#f5efe6] border-[#e5a045] text-[#1f160e]'
-                        : 'bg-white border-[#c35626] text-[#1f160e] shadow-xs'
-                      : isDark
-                      ? 'bg-[#1b130d]/70 border-[#322418] text-[#bda894] hover:text-white hover:border-[#533c27]'
-                      : 'bg-[#f4f0e8]/90 border-[#ccc2b4] text-[#4c3e31] hover:text-[#1f160e] hover:border-[#94836f]'
-                  }`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="w-2.5 h-2.5 rounded-[1px] border border-black/15 shrink-0"
-                    style={{ background: opt.swatchStyle }}
-                  />
-                  <span>{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================== */}
       {/* 2. PHOTOREALISTIC 5-BAY VINKRI FLAGSHIP ARCHITECTURAL SCENE    */}
       {/* ============================================================== */}
       <div className="relative w-full max-w-[980px] flex flex-col items-center">
-        {/* REAL PHOTOGRAPHIC FLANKING URBAN STREET TREES & HORIZON */}
-        <AnimatePresence>
-          {!isExpanded && (
-            <motion.div
-              key="flanking-trees"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-              aria-hidden="true"
-              className="hidden md:block absolute -inset-x-10 -top-4 bottom-8 pointer-events-none overflow-hidden -z-10"
-            >
-              {/* Left Real Urban Avenue Tree */}
-              <img
-                src={
-                  isDark
-                    ? '/assets/aistudio/arch/dark_tree_left.jpg'
-                    : '/assets/aistudio/arch/light_tree_left.jpg'
-                }
-                alt=""
-                className="absolute left-0 bottom-0 h-[92%] w-[16%] object-cover object-right select-none"
-                style={{
-                  WebkitMaskImage:
-                    'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%)',
-                  maskImage:
-                    'linear-gradient(90deg, transparent 0%, black 42%, black 88%, transparent 100%)'
-                }}
-              />
-              {/* Right Real Urban Avenue Tree */}
-              <img
-                src={
-                  isDark
-                    ? '/assets/aistudio/arch/dark_tree_right.jpg'
-                    : '/assets/aistudio/arch/light_tree_right.jpg'
-                }
-                alt=""
-                className="absolute right-0 bottom-0 h-[92%] w-[16%] object-cover object-left select-none"
-                style={{
-                  WebkitMaskImage:
-                    'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)',
-                  maskImage:
-                    'linear-gradient(270deg, transparent 0%, black 42%, black 88%, transparent 100%)'
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* SUBTLE ARCHITECTURAL GALLERY WALL WASH ANCHORING BUILDING TO WOOD BACKDROP */}
+        <div
+          aria-hidden="true"
+          className="hidden sm:block absolute -inset-x-6 -top-4 bottom-2 pointer-events-none -z-10 transition-opacity duration-500"
+          style={{
+            background: isDark
+              ? 'radial-gradient(ellipse 72% 60% at 50% 48%, rgba(229, 160, 69, 0.10) 0%, rgba(18, 12, 8, 0.35) 55%, transparent 80%)'
+              : 'radial-gradient(ellipse 72% 60% at 50% 48%, rgba(255, 250, 240, 0.42) 0%, rgba(165, 145, 120, 0.14) 55%, transparent 80%)'
+          }}
+        />
 
         {/* Building Massing Row: [Left Corner Pier] + [Main 5-Bay Front Facade] + [3D Perspective Right Wing] */}
         <div className="relative w-full flex items-stretch justify-center px-0 sm:px-3">
@@ -1346,7 +1218,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 {/* Left Penthouse Parapet Cap */}
                 <div className={`${leftWingCls} flex flex-col justify-end`}>
                   <div
-                    className={`relative h-6 sm:h-8 border-t border-r-[3px] sm:border-r-[4px] flex flex-col justify-between px-2 py-1 overflow-hidden ${framePierBg}`}
+                    className={`relative h-7 sm:h-9 border-t border-r-[3px] sm:border-r-[4px] flex flex-col justify-between px-2 py-1 overflow-hidden ${framePierBg}`}
                   >
                     <div
                       className="absolute inset-0 opacity-15 mix-blend-overlay"
@@ -1370,7 +1242,7 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                 {/* Center VINKRI Backlit Penthouse Signage */}
                 <div className={`${centerWingCls} flex flex-col justify-end`}>
                   <div
-                    className={`relative mx-1 sm:mx-2 h-9 sm:h-11 md:h-12 rounded-t-[2px] border-t border-x flex items-center justify-center overflow-hidden ${
+                    className={`relative h-9 sm:h-11 md:h-12 border-t flex items-center justify-center overflow-hidden ${
                       isDark
                         ? 'bg-gradient-to-b from-[#1d1c1e] via-[#131316] to-[#0c0a08] border-[#423f42]'
                         : 'bg-gradient-to-b from-[#33271e] via-[#271d16] to-[#1b130e] border-[#615244]'
@@ -1402,13 +1274,12 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
                       VINKRI
                     </span>
                   </div>
-                  {renderSlabBeam(true)}
                 </div>
 
                 {/* Right Penthouse Parapet Cap */}
                 <div className={`${rightWingCls} flex flex-col justify-end`}>
                   <div
-                    className={`relative h-6 sm:h-8 border-t border-l-[3px] sm:border-l-[4px] flex flex-col justify-between px-1.5 py-1 overflow-hidden ${framePierBg}`}
+                    className={`relative h-7 sm:h-9 border-t border-l-[3px] sm:border-l-[4px] flex flex-col justify-between px-1.5 py-1 overflow-hidden ${framePierBg}`}
                   >
                     <div
                       className="absolute inset-0 opacity-15 mix-blend-overlay"
@@ -1906,99 +1777,66 @@ export const BuildingShowcase: React.FC<BuildingShowcaseProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* RIGHT 3D PERSPECTIVE ARCHITECTURAL SIDE ELEVATION (Intact) OR SYMMETRIC CORNER PILASTER (Expanded) */}
-          {!isExpanded ? (
+          {/* SYMMETRIC FAR-RIGHT ARCHITECTURAL CORNER PILASTER */}
+          <div
+            aria-hidden="true"
+            className={`hidden sm:flex flex-col justify-between relative w-2.5 md:w-3.5 shrink-0 border-y border-r overflow-hidden ${
+              isDark
+                ? 'bg-gradient-to-l from-[#0e0a07] via-[#261c14] to-[#1a130d] border-[#36281c]'
+                : 'bg-gradient-to-l from-[#bdb3a3] via-[#d8d0c3] to-[#c7beb0] border-[#afa493]'
+            }`}
+          >
             <div
-              aria-hidden="true"
-              className="hidden sm:block relative w-6 md:w-10 shrink-0 overflow-hidden select-none pointer-events-none"
-            >
-              <img
-                src={
-                  isDark
-                    ? '/assets/aistudio/arch/dark_side_wall.jpg'
-                    : '/assets/aistudio/arch/light_side_wall.jpg'
-                }
-                alt=""
-                className="w-full h-full block object-cover object-left select-none"
-                style={{
-                  WebkitMaskImage:
-                    'linear-gradient(90deg, black 52%, transparent 100%)',
-                  maskImage: 'linear-gradient(90deg, black 52%, transparent 100%)'
-                }}
-              />
-            </div>
-          ) : (
+              className="absolute inset-0 opacity-15 mix-blend-overlay"
+              style={{ backgroundImage: ARCH_GRAIN_SVG }}
+            />
             <div
-              aria-hidden="true"
-              className={`hidden sm:flex flex-col justify-between relative w-2.5 md:w-3.5 shrink-0 border-y border-r overflow-hidden ${
+              className={`relative z-10 w-full h-[5px] border-b ${
                 isDark
-                  ? 'bg-gradient-to-l from-[#0e0a07] via-[#261c14] to-[#1a130d] border-[#36281c]'
-                  : 'bg-gradient-to-l from-[#bdb3a3] via-[#d8d0c3] to-[#c7beb0] border-[#afa493]'
+                  ? 'bg-[#3c2d1f] border-black/60'
+                  : 'bg-[#e6dfd4] border-[#9c907e]'
               }`}
-            >
-              <div
-                className="absolute inset-0 opacity-15 mix-blend-overlay"
-                style={{ backgroundImage: ARCH_GRAIN_SVG }}
-              />
-              <div
-                className={`relative z-10 w-full h-[5px] border-b ${
-                  isDark
-                    ? 'bg-[#3c2d1f] border-black/60'
-                    : 'bg-[#e6dfd4] border-[#9c907e]'
-                }`}
-              />
-              <div
-                className={`relative z-10 mx-auto w-[1px] flex-1 my-3 ${
-                  isDark ? 'bg-[#6e5237]/25' : 'bg-white/40'
-                }`}
-              />
-              <div
-                className={`relative z-10 w-full h-[6px] border-t ${
-                  isDark
-                    ? 'bg-[#2a1f16] border-[#4e3a28]'
-                    : 'bg-[#b3a896] border-[#dcd4c7]'
-                }`}
-              />
-            </div>
-          )}
+            />
+            <div
+              className={`relative z-10 mx-auto w-[1px] flex-1 my-3 ${
+                isDark ? 'bg-[#6e5237]/25' : 'bg-white/40'
+              }`}
+            />
+            <div
+              className={`relative z-10 w-full h-[6px] border-t ${
+                isDark
+                  ? 'bg-[#2a1f16] border-[#4e3a28]'
+                  : 'bg-[#b3a896] border-[#dcd4c7]'
+              }`}
+            />
+          </div>
         </div>
 
         {/* ----------------------------------------------------------- */}
-        {/* REAL PHOTOGRAPHIC WET REFLECTIVE SIDEWALK (TRUE ALPHA FADE) */}
+        {/* GROUNDED ARCHITECTURAL PLINTH & STUDIO CONTACT SHADOW       */}
         {/* ----------------------------------------------------------- */}
-        <AnimatePresence>
-          {!isExpanded && (
-            <motion.div
-              key="wet-sidewalk"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-              aria-hidden="true"
-              className="relative w-full overflow-hidden pointer-events-none"
-            >
-              <div className="relative w-full h-11 sm:h-16 overflow-hidden">
-                <img
-                  src={
-                    isDark
-                      ? '/assets/aistudio/arch/dark_sidewalk.jpg'
-                      : '/assets/aistudio/arch/light_sidewalk.jpg'
-                  }
-                  alt=""
-                  className="w-full h-full block object-cover object-top select-none"
-                  style={{
-                    WebkitMaskImage:
-                      'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(180deg, black 0%, black 38%, transparent 100%)',
-                    WebkitMaskComposite: 'source-in',
-                    maskImage:
-                      'linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(180deg, black 0%, black 38%, transparent 100%)',
-                    maskComposite: 'intersect'
-                  }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div
+          aria-hidden="true"
+          className="relative w-full px-0 sm:px-3 pointer-events-none select-none flex flex-col items-center"
+        >
+          {/* Stepped Architectural Curb Apron */}
+          <div
+            className={`w-full h-[6px] sm:h-[7px] border-x border-b ${
+              isDark
+                ? 'bg-gradient-to-b from-[#2c2016] to-[#140e09] border-[#3d2d1f]'
+                : 'bg-gradient-to-b from-[#d8d0c2] to-[#b8ad9b] border-[#afa493]'
+            }`}
+          />
+          {/* Subtle Warm Spill Reflection & Soft Studio Ground Shadow Over Wood Backdrop */}
+          <div
+            className="w-[96%] h-6 sm:h-8 -mt-[1px] transition-all duration-500"
+            style={{
+              background: isDark
+                ? 'radial-gradient(ellipse 68% 78% at 50% 0%, rgba(255, 200, 130, 0.16) 0%, rgba(0, 0, 0, 0.72) 44%, transparent 100%)'
+                : 'radial-gradient(ellipse 68% 78% at 50% 0%, rgba(72, 54, 34, 0.24) 0%, rgba(92, 72, 48, 0.10) 48%, transparent 100%)'
+            }}
+          />
+        </div>
       </div>
     </div>
     </MotionConfig>

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { ShelfCarousel } from './components/ShelfCarousel';
 import { HeroLeft } from './components/HeroLeft';
@@ -21,15 +21,12 @@ import { InfoModals } from './components/InfoModals';
 import { Footer } from './components/Footer';
 import { PRODUCTS_DATA, FLOORS_DATA } from './data/products';
 import { BACKDROP_OPTIONS } from './data/backdrops';
-import { Product, FloorInfo, CartItem, ThemeMode, BackdropFinish } from './types';
+import { Product, FloorInfo, CartItem, ThemeMode } from './types';
 import { Check } from 'lucide-react';
 
 export default function App() {
   // Theme state: Rustic Brown Dark Mode (default) vs Warm Beige Light Mode
   const [theme, setTheme] = useState<ThemeMode>('rustic-dark');
-  const [backdropFinish, setBackdropFinish] = useState<BackdropFinish>('dark-walnut');
-  const lastDarkBackdropRef = useRef<BackdropFinish>('dark-walnut');
-  const lastLightBackdropRef = useRef<BackdropFinish>('light-oak');
 
   // Navigation state
   const [activeNav, setActiveNav] = useState('HOME');
@@ -89,27 +86,7 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleToggleTheme = () => {
-    setTheme((prev) => {
-      const next = prev === 'rustic-dark' ? 'warm-beige' : 'rustic-dark';
-      setBackdropFinish(
-        next === 'rustic-dark'
-          ? lastDarkBackdropRef.current
-          : lastLightBackdropRef.current
-      );
-      return next;
-    });
-  };
-
-  const handleSelectBackdrop = (finish: BackdropFinish) => {
-    const option = BACKDROP_OPTIONS.find((opt) => opt.id === finish);
-    if (!option) return;
-    if (option.theme === 'rustic-dark') {
-      lastDarkBackdropRef.current = finish;
-    } else {
-      lastLightBackdropRef.current = finish;
-    }
-    setBackdropFinish(finish);
-    setTheme(option.theme);
+    setTheme((prev) => (prev === 'rustic-dark' ? 'warm-beige' : 'rustic-dark'));
   };
 
   const showToast = (message: string) => {
@@ -204,8 +181,9 @@ export default function App() {
   };
 
   const isDark = theme === 'rustic-dark';
+  const activeBackdropId = isDark ? 'dark-walnut' : 'light-oak';
   const activeBackdrop =
-    BACKDROP_OPTIONS.find((opt) => opt.id === backdropFinish) ?? BACKDROP_OPTIONS[0];
+    BACKDROP_OPTIONS.find((opt) => opt.id === activeBackdropId) ?? BACKDROP_OPTIONS[0];
 
   return (
     <div
@@ -329,8 +307,6 @@ export default function App() {
             <div className="lg:col-span-7 flex flex-col justify-center">
               <BuildingShowcase
                 theme={theme}
-                backdropFinish={backdropFinish}
-                onSelectBackdrop={handleSelectBackdrop}
                 onSelectFloor={handleOpenFloor}
                 onCollapseFloor={() => setFloorFilter(null)}
                 selectedFloorNumber={floorFilter}
