@@ -64,6 +64,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <img
                 src="/assets/aistudio/50547_5739e055.jpg"
                 alt="VINKRI"
+                width={140}
+                height={32}
+                style={{ maxHeight: '32px', width: 'auto' }}
                 className={`h-7 sm:h-8 w-auto object-contain block max-w-[125px] sm:max-w-[145px] transition-all duration-300 ${
                   isDark ? '' : 'filter invert mix-blend-multiply'
                 }`}

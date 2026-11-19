@@ -11,8 +11,8 @@ export interface BackdropOption {
   theme: ThemeMode;
   baseBg: string;
   imageSrc?: string;
-  imageScaleClass?: string;
-  imageOpacityClass: string;
+  imageScale?: number;
+  imageOpacity: number;
   scrimStyle: string;
   swatchStyle: string;
 }
@@ -25,7 +25,7 @@ export const BACKDROP_OPTIONS: BackdropOption[] = [
     theme: 'rustic-dark',
     baseBg: '#120c08',
     imageSrc: darkWalnutImg,
-    imageOpacityClass: 'opacity-80',
+    imageOpacity: 0.8,
     scrimStyle:
       'radial-gradient(ellipse 72% 65% at 64% 34%, rgba(28,18,11,0.34) 0%, rgba(16,10,6,0.68) 68%, rgba(11,7,4,0.88) 100%)',
     swatchStyle:
@@ -38,7 +38,7 @@ export const BACKDROP_OPTIONS: BackdropOption[] = [
     theme: 'rustic-dark',
     baseBg: '#100c09',
     imageSrc: charredOakImg,
-    imageOpacityClass: 'opacity-75',
+    imageOpacity: 0.75,
     scrimStyle:
       'radial-gradient(ellipse 72% 65% at 64% 34%, rgba(22,16,12,0.42) 0%, rgba(12,9,7,0.74) 68%, rgba(8,6,4,0.92) 100%)',
     swatchStyle:
@@ -50,7 +50,7 @@ export const BACKDROP_OPTIONS: BackdropOption[] = [
     group: 'dark-wood',
     theme: 'rustic-dark',
     baseBg: '#120c08',
-    imageOpacityClass: 'opacity-0',
+    imageOpacity: 0,
     scrimStyle:
       'radial-gradient(ellipse 70% 60% at 64% 32%, rgba(36,24,15,0.22) 0%, rgba(18,12,8,0.92) 72%)',
     swatchStyle: 'linear-gradient(135deg, #1b120c 0%, #120c08 100%)'
@@ -62,7 +62,7 @@ export const BACKDROP_OPTIONS: BackdropOption[] = [
     theme: 'warm-beige',
     baseBg: '#ece7de',
     imageSrc: whiteOakImg,
-    imageOpacityClass: 'opacity-72',
+    imageOpacity: 0.72,
     scrimStyle:
       'radial-gradient(ellipse 72% 65% at 64% 34%, rgba(244,239,231,0.44) 0%, rgba(236,231,222,0.70) 70%, rgba(227,221,210,0.86) 100%)',
     swatchStyle:
@@ -75,8 +75,8 @@ export const BACKDROP_OPTIONS: BackdropOption[] = [
     theme: 'warm-beige',
     baseBg: '#eae2d4',
     imageSrc: honeyAshImg,
-    imageScaleClass: 'scale-[1.22]',
-    imageOpacityClass: 'opacity-68',
+    imageScale: 1.22,
+    imageOpacity: 0.68,
     scrimStyle:
       'radial-gradient(ellipse 72% 65% at 64% 34%, rgba(246,238,225,0.42) 0%, rgba(236,227,211,0.68) 70%, rgba(225,214,195,0.85) 100%)',
     swatchStyle:
@@ -88,7 +88,7 @@ export const BACKDROP_OPTIONS: BackdropOption[] = [
     group: 'light-wood',
     theme: 'warm-beige',
     baseBg: '#ece9e3',
-    imageOpacityClass: 'opacity-0',
+    imageOpacity: 0,
     scrimStyle:
       'radial-gradient(ellipse 70% 60% at 64% 32%, rgba(248,245,239,0.35) 0%, rgba(236,233,227,0.92) 72%)',
     swatchStyle: 'linear-gradient(135deg, #f3efe8 0%, #e5e0d7 100%)'

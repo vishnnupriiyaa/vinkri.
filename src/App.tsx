@@ -218,20 +218,42 @@ export default function App() {
       <div
         aria-hidden="true"
         className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          overflow: 'hidden'
+        }}
       >
         {activeBackdrop.imageSrc && (
-          <img
+          <div
             key={activeBackdrop.id}
-            src={activeBackdrop.imageSrc}
-            alt=""
-            className={`w-full h-full object-cover select-none transition-opacity duration-500 ${
-              activeBackdrop.imageOpacityClass
-            } ${activeBackdrop.imageScaleClass ?? ''}`}
+            className="w-full h-full select-none transition-opacity duration-500"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: `url("${activeBackdrop.imageSrc}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              opacity: activeBackdrop.imageOpacity,
+              transform: activeBackdrop.imageScale
+                ? `scale(${activeBackdrop.imageScale})`
+                : undefined
+            }}
           />
         )}
         <div
           className="absolute inset-0 transition-all duration-500"
-          style={{ background: activeBackdrop.scrimStyle }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: activeBackdrop.scrimStyle
+          }}
         />
       </div>
 
